@@ -1,0 +1,98 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["forge*"]
+
+[project]
+name = "embodied-agent-forge"
+version = "0.1.0"
+description = "Natural language → trained robot policy. An end-to-end autonomous pipeline for embodied AI."
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.11"
+authors = [{ name = "Shaswat Garg" }]
+keywords = [
+    "robotics",
+    "reinforcement-learning",
+    "reward-design",
+    "llm",
+    "embodied-ai",
+    "world-models",
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+
+dependencies = [
+    # ── Core ──
+    "pydantic>=2.0",
+    "typer[all]>=0.12",
+    "rich>=13.0",
+
+    # ── LLM ──
+    "litellm>=1.40",
+
+    # ── Config / Serialization ──
+    "pyyaml>=6.0",
+    "toml>=0.10",
+
+    # ── Logging / Tracking ──
+    "loguru>=0.7",
+]
+
+[project.optional-dependencies]
+# Install these when you're ready for each phase
+sim = [
+    "mujoco>=3.0",
+    "gymnasium>=1.0",
+]
+train = [
+    "torch>=2.2",
+    "stable-baselines3>=2.3",
+]
+hub = [
+    "huggingface-hub>=0.23",
+]
+dev = [
+    "pytest>=8.0",
+    "pytest-cov>=5.0",
+    "ruff>=0.4",
+    "mypy>=1.10",
+    "pre-commit>=3.7",
+]
+all = [
+    "embodied-agent-forge[sim,train,hub,dev]",
+]
+
+[project.scripts]
+forge = "forge.cli:app"
+
+[project.urls]
+Homepage = "https://github.com/Shaswat2001/embodied-agent-forge"
+Issues = "https://github.com/Shaswat2001/embodied-agent-forge/issues"
+
+# ── Tool configs ──
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "UP", "B", "SIM", "RUF"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-v --tb=short"
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+warn_return_any = true
+warn_unused_configs = true
