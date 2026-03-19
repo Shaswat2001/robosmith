@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Optional
 
 import typer
+import pyfiglet
 from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
@@ -15,6 +16,7 @@ from rich.text import Text
 
 from forge import __version__
 from forge.controller import ForgeController
+from forge.envs.registry import EnvRegistry
 from forge.config import Algorithm, ForgeConfig, RobotType, TaskSpec
 
 app = typer.Typer(
@@ -27,17 +29,57 @@ console = Console()
 
 # Banner
 def _banner() -> None:
-    banner_text = Text()
-    banner_text.append("EMBODIED AGENT FORGE", style="bold bright_red")
-    banner_text.append(f"  v{__version__}", style="dim")
-    console.print(
-        Panel(
-            banner_text,
-            subtitle="Natural language → trained robot policy",
-            border_style="red",
-            padding=(0, 2),
-        )
+    ascii_art = pyfiglet.figlet_format("FORGE", font="ansi_shadow")
+    text = Text()
+    text.append(ascii_art, style="bold red")
+    text.append(f"  Embodied Agent Forge v{__version__}\n", style="dim")
+    text.append("  Natural language → trained robot policy", style="italic bright_black")
+    console.print(Panel(text, border_style="red", padding=(0, 2)))
+
+@app.command()
+def envs(
+    robot: Optional[str] = typer.Option(None, "--robot", "-r", help="Filter by robot type"),
+    framework: Optional[str] = typer.Option(None, "--framework", "-f", help="Filter by framework"),
+    tags: Optional[str] = typer.Option(None, "--tags", "-t", help="Comma-separated tags to search"),
+    env_type: Optional[str] = typer.Option(None, "--env-type", "-e", help="Filter by env type"),
+) -> None:
+    """List and search available simulation environments."""
+
+    _banner()
+    registry = EnvRegistry()
+
+    tag_list = [t.strip() for t in tags.split(",")] if tags else None
+    results = registry.search(
+        robot_type=robot,
+        framework=framework,
+        env_type=env_type,
+        tags=tag_list,
     )
+
+    if not results:
+        results = registry.list_all()
+
+    table = Table(title=f"Environments ({len(results)} found)", border_style="dim")
+    table.add_column("ID", style="bold")
+    table.add_column("Framework")
+    table.add_column("Robot")
+    table.add_column("Type")
+    table.add_column("Description", max_width=40)
+
+    for e in results:
+        fw_style = {"gymnasium": "green", "isaac_lab": "cyan", "mjlab": "magenta"}.get(
+            e.framework, "white"
+        )
+        table.add_row(
+            e.id,
+            f"[{fw_style}]{e.framework}[/{fw_style}]",
+            f"{e.robot_model or e.robot_type}",
+            e.env_type,
+            e.description[:40],
+        )
+
+    console.print()
+    console.print(table)
 
 # Commands
 @app.command()

@@ -1,0 +1,217 @@
+# Embodied Agent Forge — Environment Registry
+# =============================================
+
+environments:
+
+  # Gymnasium Classic Control
+  - id: gym-cartpole
+    name: CartPole
+    framework: gymnasium
+    env_id: CartPole-v1
+    robot_type: custom
+    robot_model: cartpole
+    env_type: floor
+    task_tags: [balance, classic, simple]
+    obs_type: state
+    action_type: discrete
+    description: Balance a pole on a cart by moving left/right.
+    source: gymnasium
+
+  - id: gym-pendulum
+    name: Pendulum
+    framework: gymnasium
+    env_id: Pendulum-v1
+    robot_type: custom
+    robot_model: pendulum
+    env_type: floor
+    task_tags: [swing-up, classic, continuous]
+    obs_type: state
+    action_type: continuous
+    description: Swing up and balance an inverted pendulum.
+    source: gymnasium
+
+  # MuJoCo Locomotion
+  - id: mujoco-ant
+    name: Ant
+    framework: gymnasium
+    env_id: Ant-v5
+    robot_type: quadruped
+    robot_model: ant
+    env_type: floor
+    task_tags: [locomotion, walk, run, quadruped]
+    obs_type: state
+    action_type: continuous
+    description: A four-legged ant robot that learns to walk forward.
+    source: gymnasium[mujoco]
+
+  - id: mujoco-humanoid
+    name: Humanoid
+    framework: gymnasium
+    env_id: Humanoid-v5
+    robot_type: biped
+    robot_model: humanoid
+    env_type: floor
+    task_tags: [locomotion, walk, biped, balance]
+    obs_type: state
+    action_type: continuous
+    description: A bipedal humanoid that learns to walk without falling.
+    source: gymnasium[mujoco]
+
+  - id: mujoco-half-cheetah
+    name: HalfCheetah
+    framework: gymnasium
+    env_id: HalfCheetah-v5
+    robot_type: quadruped
+    robot_model: half_cheetah
+    env_type: floor
+    task_tags: [locomotion, run, speed]
+    obs_type: state
+    action_type: continuous
+    description: A planar cheetah-like robot that learns to run fast.
+    source: gymnasium[mujoco]
+
+  - id: mujoco-hopper
+    name: Hopper
+    framework: gymnasium
+    env_id: Hopper-v5
+    robot_type: biped
+    robot_model: hopper
+    env_type: floor
+    task_tags: [locomotion, hop, balance, biped]
+    obs_type: state
+    action_type: continuous
+    description: A one-legged hopper that learns to hop forward.
+    source: gymnasium[mujoco]
+
+  - id: mujoco-walker2d
+    name: Walker2D
+    framework: gymnasium
+    env_id: Walker2d-v5
+    robot_type: biped
+    robot_model: walker2d
+    env_type: floor
+    task_tags: [locomotion, walk, biped, balance]
+    obs_type: state
+    action_type: continuous
+    description: A planar bipedal walker that learns to walk forward.
+    source: gymnasium[mujoco]
+
+  # MuJoCo Manipulation (Gymnasium-Robotics)
+  - id: fetch-reach
+    name: Fetch Reach
+    framework: gymnasium
+    env_id: FetchReach-v3
+    robot_type: arm
+    robot_model: fetch
+    env_type: tabletop
+    task_tags: [reach, arm, manipulation, sparse-reward]
+    obs_type: state
+    action_type: continuous
+    description: Move the Fetch robot gripper to a target position.
+    source: gymnasium-robotics
+
+  - id: fetch-push
+    name: Fetch Push
+    framework: gymnasium
+    env_id: FetchPush-v3
+    robot_type: arm
+    robot_model: fetch
+    env_type: tabletop
+    task_tags: [push, arm, manipulation, contact, sparse-reward]
+    obs_type: state
+    action_type: continuous
+    description: Push a block to a target location on the table.
+    source: gymnasium-robotics
+
+  - id: fetch-pick-and-place
+    name: Fetch Pick and Place
+    framework: gymnasium
+    env_id: FetchPickAndPlace-v3
+    robot_type: arm
+    robot_model: fetch
+    env_type: tabletop
+    task_tags: [pick, place, grasp, arm, manipulation, sparse-reward]
+    obs_type: state
+    action_type: continuous
+    description: Pick up a block and place it at a target location.
+    source: gymnasium-robotics
+
+  - id: fetch-slide
+    name: Fetch Slide
+    framework: gymnasium
+    env_id: FetchSlide-v3
+    robot_type: arm
+    robot_model: fetch
+    env_type: tabletop
+    task_tags: [slide, push, arm, manipulation, precision, sparse-reward]
+    obs_type: state
+    action_type: continuous
+    description: Slide a puck across a table to a target location.
+    source: gymnasium-robotics
+
+  # MuJoCo Dexterous Hand (Gymnasium-Robotics)
+  - id: hand-reach
+    name: Shadow Hand Reach
+    framework: gymnasium
+    env_id: HandReach-v2
+    robot_type: dexterous_hand
+    robot_model: shadow_hand
+    env_type: tabletop
+    task_tags: [reach, dexterous, hand, fingers]
+    obs_type: state
+    action_type: continuous
+    description: Move Shadow Hand fingertips to target positions.
+    source: gymnasium-robotics
+
+  # Isaac Lab (placeholder entries
+  - id: isaac-franka-lift
+    name: Isaac Franka Lift Cube
+    framework: isaac_lab
+    env_id: Isaac-Lift-Cube-Franka-v0
+    robot_type: arm
+    robot_model: franka
+    env_type: tabletop
+    task_tags: [lift, pick, cube, arm, manipulation, franka]
+    obs_type: state
+    action_type: continuous
+    description: Franka arm lifts a cube to a target height.
+    source: isaac_lab
+
+  - id: isaac-franka-cabinet
+    name: Isaac Franka Cabinet
+    framework: isaac_lab
+    env_id: Isaac-Franka-Cabinet-Direct-v0
+    robot_type: arm
+    robot_model: franka
+    env_type: tabletop
+    task_tags: [cabinet, door, open, arm, manipulation, franka]
+    obs_type: state
+    action_type: continuous
+    description: Franka arm opens a cabinet door.
+    source: isaac_lab
+
+  - id: isaac-ant
+    name: Isaac Ant Locomotion
+    framework: isaac_lab
+    env_id: Isaac-Ant-v0
+    robot_type: quadruped
+    robot_model: ant
+    env_type: floor
+    task_tags: [locomotion, walk, quadruped]
+    obs_type: state
+    action_type: continuous
+    description: Ant locomotion in Isaac Lab (GPU-parallel).
+    source: isaac_lab
+
+  - id: isaac-humanoid
+    name: Isaac Humanoid
+    framework: isaac_lab
+    env_id: Isaac-Humanoid-v0
+    robot_type: biped
+    robot_model: humanoid
+    env_type: floor
+    task_tags: [locomotion, walk, biped, humanoid]
+    obs_type: state
+    action_type: continuous
+    description: Humanoid locomotion in Isaac Lab (GPU-parallel).
+    source: isaac_lab

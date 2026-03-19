@@ -42,6 +42,7 @@ dependencies = [
     # ── Config / Serialization ──
     "pyyaml>=6.0",
     "toml>=0.10",
+    "pyfiglet>=1.0",
 
     # ── Logging / Tracking ──
     "loguru>=0.7",
