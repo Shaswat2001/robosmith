@@ -1,9 +1,10 @@
 """
-Forge CLI - the main entry point for Embodied Agent Forge.
+Forge CLI — the main entry point for Embodied Agent Forge.
 """
 
 from __future__ import annotations
 
+from pathlib import Path
 from typing import Optional
 
 import typer
@@ -12,3 +13,149 @@ from rich.panel import Panel
 from rich.table import Table
 from rich.text import Text
 
+from forge import __version__
+from forge.controller import ForgeController
+from forge.config import Algorithm, ForgeConfig, RobotType, TaskSpec
+
+app = typer.Typer(
+    name="forge",
+    help="Embodied Agent Forge — Natural language → trained robot policy.",
+    no_args_is_help=True,
+    rich_markup_mode="rich",
+)
+console = Console()
+
+# Banner
+def _banner() -> None:
+    banner_text = Text()
+    banner_text.append("EMBODIED AGENT FORGE", style="bold bright_red")
+    banner_text.append(f"  v{__version__}", style="dim")
+    console.print(
+        Panel(
+            banner_text,
+            subtitle="Natural language → trained robot policy",
+            border_style="red",
+            padding=(0, 2),
+        )
+    )
+
+# Commands
+@app.command()
+def run(
+    task: str = typer.Option(..., "--task", "-t", help="Natural language task description"),
+    robot: Optional[str] = typer.Option(None, "--robot", "-r", help="Robot type: arm, quadruped, biped, dexterous_hand, mobile_base"),
+    model: Optional[str] = typer.Option(None, "--model", "-m", help="Specific robot model: franka, unitree_go2, shadow_hand"),
+    algorithm: Optional[str] = typer.Option(None, "--algo", "-a", help="RL algorithm: ppo, sac, td3, auto"),
+    time_budget: int = typer.Option(60, "--time-budget", help="Max training time in minutes"),
+    num_envs: int = typer.Option(1024, "--num-envs", help="Number of parallel sim environments"),
+    push_to_hub: Optional[str] = typer.Option(None, "--push-to-hub", help="HuggingFace repo ID to push to"),
+    dry_run: bool = typer.Option(False, "--dry-run", help="Parse and plan only, don't train"),
+    verbose: bool = typer.Option(True, "--verbose/--quiet", help="Verbose output"),
+) -> None:
+    """
+    Run the full Forge pipeline.
+
+    Provide a natural language task description, and Forge handles everything:
+    environment setup, reward design, training, evaluation, and packaging.
+    """
+    _banner()
+
+    # Build TaskSpec
+    task_spec = TaskSpec(
+        task_description=task,
+        raw_input=task,
+        robot_type=RobotType(robot) if robot else RobotType.ARM,
+        robot_model=model,
+        algorithm=Algorithm(algorithm) if algorithm else Algorithm.AUTO,
+        time_budget_minutes=time_budget,
+        num_envs=num_envs,
+        push_to_hub=push_to_hub,
+    )
+
+    # Build config
+    config = ForgeConfig(verbose=verbose, dry_run=dry_run)
+
+    # Show plan
+    _show_task_spec(task_spec)
+
+    if dry_run:
+        console.print("\n[yellow]Dry run — stopping before execution.[/yellow]")
+        return
+
+    # Run pipeline
+    controller = ForgeController(task_spec, config)
+
+    console.print()
+    with console.status("[bold red]Running Forge pipeline...", spinner="dots"):
+        result = controller.run()
+
+    _show_result(result)
+
+@app.command()
+def version() -> None:
+    """Show Forge version."""
+    console.print(f"Embodied Agent Forge v{__version__}")
+
+@app.command()
+def config() -> None:
+    """Show default configuration."""
+    _banner()
+    cfg = ForgeConfig()
+    console.print_json(cfg.model_dump_json(indent=2))
+
+# Display helpers
+def _show_task_spec(spec: TaskSpec) -> None:
+    """Pretty-print the parsed task specification."""
+    table = Table(title="Task specification", border_style="dim", show_header=False, pad_edge=False)
+    table.add_column("Field", style="bold", width=20)
+    table.add_column("Value")
+
+    table.add_row("Task", spec.task_description)
+    table.add_row("Robot type", spec.robot_type.value)
+    table.add_row("Robot model", spec.robot_model or "(auto)")
+    table.add_row("Environment", spec.environment_type.value)
+    table.add_row("Algorithm", spec.algorithm.value)
+    table.add_row("Time budget", f"{spec.time_budget_minutes} min")
+    table.add_row("Parallel envs", str(spec.num_envs))
+    table.add_row(
+        "Success criteria",
+        ", ".join(str(c) for c in spec.success_criteria),
+    )
+    if spec.push_to_hub:
+        table.add_row("Push to hub", spec.push_to_hub)
+
+    console.print()
+    console.print(table)
+
+def _show_result(state) -> None:  # noqa: ANN001
+    """Pretty-print the pipeline result."""
+    from forge.config import StageStatus
+
+    console.print()
+
+    table = Table(title="Pipeline result", border_style="dim")
+    table.add_column("Stage", style="bold")
+    table.add_column("Status")
+    table.add_column("Time")
+
+    status_styles = {
+        StageStatus.COMPLETED: "[green]completed[/green]",
+        StageStatus.FAILED: "[red]failed[/red]",
+        StageStatus.SKIPPED: "[yellow]skipped[/yellow]",
+        StageStatus.PENDING: "[dim]pending[/dim]",
+        StageStatus.RUNNING: "[blue]running[/blue]",
+    }
+
+    for name, record in state.stages.items():
+        table.add_row(
+            name,
+            status_styles.get(record.status, str(record.status)),
+            f"{record.duration_seconds:.1f}s",
+        )
+
+    console.print(table)
+    console.print(f"\nRun ID: [bold]{state.run_id}[/bold]")
+    console.print(f"Artifacts: [dim]{state.artifacts_dir}[/dim]")
+
+if __name__ == "__main__":
+    app()
