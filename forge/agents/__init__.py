@@ -1,3 +1,4 @@
 from forge.agents.base import BaseAgent
- 
-__all__ = ["BaseAgent"]
+from forge.agents.reward_agent import RewardAgent, RewardCandidate
+
+__all__ = ["BaseAgent", "RewardAgent", "RewardCandidate"]
