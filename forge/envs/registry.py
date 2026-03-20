@@ -33,7 +33,7 @@ class EnvEntry:
     description: str
     source: str
 
-    def match_tags(self, tags: list[str]) -> int:
+    def matches_tags(self, tags: list[str]) -> int:
         """Count how many of the given tags this entry matches."""
         entry_tags = set(self.task_tags)
         return sum(1 for t in tags if t in entry_tags)

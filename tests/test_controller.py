@@ -6,7 +6,6 @@ from pathlib import Path
 from forge.config import ForgeConfig, RobotType, StageStatus, TaskSpec
 from forge.controller import ForgeController, STAGES
 
-
 class TestForgeController:
     def _make_controller(self, tmp_path: Path) -> ForgeController:
         spec = TaskSpec(
@@ -38,8 +37,14 @@ class TestForgeController:
         # Intake should complete (spec is pre-specified)
         assert result.stages["intake"].status == StageStatus.COMPLETED
 
-        # All other stages should be skipped (not implemented yet)
-        for stage in STAGES[1:]:
+        # env_synthesis is now implemented — it should complete or fail, not skip
+        assert result.stages["env_synthesis"].status in (
+            StageStatus.COMPLETED,
+            StageStatus.FAILED,
+        )
+
+        # Remaining stages should still be skipped (not implemented yet)
+        for stage in ["scout", "reward_design", "training", "evaluation", "delivery"]:
             assert result.stages[stage].status == StageStatus.SKIPPED
 
     def test_state_saved_to_disk(self, tmp_path: Path):

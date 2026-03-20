@@ -156,7 +156,40 @@ class ForgeController:
         raise NotImplementedError("Literature scout not yet implemented")
 
     def _stage_env_synthesis(self) -> dict:
-        raise NotImplementedError("Environment synthesis not yet implemented")
+        """Find or generate an environment matching the TaskSpec."""
+        from forge.envs.registry import EnvRegistry
+        from forge.stages.env_synthesis import match_task_to_env
+
+        registry = EnvRegistry(self.config.env_registry_path)
+
+        # For now, prefer gymnasium (your working framework)
+        match = match_task_to_env(self.task_spec, registry, framework="gymnasium")
+
+        # Fallback: try any framework
+        if match is None:
+            match = match_task_to_env(self.task_spec, registry)
+
+        if match is None:
+            raise RuntimeError(
+                f"No environment found for task: {self.task_spec.task_description}. "
+                "Try adding an environment to configs/env_registry.yaml."
+            )
+
+        # Store the matched env in the task spec for downstream stages
+        self.task_spec.environment_id = match.entry.id
+
+        logger.info(
+            f"Matched environment: {match.entry.name} ({match.entry.env_id}) "
+            f"— score {match.score}"
+        )
+
+        return {
+            "env_id": match.entry.id,
+            "env_gym_id": match.entry.env_id,
+            "framework": match.entry.framework,
+            "score": match.score,
+            "reason": match.match_reason,
+        }
 
     def _stage_reward_design(self) -> dict:
         raise NotImplementedError("Reward design not yet implemented")
