@@ -24,6 +24,10 @@ from forge.config import (
     TaskSpec,
 )
 
+from forge.envs.registry import EnvRegistry
+from forge.stages.env_synthesis import match_task_to_env
+from forge.stages.reward_design import run_reward_design
+
 # The pipeline stages, in order
 STAGES = [
     "intake",
@@ -157,8 +161,6 @@ class ForgeController:
 
     def _stage_env_synthesis(self) -> dict:
         """Find or generate an environment matching the TaskSpec."""
-        from forge.envs.registry import EnvRegistry
-        from forge.stages.env_synthesis import match_task_to_env
 
         registry = EnvRegistry(self.config.env_registry_path)
 
@@ -192,7 +194,41 @@ class ForgeController:
         }
 
     def _stage_reward_design(self) -> dict:
-        raise NotImplementedError("Reward design not yet implemented")
+        """Generate and evaluate reward function candidates."""
+
+        # We need the matched environment from Stage 3
+        env_id = self.task_spec.environment_id
+        if not env_id:
+            raise RuntimeError("No environment matched — run env_synthesis first")
+ 
+        registry = EnvRegistry(self.config.env_registry_path)
+        env_entry = registry.get(env_id)
+        if not env_entry:
+            raise RuntimeError(f"Environment '{env_id}' not found in registry")
+ 
+        result = run_reward_design(
+            task_spec=self.task_spec,
+            env_entry=env_entry,
+            llm_config=self.config.llm,
+            search_config=self.config.reward_search,
+            num_candidates=self.config.reward_search.candidates_per_iteration,
+        )
+ 
+        # Store the best reward code for downstream stages
+        self._reward_code = result.best_candidate.code
+        self._reward_candidate = result.best_candidate
+ 
+        logger.info(
+            f"Reward design complete — best score: {result.best_candidate.score:.2f}, "
+            f"generations: {result.generations_run}"
+        )
+ 
+        return {
+            "best_score": result.best_candidate.score,
+            "best_candidate_id": result.best_candidate.candidate_id,
+            "num_valid_candidates": len(result.all_candidates),
+            "generations_run": result.generations_run,
+        }
 
     def _stage_training(self) -> dict:
         raise NotImplementedError("Policy training not yet implemented")
