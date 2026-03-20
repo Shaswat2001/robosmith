@@ -6,6 +6,7 @@ from pathlib import Path
 from forge.config import ForgeConfig, RobotType, StageStatus, TaskSpec
 from forge.controller import ForgeController, STAGES
 
+
 class TestForgeController:
     def _make_controller(self, tmp_path: Path) -> ForgeController:
         spec = TaskSpec(
@@ -43,8 +44,14 @@ class TestForgeController:
             StageStatus.FAILED,
         )
 
-        # Remaining stages should still be skipped (not implemented yet)
-        for stage in ["scout", "reward_design", "training", "evaluation", "delivery"]:
+        # Remaining stages: reward_design is implemented but may fail (no LLM key in tests)
+        assert result.stages["reward_design"].status in (
+            StageStatus.COMPLETED,
+            StageStatus.FAILED,
+        )
+
+        # These are still truly not implemented
+        for stage in ["scout", "training", "evaluation", "delivery"]:
             assert result.stages[stage].status == StageStatus.SKIPPED
 
     def test_state_saved_to_disk(self, tmp_path: Path):
