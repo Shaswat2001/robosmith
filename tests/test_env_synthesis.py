@@ -1,8 +1,8 @@
 """Tests for forge.stages.env_synthesis — environment matching."""
 
 from forge.config import EnvironmentType, RobotType, TaskSpec
-from forge.envs import EnvRegistry
-from forge.stages import EnvMatch, _extract_tags, match_task_to_env
+from forge.envs.registry import EnvRegistry
+from forge.stages.env_synthesis import EnvMatch, _extract_tags, match_task_to_env
 
 
 class TestExtractTags:

@@ -15,6 +15,7 @@ from rich.table import Table
 from rich.text import Text
 
 from forge import __version__
+from forge.config import RewardSearchConfig
 from forge.controller import ForgeController
 from forge.envs.registry import EnvRegistry
 from forge.config import Algorithm, ForgeConfig, RobotType, TaskSpec
@@ -91,6 +92,7 @@ def run(
     time_budget: int = typer.Option(60, "--time-budget", help="Max training time in minutes"),
     num_envs: int = typer.Option(1024, "--num-envs", help="Number of parallel sim environments"),
     push_to_hub: Optional[str] = typer.Option(None, "--push-to-hub", help="HuggingFace repo ID to push to"),
+    candidates: int = typer.Option(4, "--candidates", "-c", help="Number of reward function candidates per iteration"),
     dry_run: bool = typer.Option(False, "--dry-run", help="Parse and plan only, don't train"),
     verbose: bool = typer.Option(True, "--verbose/--quiet", help="Verbose output"),
 ) -> None:
@@ -115,7 +117,11 @@ def run(
     )
 
     # Build config
-    config = ForgeConfig(verbose=verbose, dry_run=dry_run)
+    config = ForgeConfig(
+        verbose=verbose, 
+        dry_run=dry_run, 
+        reward_search=RewardSearchConfig(candidates_per_iteration=candidates),
+    )
 
     # Show plan
     _show_task_spec(task_spec)

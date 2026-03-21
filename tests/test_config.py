@@ -97,7 +97,7 @@ class TestForgeConfig:
     def test_defaults(self):
         cfg = ForgeConfig()
         assert cfg.llm.provider == "anthropic"
-        assert cfg.reward_search.candidates_per_iteration == 5
+        assert cfg.reward_search.candidates_per_iteration == 4
         assert cfg.max_iterations == 3
 
     def test_serialization(self):
