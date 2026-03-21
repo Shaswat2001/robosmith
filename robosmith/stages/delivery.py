@@ -16,21 +16,23 @@ from __future__ import annotations
 
 import json
 import time
-from dataclasses import dataclass
+import shutil
+import imageio
+import numpy as np
 from pathlib import Path
-
+import gymnasium as gym
 from loguru import logger
+from dataclasses import dataclass
 
-from robosmith.agents.reward_agent import RewardCandidate
 from robosmith.config import RunState, TaskSpec
 from robosmith.envs.registry import EnvRegistry
-from robosmith.envs.registry import EnvRegistry
 from robosmith.stages.evaluation import EvalReport
+from robosmith.agents.reward_agent import RewardCandidate
 
 @dataclass
 class DeliveryResult:
     """Output of the delivery stage."""
- 
+
     artifacts_dir: Path
     files_written: list[str]
     pushed_to_hub: bool = False
@@ -44,33 +46,24 @@ def run_delivery(
 ) -> DeliveryResult:
     """
     Package all artifacts from a Forge run.
- 
-    Args:
-        state: The full pipeline run state.
-        reward_candidate: The best reward function.
-        eval_report: Evaluation results.
-        training_result: Training results (has model_path, metrics_history).
- 
-    Returns:
-        DeliveryResult with the list of files written.
     """
     artifacts_dir = Path(state.artifacts_dir) if state.artifacts_dir else Path("./forge_output")
     artifacts_dir.mkdir(parents=True, exist_ok=True)
- 
+
     files_written: list[str] = []
- 
+
     # 1. Save reward function as standalone Python file
     if reward_candidate:
         reward_path = artifacts_dir / "reward_function.py"
         _write_reward_file(reward_path, reward_candidate, state.task_spec)
         files_written.append("reward_function.py")
         logger.info(f"Saved reward function → {reward_path}")
- 
+
     # 2. Save task spec
     spec_path = artifacts_dir / "task_spec.json"
     spec_path.write_text(state.task_spec.model_dump_json(indent=2))
     files_written.append("task_spec.json")
- 
+
     # 3. Save eval report
     if eval_report:
         eval_path = artifacts_dir / "eval_report.json"
@@ -88,12 +81,12 @@ def run_delivery(
         }
         eval_path.write_text(json.dumps(eval_data, indent=2))
         files_written.append("eval_report.json")
- 
+
     # 4. Save run state
     state_path = artifacts_dir / "run_state.json"
     state_path.write_text(state.model_dump_json(indent=2))
     files_written.append("run_state.json")
- 
+
     # 5. Record video of the trained policy
     if training_result and hasattr(training_result, "model_path") and training_result.model_path:
         video_path = _record_policy_video(
@@ -103,13 +96,13 @@ def run_delivery(
         )
         if video_path:
             files_written.append(video_path.name)
- 
+
     # 6. Generate markdown report card
     report_path = artifacts_dir / "report.md"
     _write_report_card(report_path, state, reward_candidate, eval_report, training_result)
     files_written.append("report.md")
     logger.info(f"Saved report card → {report_path}")
- 
+
     # 7. Push to HuggingFace Hub (if requested)
     pushed = False
     hub_url = None
@@ -117,9 +110,9 @@ def run_delivery(
         pushed, hub_url = _push_to_hub(state.task_spec.push_to_hub, artifacts_dir)
         if pushed:
             files_written.append(f"(pushed to {hub_url})")
- 
+
     logger.info(f"Delivery complete — {len(files_written)} artifacts in {artifacts_dir}")
- 
+
     return DeliveryResult(
         artifacts_dir=artifacts_dir,
         files_written=files_written,
@@ -136,96 +129,75 @@ def _record_policy_video(
 ) -> Path | None:
     """
     Record a video of the trained policy acting in the environment.
- 
+
     Uses gymnasium's RecordVideo wrapper. Falls back to frame-by-frame
     capture with imageio if RecordVideo is unavailable.
- 
-    Returns:
-        Path to the video file, or None if recording failed.
     """
     env_id = state.task_spec.environment_id
     if not env_id:
         logger.warning("No environment ID — skipping video recording")
         return None
- 
+
     try:
- 
+
         registry = EnvRegistry()
         env_entry = registry.get(env_id)
         if not env_entry:
             logger.warning(f"Environment '{env_id}' not found — skipping video")
             return None
- 
+
         # Try to load the trained model
         try:
             from stable_baselines3 import PPO, SAC
- 
+
             algo_name = model_path.stem.replace("policy_", "")
             AlgoClass = PPO if "ppo" in algo_name.lower() else SAC
             model = AlgoClass.load(str(model_path))
         except Exception as e:
             logger.warning(f"Could not load model for video: {e}")
             return None
- 
+
         # Create env with render_mode="rgb_array" for video capture
-        import gymnasium as gym
- 
+
         video_dir = artifacts_dir / "video"
         video_dir.mkdir(exist_ok=True)
- 
+
+        # Method 1: gymnasium RecordVideo (needs moviepy)
         try:
             env = gym.make(env_entry.env_id, render_mode="rgb_array")
-        except Exception as e:
-            logger.info(f"Cannot create env with rgb_array render: {e}")
-            logger.info("Install rendering deps: pip install \"gymnasium[classic-control]\" moviepy imageio[ffmpeg]")
-            import shutil
-            shutil.rmtree(video_dir, ignore_errors=True)
-            return None
- 
-        try:
-            # Try gymnasium's built-in RecordVideo wrapper
-            env_for_video = gym.wrappers.RecordVideo(
+            env = gym.wrappers.RecordVideo(
                 env,
                 video_folder=str(video_dir),
                 episode_trigger=lambda ep: True,
                 name_prefix="policy",
             )
- 
+
             for ep in range(num_episodes):
-                obs, info = env_for_video.reset()
+                obs, info = env.reset()
                 for step in range(max_steps):
                     action, _ = model.predict(obs, deterministic=True)
-                    obs, reward, terminated, truncated, info = env_for_video.step(action)
+                    obs, reward, terminated, truncated, info = env.step(action)
                     if terminated or truncated:
                         break
- 
-            env_for_video.close()
- 
-            # Find the recorded video file
+            env.close()
+
             video_files = sorted(video_dir.glob("*.mp4"))
             if video_files:
                 final_path = artifacts_dir / "policy_rollout.mp4"
                 video_files[-1].rename(final_path)
-                import shutil
+                
                 shutil.rmtree(video_dir, ignore_errors=True)
                 logger.info(f"Recorded policy video → {final_path}")
                 return final_path
- 
+
         except Exception as e:
-            logger.debug(f"RecordVideo failed: {e}, trying imageio fallback")
-            try:
-                env.close()
-            except Exception:
-                pass
- 
-        # Fallback: manual frame capture with imageio
+            logger.debug(f"RecordVideo failed ({e}), trying imageio")
+
+        # Method 2: manual frame capture with imageio
         try:
-            import imageio
-            import numpy as np
- 
             env = gym.make(env_entry.env_id, render_mode="rgb_array")
             frames: list = []
- 
+
             for ep in range(num_episodes):
                 obs, info = env.reset()
                 for step in range(max_steps):
@@ -236,29 +208,26 @@ def _record_policy_video(
                     obs, reward, terminated, truncated, info = env.step(action)
                     if terminated or truncated:
                         break
- 
             env.close()
- 
+
             if frames:
                 video_path = artifacts_dir / "policy_rollout.mp4"
                 imageio.mimwrite(str(video_path), frames, fps=30)
-                logger.info(f"Recorded policy video (imageio) → {video_path}")
-                import shutil
                 shutil.rmtree(video_dir, ignore_errors=True)
+                logger.info(f"Recorded policy video → {video_path}")
                 return video_path
- 
+
         except ImportError:
-            logger.info("Video deps not installed — pip install imageio[ffmpeg] moviepy \"gymnasium[classic-control]\"")
+            logger.info("For video recording: pip install imageio[ffmpeg] moviepy")
         except Exception as e:
             logger.warning(f"Video recording failed: {e}")
- 
+
         # Clean up empty video dir
-        import shutil
         shutil.rmtree(video_dir, ignore_errors=True)
- 
+
     except Exception as e:
         logger.warning(f"Video recording failed: {e}")
- 
+
     return None
 
 def _write_reward_file(
@@ -269,25 +238,25 @@ def _write_reward_file(
     """Write the reward function as a standalone, documented Python file."""
     header = f'''"""
 Reward function generated by RoboSmith.
- 
+
 Task: {task_spec.task_description}
 Robot: {task_spec.robot_type.value} ({task_spec.robot_model or "auto"})
 Environment: {task_spec.environment_id or "auto"}
 Generation: {candidate.generation}
 Score: {candidate.score}
- 
+
 Usage:
     import numpy as np
     from reward_function import compute_reward
- 
+
     obs = env.reset()
     action = policy(obs)
     next_obs, _, _, _, info = env.step(action)
     reward, components = compute_reward(obs, action, next_obs, info)
 """
- 
+
 import numpy as np
- 
+
 '''
     path.write_text(header + candidate.code + "\n")
 
@@ -301,14 +270,14 @@ def _write_report_card(
     """Generate a human-readable markdown report card."""
     spec = state.task_spec
     lines: list[str] = []
- 
+
     lines.append(f"# RoboSmith report: {spec.task_description}")
     lines.append("")
     lines.append(f"**Run ID:** `{state.run_id}`")
     lines.append(f"**Date:** {time.strftime('%Y-%m-%d %H:%M')}")
     lines.append(f"**Iterations:** {state.iteration}")
     lines.append("")
- 
+
     # Task summary
     lines.append("## Task")
     lines.append("")
@@ -317,7 +286,7 @@ def _write_report_card(
     lines.append(f"- **Environment:** {spec.environment_id or 'auto'}")
     lines.append(f"- **Algorithm:** {spec.algorithm.value}")
     lines.append("")
- 
+
     # Evaluation results
     if eval_report:
         lines.append("## Evaluation results")
@@ -330,7 +299,7 @@ def _write_report_card(
         lines.append(f"- **Episodes evaluated:** {len(eval_report.episodes)}")
         lines.append(f"- **Decision:** {eval_report.decision.value} — {eval_report.decision_reason}")
         lines.append("")
- 
+
         if eval_report.criteria_results:
             lines.append("### Success criteria")
             lines.append("")
@@ -339,7 +308,7 @@ def _write_report_card(
                 value = result.get("value", "N/A")
                 lines.append(f"- `{criterion}` → {value} [{status}]")
             lines.append("")
- 
+
     # Training info
     if training_result and hasattr(training_result, "algorithm"):
         lines.append("## Training")
@@ -355,7 +324,7 @@ def _write_report_card(
         if video_path and video_path.exists():
             lines.append(f"- **Policy video:** `policy_rollout.mp4`")
         lines.append("")
- 
+
     # Reward function
     if reward_candidate:
         lines.append("## Reward function")
@@ -367,7 +336,7 @@ def _write_report_card(
         lines.append(reward_candidate.code.strip())
         lines.append("```")
         lines.append("")
- 
+
     # Pipeline stages
     lines.append("## Pipeline stages")
     lines.append("")
@@ -375,7 +344,7 @@ def _write_report_card(
         duration = f"{record.duration_seconds:.1f}s" if record.duration_seconds else "—"
         lines.append(f"- **{name}:** {record.status.value} ({duration})")
     lines.append("")
- 
+
     # Decision history
     if state.decision_history:
         lines.append("## Decision history")
@@ -384,10 +353,10 @@ def _write_report_card(
             lines.append(f"- Iteration {d.get('iteration', '?')}: "
                          f"{d.get('decision', '?')} — {d.get('reason', '')}")
         lines.append("")
- 
+
     lines.append("---")
     lines.append("*Generated by [RoboSmith](https://github.com/Shaswat2001/robosmith)*")
- 
+
     path.write_text("\n".join(lines))
 
 def _push_to_hub(repo_id: str, artifacts_dir: Path) -> tuple[bool, str | None]:
@@ -397,7 +366,7 @@ def _push_to_hub(repo_id: str, artifacts_dir: Path) -> tuple[bool, str | None]:
     except ImportError:
         logger.warning("huggingface-hub not installed — skipping push")
         return False, None
- 
+
     try:
         api = HfApi()
         api.create_repo(repo_id, exist_ok=True)

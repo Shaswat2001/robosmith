@@ -201,3 +201,39 @@ class TestRunScout:
         assert card.papers[0]["title"] == "Paper A"
         assert card.papers[1]["title"] == "Paper C"
         assert card.papers[2]["title"] == "Paper B"
+
+
+class TestBuildLiteratureContext:
+    def test_empty_card(self):
+        from robosmith.stages.scout import build_literature_context
+        card = KnowledgeCard(query="test")
+        assert build_literature_context(card) == ""
+
+    def test_produces_numbered_list(self):
+        from robosmith.stages.scout import build_literature_context
+        card = KnowledgeCard(
+            query="test",
+            papers=[
+                {"title": "Eureka: Reward Design", "year": 2024, "citations": 150,
+                 "abstract": "We present a method for automated reward design using LLMs."},
+                {"title": "Language to Rewards", "year": 2023, "citations": 85,
+                 "abstract": "A paradigm for defining reward parameters from language."},
+            ],
+        )
+        ctx = build_literature_context(card)
+        assert "1." in ctx
+        assert "2." in ctx
+        assert "Eureka" in ctx
+        assert "Language to Rewards" in ctx
+        assert "Key insight" in ctx
+
+    def test_respects_max_papers(self):
+        from robosmith.stages.scout import build_literature_context
+        card = KnowledgeCard(
+            query="test",
+            papers=[{"title": f"Paper {i}", "citations": 100 - i, "abstract": ""}
+                    for i in range(20)],
+        )
+        ctx = build_literature_context(card, max_papers=3)
+        assert "3." in ctx
+        assert "4." not in ctx

@@ -296,13 +296,22 @@ class ForgeController:
         env_entry = registry.get(env_id)
         if not env_entry:
             raise RuntimeError(f"Environment '{env_id}' not found in registry")
- 
+
+        # Build literature context from scout results (if available)
+        lit_context = ""
+        if hasattr(self, "_knowledge_card") and self._knowledge_card:
+            from robosmith.stages.scout import build_literature_context
+            lit_context = build_literature_context(self._knowledge_card)
+            if lit_context:
+                logger.info("Passing literature context to reward design")
+
         result = run_reward_design(
             task_spec=self.task_spec,
             env_entry=env_entry,
             llm_config=self.config.llm,
             search_config=self.config.reward_search,
             num_candidates=self.config.reward_search.candidates_per_iteration,
+            literature_context=lit_context
         )
  
         # Keep the best reward across iterations — only replace if new one is better

@@ -204,3 +204,32 @@ def run_scout(
         papers=merged,
         total_found=total_found,
     )
+
+def build_literature_context(card: KnowledgeCard, max_papers: int = 5) -> str:
+    """
+    Build a concise text summary of scout results for the reward design LLM.
+
+    Extracts the top papers by citation count and summarizes their
+    titles and abstracts into a paragraph the LLM can use as context.
+    """
+
+    if not card.papers:
+        return ""
+
+    top = card.top_papers(max_papers)
+    lines = []
+
+    for i, paper in enumerate(top, 1):
+        title = paper["title"]
+        year = paper.get("year", "?")
+        cites = paper.get("citations", 0)
+        abstract = paper.get("abstract", "").strip()
+
+        line = f"{i}. \"{title}\" ({year}, {cites} citations)"
+        if abstract:
+            # Truncate abstract to ~150 chars for conciseness
+            short = abstract[:150].rsplit(" ", 1)[0] if len(abstract) > 150 else abstract
+            line += f"\n   Key insight: {short}"
+        lines.append(line)
+
+    return "\n".join(lines)

@@ -198,6 +198,7 @@ def run_reward_design(
     search_config: RewardSearchConfig | None = None,
     num_candidates: int = 4,
     num_eval_episodes: int = 5,
+    literature_context: str = "",
 ) -> RewardDesignResult:
     """
     Run the full evolutionary reward design stage.
@@ -231,12 +232,13 @@ def run_reward_design(
 
         # Step 2: Generate candidates
         if gen == 0:
-            # First generation: generate from scratch
+            # First generation: generate from scratch with literature context
             candidates = agent.generate(
                 task_description=task_spec.task_description,
                 obs_space_info=obs_info,
                 action_space_info=act_info,
                 num_candidates=num_candidates,
+                literature_context=literature_context
             )
         else:
             # Later generations: evolve from the best so far

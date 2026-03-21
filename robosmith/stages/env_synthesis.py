@@ -128,16 +128,23 @@ def _extract_tags(description: str) -> list[str]:
         "pick", "place", "push", "pull", "slide", "grasp", "grip",
         "lift", "stack", "insert", "open", "close", "reach", "pour",
         "throw", "catch", "hand", "fingers", "dexterous", "spin",
+        "rotate", "in-hand", "fragile",
         # Locomotion
         "walk", "run", "hop", "jump", "crawl", "navigate", "locomotion",
-        "balance", "stand", "climb", "terrain", "rubble", "stairs",
-        "swing", "swing-up",
+        "balance", "stand", "stand-up", "climb", "terrain", "rubble", "stairs",
+        "swing", "swing-up", "forward", "fast", "recovery",
+        # Classic control
+        "pendulum", "cartpole", "cart", "pole", "acrobot", "double-pendulum",
+        "hill", "momentum", "land", "hover", "thrust",
+        # Aquatic / aerial
+        "swim", "aquatic", "snake", "fly", "aerial",
         # Objects
         "cube", "ball", "cup", "bottle", "door", "drawer", "cabinet",
-        "peg", "nut", "bolt", "gear", "scissor", "pen", "pendulum",
+        "peg", "nut", "bolt", "gear", "scissor", "pen", "block", "egg",
+        "puck", "object", "target",
         # Properties
-        "fast", "slow", "precise", "careful", "gentle", "stable",
-        "speed", "contact",
+        "slow", "precise", "careful", "gentle", "stable",
+        "speed", "contact", "stabilize", "inverted",
     ]
 
     found = [tag for tag in known_tags if tag in words]

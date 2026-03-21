@@ -1,9 +1,10 @@
 # RoboSmith — Environment Registry
-# =============================================
+# =================================
 
 environments:
 
-  # Gymnasium Classic Control
+  # ─── Gymnasium Classic Control ───────────────────────────────
+
   - id: gym-cartpole
     name: CartPole
     framework: gymnasium
@@ -11,7 +12,7 @@ environments:
     robot_type: custom
     robot_model: cartpole
     env_type: floor
-    task_tags: [balance, classic, simple]
+    task_tags: [balance, classic, simple, pole, cart]
     obs_type: state
     action_type: discrete
     description: Balance a pole on a cart by moving left/right.
@@ -24,13 +25,79 @@ environments:
     robot_type: custom
     robot_model: pendulum
     env_type: floor
-    task_tags: [swing-up, pendulum, balance, classic, continuous]
+    task_tags: [swing-up, pendulum, balance, classic, continuous, swing]
     obs_type: state
     action_type: continuous
     description: Swing up and balance an inverted pendulum.
     source: gymnasium
 
-  # MuJoCo Locomotion
+  - id: gym-mountain-car
+    name: MountainCar
+    framework: gymnasium
+    env_id: MountainCar-v0
+    robot_type: custom
+    robot_model: mountain_car
+    env_type: floor
+    task_tags: [classic, hill, climb, momentum, sparse-reward]
+    obs_type: state
+    action_type: discrete
+    description: Drive a car up a steep hill using momentum.
+    source: gymnasium
+
+  - id: gym-mountain-car-continuous
+    name: MountainCarContinuous
+    framework: gymnasium
+    env_id: MountainCarContinuous-v0
+    robot_type: custom
+    robot_model: mountain_car
+    env_type: floor
+    task_tags: [classic, hill, climb, momentum, continuous]
+    obs_type: state
+    action_type: continuous
+    description: Drive a car up a steep hill (continuous actions).
+    source: gymnasium
+
+  - id: gym-acrobot
+    name: Acrobot
+    framework: gymnasium
+    env_id: Acrobot-v1
+    robot_type: custom
+    robot_model: acrobot
+    env_type: floor
+    task_tags: [swing-up, balance, classic, double-pendulum, acrobot]
+    obs_type: state
+    action_type: discrete
+    description: Swing the end of a double-pendulum above a threshold.
+    source: gymnasium
+
+  - id: gym-lunar-lander
+    name: LunarLander
+    framework: gymnasium
+    env_id: LunarLander-v3
+    robot_type: custom
+    robot_model: lander
+    env_type: aerial
+    task_tags: [land, hover, classic, thrust, control]
+    obs_type: state
+    action_type: discrete
+    description: Land a spacecraft between two flags on the moon.
+    source: gymnasium
+
+  - id: gym-lunar-lander-continuous
+    name: LunarLanderContinuous
+    framework: gymnasium
+    env_id: LunarLander-v3
+    robot_type: custom
+    robot_model: lander
+    env_type: aerial
+    task_tags: [land, hover, classic, thrust, control, continuous]
+    obs_type: state
+    action_type: continuous
+    description: Land a spacecraft (continuous thrust control).
+    source: gymnasium
+
+  # ─── MuJoCo Locomotion ──────────────────────────────────────
+
   - id: mujoco-ant
     name: Ant
     framework: gymnasium
@@ -38,7 +105,7 @@ environments:
     robot_type: quadruped
     robot_model: ant
     env_type: floor
-    task_tags: [locomotion, walk, run, quadruped]
+    task_tags: [locomotion, walk, run, quadruped, forward]
     obs_type: state
     action_type: continuous
     description: A four-legged ant robot that learns to walk forward.
@@ -51,10 +118,23 @@ environments:
     robot_type: biped
     robot_model: humanoid
     env_type: floor
-    task_tags: [locomotion, walk, biped, balance]
+    task_tags: [locomotion, walk, biped, balance, forward]
     obs_type: state
     action_type: continuous
     description: A bipedal humanoid that learns to walk without falling.
+    source: gymnasium[mujoco]
+
+  - id: mujoco-humanoid-standup
+    name: HumanoidStandup
+    framework: gymnasium
+    env_id: HumanoidStandup-v5
+    robot_type: biped
+    robot_model: humanoid
+    env_type: floor
+    task_tags: [stand, stand-up, balance, biped, recovery]
+    obs_type: state
+    action_type: continuous
+    description: A humanoid that learns to stand up from the ground.
     source: gymnasium[mujoco]
 
   - id: mujoco-half-cheetah
@@ -64,7 +144,7 @@ environments:
     robot_type: quadruped
     robot_model: half_cheetah
     env_type: floor
-    task_tags: [locomotion, run, speed]
+    task_tags: [locomotion, run, speed, forward, fast]
     obs_type: state
     action_type: continuous
     description: A planar cheetah-like robot that learns to run fast.
@@ -77,7 +157,7 @@ environments:
     robot_type: biped
     robot_model: hopper
     env_type: floor
-    task_tags: [locomotion, hop, balance, biped]
+    task_tags: [locomotion, hop, balance, biped, jump, forward]
     obs_type: state
     action_type: continuous
     description: A one-legged hopper that learns to hop forward.
@@ -90,13 +170,79 @@ environments:
     robot_type: biped
     robot_model: walker2d
     env_type: floor
-    task_tags: [locomotion, walk, biped, balance]
+    task_tags: [locomotion, walk, biped, balance, forward]
     obs_type: state
     action_type: continuous
     description: A planar bipedal walker that learns to walk forward.
     source: gymnasium[mujoco]
 
-  # MuJoCo Manipulation (Gymnasium-Robotics)
+  - id: mujoco-swimmer
+    name: Swimmer
+    framework: gymnasium
+    env_id: Swimmer-v5
+    robot_type: custom
+    robot_model: swimmer
+    env_type: aquatic
+    task_tags: [locomotion, swim, aquatic, forward, snake]
+    obs_type: state
+    action_type: continuous
+    description: A multi-jointed swimmer in a 2D viscous fluid.
+    source: gymnasium[mujoco]
+
+  - id: mujoco-inverted-pendulum
+    name: InvertedPendulum
+    framework: gymnasium
+    env_id: InvertedPendulum-v5
+    robot_type: custom
+    robot_model: pendulum
+    env_type: floor
+    task_tags: [balance, pendulum, classic, inverted, stabilize]
+    obs_type: state
+    action_type: continuous
+    description: Balance an inverted pendulum on a cart (MuJoCo).
+    source: gymnasium[mujoco]
+
+  - id: mujoco-inverted-double-pendulum
+    name: InvertedDoublePendulum
+    framework: gymnasium
+    env_id: InvertedDoublePendulum-v5
+    robot_type: custom
+    robot_model: double_pendulum
+    env_type: floor
+    task_tags: [balance, pendulum, double-pendulum, classic, stabilize]
+    obs_type: state
+    action_type: continuous
+    description: Balance a double inverted pendulum (harder than single).
+    source: gymnasium[mujoco]
+
+  - id: mujoco-reacher
+    name: Reacher
+    framework: gymnasium
+    env_id: Reacher-v5
+    robot_type: arm
+    robot_model: reacher
+    env_type: tabletop
+    task_tags: [reach, arm, target, 2d, manipulation]
+    obs_type: state
+    action_type: continuous
+    description: A 2-joint arm reaching a target in 2D.
+    source: gymnasium[mujoco]
+
+  - id: mujoco-pusher
+    name: Pusher
+    framework: gymnasium
+    env_id: Pusher-v5
+    robot_type: arm
+    robot_model: pusher
+    env_type: tabletop
+    task_tags: [push, arm, manipulation, contact, object]
+    obs_type: state
+    action_type: continuous
+    description: A 3-joint arm pushing an object to a target.
+    source: gymnasium[mujoco]
+
+  # ─── Gymnasium-Robotics (Fetch) ──────────────────────────────
+
   - id: fetch-reach
     name: Fetch Reach
     framework: gymnasium
@@ -104,7 +250,7 @@ environments:
     robot_type: arm
     robot_model: fetch
     env_type: tabletop
-    task_tags: [reach, arm, manipulation, sparse-reward]
+    task_tags: [reach, arm, manipulation, sparse-reward, target]
     obs_type: state
     action_type: continuous
     description: Move the Fetch robot gripper to a target position.
@@ -117,7 +263,7 @@ environments:
     robot_type: arm
     robot_model: fetch
     env_type: tabletop
-    task_tags: [push, arm, manipulation, contact, sparse-reward]
+    task_tags: [push, arm, manipulation, contact, sparse-reward, object]
     obs_type: state
     action_type: continuous
     description: Push a block to a target location on the table.
@@ -130,7 +276,7 @@ environments:
     robot_type: arm
     robot_model: fetch
     env_type: tabletop
-    task_tags: [pick, place, grasp, arm, manipulation, sparse-reward]
+    task_tags: [pick, place, grasp, arm, manipulation, sparse-reward, lift]
     obs_type: state
     action_type: continuous
     description: Pick up a block and place it at a target location.
@@ -149,7 +295,8 @@ environments:
     description: Slide a puck across a table to a target location.
     source: gymnasium-robotics
 
-  # MuJoCo Dexterous Hand (Gymnasium-Robotics)
+  # ─── Gymnasium-Robotics (Shadow Hand) ────────────────────────
+
   - id: hand-reach
     name: Shadow Hand Reach
     framework: gymnasium
@@ -157,13 +304,53 @@ environments:
     robot_type: dexterous_hand
     robot_model: shadow_hand
     env_type: tabletop
-    task_tags: [reach, dexterous, hand, fingers]
+    task_tags: [reach, dexterous, hand, fingers, target]
     obs_type: state
     action_type: continuous
     description: Move Shadow Hand fingertips to target positions.
     source: gymnasium-robotics
 
-  # Isaac Lab (placeholder entries
+  - id: hand-manipulate-block
+    name: Shadow Hand Block Rotate
+    framework: gymnasium
+    env_id: HandManipulateBlock-v1
+    robot_type: dexterous_hand
+    robot_model: shadow_hand
+    env_type: tabletop
+    task_tags: [rotate, dexterous, hand, block, manipulation, in-hand]
+    obs_type: state
+    action_type: continuous
+    description: In-hand manipulation — rotate a block to a target orientation.
+    source: gymnasium-robotics
+
+  - id: hand-manipulate-egg
+    name: Shadow Hand Egg Rotate
+    framework: gymnasium
+    env_id: HandManipulateEgg-v1
+    robot_type: dexterous_hand
+    robot_model: shadow_hand
+    env_type: tabletop
+    task_tags: [rotate, dexterous, hand, egg, manipulation, in-hand, fragile]
+    obs_type: state
+    action_type: continuous
+    description: In-hand manipulation — rotate an egg to a target orientation.
+    source: gymnasium-robotics
+
+  - id: hand-manipulate-pen
+    name: Shadow Hand Pen Rotate
+    framework: gymnasium
+    env_id: HandManipulatePen-v1
+    robot_type: dexterous_hand
+    robot_model: shadow_hand
+    env_type: tabletop
+    task_tags: [rotate, dexterous, hand, pen, manipulation, in-hand, spin]
+    obs_type: state
+    action_type: continuous
+    description: In-hand manipulation — rotate a pen to a target orientation.
+    source: gymnasium-robotics
+
+  # ─── Isaac Lab (placeholder — framework not yet wired) ───────
+
   - id: isaac-franka-lift
     name: Isaac Franka Lift Cube
     framework: isaac_lab

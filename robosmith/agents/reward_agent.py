@@ -114,19 +114,33 @@ class RewardAgent(BaseAgent):
         action_space_info: str,
         num_candidates: int = 4,
         env_code_context: str = "",
+        literature_context: str = "",
     ) -> list[RewardCandidate]:
         """
         Generate multiple reward function candidates for a task.
+
+        Args:
+            task_description: What the robot should do.
+            obs_space_info: Description of the observation space.
+            action_space_info: Description of the action space.
+            num_candidates: How many candidates to generate.
+            env_code_context: Optional environment source code for richer context.
+            literature_context: Summary of relevant papers from literature scout.
+
+        Returns:
+            List of RewardCandidate objects (validated, ready to evaluate).
         """
         prompt = self._build_generation_prompt(
-            task_description, obs_space_info, action_space_info, env_code_context
+            task_description, obs_space_info, action_space_info,
+            env_code_context, literature_context,
         )
 
         candidates = []
         for i in range(num_candidates):
             logger.info(f"Generating reward candidate {i + 1}/{num_candidates}")
 
-            # Use higher temperature for diversity across candidates
+            # Use slightly varied temperature for diversity across candidates
+            # Cap at 1.0 — above that, code quality drops sharply
             temp = 0.7 + (i * 0.05)
             temp = min(temp, 1.0)
 
@@ -191,13 +205,15 @@ class RewardAgent(BaseAgent):
         logger.info(f"Evolved {len(candidates)}/{num_candidates} valid candidates (gen {generation})")
         return candidates
 
-    # Prompt construction
+    # ── Prompt construction ──
+
     def _build_generation_prompt(
         self,
         task_description: str,
         obs_space_info: str,
         action_space_info: str,
         env_code_context: str,
+        literature_context: str = "",
     ) -> str:
         prompt = f"""Write a reward function for this robot learning task.
 
@@ -207,6 +223,9 @@ OBSERVATION SPACE: {obs_space_info}
 
 ACTION SPACE: {action_space_info}
 """
+        if literature_context:
+            prompt += f"\nRELEVANT PRIOR WORK (use these insights to inform your reward design):\n{literature_context}\n"
+
         if env_code_context:
             prompt += f"\nENVIRONMENT CODE (for context):\n{env_code_context}\n"
 
