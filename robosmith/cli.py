@@ -23,6 +23,7 @@ import typer
 import logging
 import pyfiglet
 import time as _time
+from pathlib import Path
 from loguru import logger
 from typing import Optional
 from rich.console import Console
@@ -124,7 +125,10 @@ def run(
     # Suppress all noisy loggers — we handle output ourselves
     logger.remove()
     if verbose:
-        logger.add(sys.stderr, level="DEBUG", format="{time:HH:mm:ss} | {level:<7} | {message}")
+        log_path = Path("robosmith_runs") / "latest.log"
+        log_path.parent.mkdir(parents=True, exist_ok=True)
+        logger.add(str(log_path), level="DEBUG", format="{time:HH:mm:ss} | {level:<7} | {message}", mode="w")
+        console.print(f"  [dim]Verbose logs → {log_path}[/dim]\n")
 
     for noisy in ("LiteLLM", "litellm", "httpx", "httpcore"):
         logging.getLogger(noisy).setLevel(logging.CRITICAL)

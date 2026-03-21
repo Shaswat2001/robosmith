@@ -70,19 +70,35 @@ def search_papers(
     }
     if year_range:
         params["year"] = year_range
-
-    try:
-        with httpx.Client(timeout=15.0) as client:
-            resp = client.get(f"{S2_BASE}/paper/search", params=params)
-            resp.raise_for_status()
-            data = resp.json()
-    except httpx.HTTPStatusError as e:
-        logger.warning(f"Semantic Scholar API error: {e.response.status_code}")
+ 
+    data = None
+    max_retries = 3
+    for attempt in range(max_retries):
+        try:
+            with httpx.Client(timeout=15.0) as client:
+                resp = client.get(f"{S2_BASE}/paper/search", params=params)
+ 
+                if resp.status_code == 429:
+                    wait = 2 ** (attempt + 1)
+                    logger.info(f"Semantic Scholar rate limited, waiting {wait}s...")
+                    time.sleep(wait)
+                    continue
+ 
+                resp.raise_for_status()
+                data = resp.json()
+                break
+ 
+        except httpx.HTTPStatusError as e:
+            logger.warning(f"Semantic Scholar API error: {e.response.status_code}")
+            return KnowledgeCard(query=query, search_time_seconds=time.time() - start)
+        except Exception as e:
+            logger.warning(f"Semantic Scholar search failed: {e}")
+            return KnowledgeCard(query=query, search_time_seconds=time.time() - start)
+ 
+    if data is None:
+        logger.warning("Semantic Scholar: max retries exceeded (rate limited)")
         return KnowledgeCard(query=query, search_time_seconds=time.time() - start)
-    except Exception as e:
-        logger.warning(f"Semantic Scholar search failed: {e}")
-        return KnowledgeCard(query=query, search_time_seconds=time.time() - start)
-
+ 
     papers = []
     for item in data.get("data", []):
         paper = {
@@ -95,10 +111,10 @@ def search_papers(
             "authors": [a.get("name", "") for a in (item.get("authors") or [])[:5]],
         }
         papers.append(paper)
-
+ 
     elapsed = time.time() - start
     logger.info(f"Semantic Scholar: {len(papers)} papers for '{query[:50]}' ({elapsed:.1f}s)")
-
+ 
     return KnowledgeCard(
         query=query,
         papers=papers,
@@ -151,14 +167,14 @@ def run_scout(
     """
     queries = build_search_queries(task_spec)
     logger.info(f"Scout: searching {len(queries)} queries")
-
+ 
     all_papers: dict[str, dict] = {}  # deduplicate by title
     total_found = 0
-
+ 
     for query in queries:
         card = search_papers(query, max_results=max_papers_per_query, year_range="2022-")
         total_found += card.total_found
-
+ 
         for paper in card.papers:
             title_key = paper["title"].lower().strip()
             if title_key not in all_papers:
@@ -167,15 +183,15 @@ def run_scout(
                 # Merge: keep the one with more citations
                 if paper["citations"] > all_papers[title_key]["citations"]:
                     all_papers[title_key] = paper
-
-        # Be polite to the API
-        time.sleep(0.3)
-
+ 
+        # Be polite to the API — 1 second between queries
+        time.sleep(1.0)
+ 
     # Sort by citations
     merged = sorted(all_papers.values(), key=lambda p: p.get("citations", 0), reverse=True)
-
+ 
     logger.info(f"Scout complete: {len(merged)} unique papers from {len(queries)} queries")
-
+ 
     return KnowledgeCard(
         query=" | ".join(queries),
         papers=merged,
