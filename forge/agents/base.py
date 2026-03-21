@@ -55,7 +55,6 @@ class BaseAgent:
             try:
                 logger.debug(f"LLM call (attempt {attempt}): model={self.model}, len={len(user_message)}")
                 start = time.time()
- 
                 response = litellm.completion(
                     model=self.model,
                     messages=messages,

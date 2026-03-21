@@ -1,10 +1,14 @@
 """
-Stage 3: Environment Synthesis.
+Stage 3: Environment synthesis.
 
 This stage takes a TaskSpec and finds (or generates) a simulation
 environment for it. Currently supports:
- 
+
   - Registry matching: search the catalog for the best existing env
+
+Coming later:
+  - LLM-based MJCF generation for novel tasks
+  - Composable scene assembly from primitives
 """
 
 from __future__ import annotations
@@ -14,7 +18,7 @@ from dataclasses import dataclass
 from loguru import logger
 
 from forge.config import TaskSpec
-from forge.envs import EnvEntry, EnvRegistry
+from forge.envs.registry import EnvEntry, EnvRegistry
 
 @dataclass
 class EnvMatch:
@@ -23,6 +27,7 @@ class EnvMatch:
     entry: EnvEntry
     score: float  # How well it matched (higher = better)
     match_reason: str  # Human-readable explanation
+
 
 def match_task_to_env(
     task_spec: TaskSpec,
@@ -45,8 +50,8 @@ def match_task_to_env(
             return EnvMatch(entry=entry, score=1.0, match_reason="Explicitly specified in TaskSpec")
         else:
             logger.warning(f"Specified env_id '{task_spec.environment_id}' not found in registry")
-    
-    # path 2: Search by structured fields + tags from task description
+
+    # Path 2: Search by structured fields + tags from task description
     tags = _extract_tags(task_spec.task_description)
     logger.info(f"Extracted search tags from task description: {tags}")
 
@@ -55,7 +60,7 @@ def match_task_to_env(
         env_type=task_spec.environment_type.value,
         framework=framework,
         robot_model=task_spec.robot_model,
-        tags=tags
+        tags=tags,
     )
 
     if not results:
@@ -75,11 +80,11 @@ def match_task_to_env(
             robot_type=task_spec.robot_type.value,
             tags=tags,
         )
- 
+
     if not results:
         logger.warning("No matching environment found in registry")
         return None
-    
+
     # Score the best result
     best = results[0]
     tag_score = best.matches_tags(tags)
@@ -90,22 +95,33 @@ def match_task_to_env(
     if tag_score == 0:
         logger.warning("No tag overlap between task and any environment — rejecting")
         return None
- 
+
     reason = f"Matched {tag_score}/{total_tags} tags: {', '.join(tags[:5])}"
     logger.info(f"Best match: {best.id} ({best.env_id}) — score {score} — {reason}")
- 
+
     return EnvMatch(entry=best, score=score, match_reason=reason)
 
 def _extract_tags(description: str) -> list[str]:
     """
     Extract searchable tags from a natural language task description.
- 
+
     This is a simple keyword extraction — no LLM needed.
     Later, an LLM can provide richer tag extraction.
     """
-    # Normalize
+    # Normalize and split into words for boundary-safe matching
     text = description.lower()
- 
+    raw_words = text.split()
+
+    # Simple stemming: strip common verb/noun suffixes
+    # "walks" → "walk", "pushes" → "push", "picking" → "pick", "balanced" → "balance"
+    stemmed = set()
+    for w in raw_words:
+        stemmed.add(w)
+        for suffix in ("ing", "ed", "es", "s"):
+            if w.endswith(suffix) and len(w) > len(suffix) + 2:
+                stemmed.add(w[: -len(suffix)])
+    words = stemmed
+
     # Known task-relevant keywords to look for
     known_tags = [
         # Manipulation
@@ -115,21 +131,22 @@ def _extract_tags(description: str) -> list[str]:
         # Locomotion
         "walk", "run", "hop", "jump", "crawl", "navigate", "locomotion",
         "balance", "stand", "climb", "terrain", "rubble", "stairs",
+        "swing", "swing-up",
         # Objects
         "cube", "ball", "cup", "bottle", "door", "drawer", "cabinet",
-        "peg", "nut", "bolt", "gear", "scissor", "pen",
+        "peg", "nut", "bolt", "gear", "scissor", "pen", "pendulum",
         # Properties
         "fast", "slow", "precise", "careful", "gentle", "stable",
         "speed", "contact",
     ]
- 
-    found = [tag for tag in known_tags if tag in text]
- 
+
+    found = [tag for tag in known_tags if tag in words]
+
     # Also check for robot model names
     model_keywords = [
         "franka", "fetch", "ur5", "unitree", "shadow", "ant",
         "humanoid", "cheetah", "hopper", "walker",
     ]
-    found.extend(tag for tag in model_keywords if tag in text)
- 
+    found.extend(tag for tag in model_keywords if tag in words)
+
     return found

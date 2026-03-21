@@ -211,7 +211,7 @@ class LLMConfig(BaseModel):
 class RewardSearchConfig(BaseModel):
     """Configuration for evolutionary reward search."""
 
-    candidates_per_iteration: int = Field(default=16, ge=4, le=64)
+    candidates_per_iteration: int = Field(default=5, ge=4, le=64)
     num_iterations: int = Field(default=5, ge=1, le=20)
     eval_timesteps: int = Field(
         default=50_000, description="Short eval budget per candidate (steps)"

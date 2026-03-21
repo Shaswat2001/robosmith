@@ -127,8 +127,8 @@ class RewardAgent(BaseAgent):
             logger.info(f"Generating reward candidate {i + 1}/{num_candidates}")
 
             # Use higher temperature for diversity across candidates
-            temp = 0.7 + (i * 0.1)  # 0.7, 0.8, 0.9, 1.0, ...
-            temp = min(temp, 1.3)
+            temp = 0.7 + (i * 0.05)
+            temp = min(temp, 1.0)
 
             raw_code = self.chat(prompt, temperature=temp)
             code = self._clean_code(raw_code)

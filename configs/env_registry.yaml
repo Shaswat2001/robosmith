@@ -24,7 +24,7 @@ environments:
     robot_type: custom
     robot_model: pendulum
     env_type: floor
-    task_tags: [swing-up, classic, continuous]
+    task_tags: [swing-up, pendulum, balance, classic, continuous]
     obs_type: state
     action_type: continuous
     description: Swing up and balance an inverted pendulum.

@@ -48,7 +48,7 @@ class RewardDesignResult:
     eval_results: list[EvalResult]
     generations_run: int
 
-def extra_space_info(env) -> tuple[str, str]: #noqa: ANN001
+def extract_space_info(env) -> tuple[str, str]: #noqa: ANN001
     """
     Extract human-readable observation and action space descriptions
     from a gymnasium environment. This is what the LLM sees as context.
