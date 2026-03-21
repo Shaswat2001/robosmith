@@ -1,0 +1,29 @@
+# RoboSmith Configuration
+# =======================
+# Save this as robosmith.yaml in your project directory.
+# Usage: robosmith run --config robosmith.yaml --task "Walk forward"
+# CLI flags override config file values.
+
+# LLM settings
+llm:
+  provider: anthropic                    # anthropic, openai, ollama
+  model: claude-sonnet-4-20250514      # Model for code generation
+  fast_model: claude-haiku-4-5-20251001  # Model for classification/parsing
+  temperature: 0.7
+  max_retries: 3
+
+# Reward search settings
+reward_search:
+  candidates_per_iteration: 4            # Reward functions generated per iteration
+  num_iterations: 3                      # Evolutionary iterations
+  eval_timesteps: 50000                  # Steps per candidate evaluation
+  eval_time_minutes: 2.0                 # Max time per candidate eval
+
+# Pipeline settings
+max_iterations: 3                        # Max outer pipeline iterations (accept/refine/pivot)
+skip_stages: []                          # Stages to skip: scout, intake, delivery
+# skip_stages: [scout]                   # Uncomment to always skip literature search
+
+# Paths
+runs_dir: ./robosmith_runs               # Where run artifacts are saved
+# env_registry_path: ./my_envs.yaml     # Custom environment registry

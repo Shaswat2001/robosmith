@@ -109,17 +109,21 @@ class TestBuildReport:
             assert "passed" in result
             assert "value" in result
 
-    def test_unknown_metric_fails(self):
-        episodes = self._make_episodes([1.0], [100], [True])
+    def test_unknown_metric_ignored(self):
+        """Unknown metrics from the LLM are ignored, not treated as failures."""
+        episodes = self._make_episodes([100.0], [200], [True])
         spec = TaskSpec(
             task_description="test",
             success_criteria=[
+                SuccessCriterion(metric="success_rate", threshold=0.8),
                 SuccessCriterion(metric="nonexistent_metric", threshold=0.5),
             ],
         )
         report = _build_report(episodes, spec)
 
-        assert report.decision != Decision.ACCEPT
+        # success_rate passes, nonexistent ignored → should ACCEPT
+        assert report.decision == Decision.ACCEPT
+        assert report.criteria_results["nonexistent_metric >= 0.5"]["passed"] is None
 
     def test_aggregate_metrics(self):
         episodes = self._make_episodes(

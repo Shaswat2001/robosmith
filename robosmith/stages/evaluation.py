@@ -189,6 +189,7 @@ def _build_report(episodes: list[EpisodeResult], task_spec: TaskSpec) -> EvalRep
     }
 
     all_passed = True
+    known_failed = False
     for criterion in task_spec.success_criteria:
         value = metric_values.get(criterion.metric)
         if value is not None:
@@ -199,13 +200,15 @@ def _build_report(episodes: list[EpisodeResult], task_spec: TaskSpec) -> EvalRep
             }
             if not passed:
                 all_passed = False
+                known_failed = True
         else:
+            # Unknown metrics (e.g. LLM-invented ones) — log but don't fail
             report.criteria_results[str(criterion)] = {
                 "value": None,
-                "passed": False,
-                "note": f"Unknown metric: {criterion.metric}",
+                "passed": None,
+                "note": f"Unknown metric: {criterion.metric} (ignored)",
             }
-            all_passed = False
+            logger.debug(f"Ignoring unknown criterion metric: {criterion.metric}")
 
     # Make decision
     if all_passed:

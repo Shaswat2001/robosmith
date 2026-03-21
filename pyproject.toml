@@ -58,6 +58,10 @@ train = [
     "torch>=2.2",
     "stable-baselines3>=2.3",
 ]
+video = [
+    "imageio>=2.34",
+    "imageio-ffmpeg>=0.4",
+]
 hub = [
     "huggingface-hub>=0.23",
 ]
@@ -69,7 +73,7 @@ dev = [
     "pre-commit>=3.7",
 ]
 all = [
-    "robosmith[sim,train,hub,dev]",
+    "robosmith[sim,train,video,hub,dev]",
 ]
 
 [project.scripts]

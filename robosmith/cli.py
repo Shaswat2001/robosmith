@@ -18,7 +18,7 @@ Usage::
 
 from __future__ import annotations
 
-import sys
+import yaml
 import typer
 import logging
 import pyfiglet
@@ -34,7 +34,7 @@ from rich.text import Text
 from robosmith import __version__
 from robosmith.config import StageStatus
 from robosmith.envs.registry import EnvRegistry
-from robosmith.config import RewardSearchConfig
+from robosmith.config import RewardSearchConfig, LLMConfig
 from robosmith.controller import ForgeController, STAGES
 from robosmith.config import Algorithm, ForgeConfig, RobotType, TaskSpec
 
@@ -111,6 +111,7 @@ def run(
     push_to_hub: Optional[str] = typer.Option(None, "--push-to-hub", help="HuggingFace repo ID to push to"),
     candidates: int = typer.Option(4, "--candidates", "-c", help="Number of reward function candidates per iteration"),
     skip: Optional[list[str]] = typer.Option(None, "--skip", "-s", help="Stages to skip: scout, intake, delivery"),
+    config_file: Optional[Path] = typer.Option(None, "--config", help="Path to robosmith.yaml config file"),
     dry_run: bool = typer.Option(False, "--dry-run", help="Parse and plan only, don't train"),
     verbose: bool = typer.Option(False, "--verbose", "-v", help="Show detailed logs"),
 ) -> None:
@@ -145,22 +146,65 @@ def run(
         push_to_hub=push_to_hub,
     )
 
-    # Build config
-    # Validate and process skip stages
-    skip_stages = []
+    # Load config file if provided, auto-detect robosmith.yaml in cwd
+    file_config: dict = {}
+    _config_path = config_file
+    if _config_path is None:
+        # Auto-detect robosmith.yaml in current directory
+        for name in ("robosmith.yaml", "robosmith.yml"):
+            if Path(name).exists():
+                _config_path = Path(name)
+                break
+
+    if _config_path and _config_path.exists():
+        with open(_config_path) as f:
+            file_config = yaml.safe_load(f) or {}
+        console.print(f"  [dim]Config loaded from {_config_path}[/dim]\n")
+
+    # LLM config from file
+    llm_cfg = file_config.get("llm", {})
+    llm_config = LLMConfig(
+        provider=llm_cfg.get("provider", "anthropic"),
+        model=llm_cfg.get("model", "claude-sonnet-4-20250514"),
+        fast_model=llm_cfg.get("fast_model", "claude-haiku-4-5-20251001"),
+        temperature=llm_cfg.get("temperature", 0.7),
+        max_retries=llm_cfg.get("max_retries", 3),
+    )
+
+    # Reward search config — CLI --candidates overrides file
+    rs_cfg = file_config.get("reward_search", {})
+    reward_config = RewardSearchConfig(
+        candidates_per_iteration=candidates if candidates != 4 else rs_cfg.get("candidates_per_iteration", 4),
+        num_iterations=rs_cfg.get("num_iterations", 3),
+        eval_timesteps=rs_cfg.get("eval_timesteps", 50_000),
+        eval_time_minutes=rs_cfg.get("eval_time_minutes", 2.0),
+    )
+
+    # Skip stages — merge file + CLI
+    skip_stages = list(file_config.get("skip_stages", []))
     SKIPPABLE = {"scout", "intake", "delivery"}
     if skip:
         for s in skip:
-            if s in SKIPPABLE:
+            if s not in skip_stages:
                 skip_stages.append(s)
-            else:
-                console.print(f"  [yellow]Warning: '{s}' cannot be skipped (core stage). Ignoring.[/yellow]")
+    for s in skip_stages[:]:
+        if s not in SKIPPABLE:
+            console.print(f"  [yellow]Warning: '{s}' cannot be skipped (core stage). Ignoring.[/yellow]")
+            skip_stages.remove(s)
+
+    # Paths from file
+    runs_dir = Path(file_config.get("runs_dir", "./robosmith_runs"))
+    env_registry_path = file_config.get("env_registry_path")
 
     config = ForgeConfig(
+        llm=llm_config,
+        reward_search=reward_config,
         verbose=verbose,
         dry_run=dry_run,
         skip_stages=skip_stages,
-        reward_search=RewardSearchConfig(candidates_per_iteration=candidates),
+        runs_dir=runs_dir,
+        env_registry_path=Path(env_registry_path) if env_registry_path else None,
+        max_iterations=file_config.get("max_iterations", 3),
     )
 
     # Show plan
@@ -196,13 +240,15 @@ def run(
 
     # Run the pipeline stage by stage with live output
     _critical_failure = False
+    # Stages that run inside the iteration loop (delivery runs once at the end)
+    ITERATION_STAGES = [s for s in STAGES if s != "delivery"]
 
     while not controller.state.is_complete() and not _critical_failure:
         controller.state.iteration += 1
         if controller.state.iteration > 1:
             console.print(f"\n  [dim]Iteration {controller.state.iteration}/{controller.state.max_iterations}[/dim]")
 
-        for stage_name in STAGES:
+        for stage_name in ITERATION_STAGES:
             if controller._should_skip_stage(stage_name):
                 continue
 
@@ -259,6 +305,23 @@ def run(
             # Check if evaluation decided to iterate
             if controller._needs_iteration():
                 break
+
+    # Always run delivery at the end (regardless of iteration/failure state)
+    if "delivery" not in controller.config.skip_stages:
+        label = STAGE_LABELS["delivery"]
+        color = STAGE_COLORS["delivery"]
+        console.print(f"  [cyan]⟳[/cyan] [{color}]{label}[/{color}]...", end="")
+        start = _time.time()
+        controller._run_stage("delivery")
+        elapsed = _time.time() - start
+        record = controller.state.stages.get("delivery")
+        if record and record.status == StageStatus.COMPLETED:
+            n_files = len(record.metadata.get("files_written", []))
+            console.print(f"\r  [green]✓[/green] [{color}]{label}[/{color}] [dim]({elapsed:.1f}s)[/dim] → {n_files} files")
+        elif record and record.status == StageStatus.FAILED:
+            console.print(f"\r  [red]✗[/red] [{color}]{label}[/{color}]")
+        else:
+            console.print(f"\r  [green]✓[/green] [{color}]{label}[/{color}]")
 
     # Save state
     controller._save_state()

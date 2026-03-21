@@ -36,6 +36,7 @@ from robosmith.stages.evaluation import run_evaluation
 from robosmith.stages.env_synthesis import _extract_tags
 from robosmith.stages.env_synthesis import match_task_to_env
 from robosmith.stages.reward_design import run_reward_design
+
 # The pipeline stages, in order
 STAGES = [
     "intake",
@@ -50,13 +51,19 @@ STAGES = [
 class ForgeController:
     """
     Orchestrates the full Forge pipeline.
-
+ 
+    Usage::
+ 
+        spec = TaskSpec(task_description="Pick up a red cube", robot_type="arm")
+        controller = ForgeController(spec)
+        result = controller.run()
+ 
     The controller is intentionally simple: it walks through stages in order,
     checks results, and decides whether to loop. Each stage is a separate
     module with a clean interface — the controller just calls them and
     tracks state.
     """
-
+ 
     def __init__(
         self,
         task_spec: TaskSpec,
@@ -64,43 +71,43 @@ class ForgeController:
     ) -> None:
         self.config = config or ForgeConfig()
         self.task_spec = task_spec
-
+ 
         # Create run state
         run_id = f"run_{time.strftime('%Y%m%d_%H%M%S')}_{uuid.uuid4().hex[:6]}"
         artifacts_dir = self.config.runs_dir / run_id
         artifacts_dir.mkdir(parents=True, exist_ok=True)
-
+ 
         self.state = RunState(
             run_id=run_id,
             task_spec=task_spec,
             max_iterations=self.config.max_iterations,
             artifacts_dir=artifacts_dir,
         )
-
+ 
         logger.info(f"RoboSmith run initialized: {run_id}")
         logger.info(f"Task: {task_spec.summary()}")
         logger.info(f"Artifacts: {artifacts_dir}")
-
+ 
     def run(self) -> RunState:
         """
         Execute the full pipeline.
-
+ 
         Returns the final RunState with all results and artifacts.
         """
         logger.info("Starting RoboSmith pipeline")
-
+ 
         _critical_failure = False
-
+ 
         while not self.state.is_complete() and not _critical_failure:
             self.state.iteration += 1
             logger.info(f"Outer iteration {self.state.iteration}/{self.state.max_iterations}")
-
+ 
             for stage_name in STAGES:
                 if self._should_skip_stage(stage_name):
                     continue
-
+ 
                 self._run_stage(stage_name)
-
+ 
                 # If a critical stage failed, stop — don't cascade errors
                 record = self.state.stages.get(stage_name)
                 if record and record.status == StageStatus.FAILED:
@@ -111,50 +118,50 @@ class ForgeController:
                         )
                         _critical_failure = True
                         break
-
+ 
                 # Check if we need to break out of the stage loop
                 # (e.g., evaluation decided to refine reward)
                 if self._needs_iteration():
                     break
-
+ 
         self._save_state()
         logger.info(f"RoboSmith pipeline complete. Run ID: {self.state.run_id}")
         return self.state
-
+ 
     def _run_stage(self, stage_name: str) -> None:
         """Execute a single pipeline stage."""
         record = StageRecord(stage=stage_name, status=StageStatus.RUNNING)
         self.state.stages[stage_name] = record
-
+ 
         logger.info(f"Stage: {stage_name} — starting")
         start = time.time()
-
+ 
         try:
             # Dispatch to the appropriate stage handler
             handler = self._get_stage_handler(stage_name)
             result = handler()
-
+ 
             record.status = StageStatus.COMPLETED
             record.metadata = result or {}
             logger.info(f"Stage: {stage_name} — completed")
-
+ 
         except NotImplementedError:
             record.status = StageStatus.SKIPPED
             logger.warning(f"Stage: {stage_name} — not yet implemented, skipping")
-
+ 
         except Exception as e:
             record.status = StageStatus.FAILED
             record.error = str(e)
             record.attempts += 1
             logger.error(f"Stage: {stage_name} — failed: {e}")
-
+ 
         finally:
             record.duration_seconds = time.time() - start
-
+ 
     def _get_stage_handler(self, stage_name: str):  # noqa: ANN202
         """
         Return the handler function for a stage.
-
+ 
         Each stage will be implemented as a separate module. For now,
         they all raise NotImplementedError — we'll fill them in one by one.
         """
@@ -168,22 +175,22 @@ class ForgeController:
             "delivery": self._stage_delivery,
         }
         return handlers[stage_name]
-
+ 
     # ── Stage stubs (to be implemented one at a time) ──
-
+ 
     def _stage_intake(self) -> dict:
         """Parse natural language into TaskSpec via LLM."""
-        
+ 
         raw = self.task_spec.raw_input or self.task_spec.task_description
-
+ 
         # If user provided explicit --robot flag, keep it. Otherwise, let LLM parse.
         if self.task_spec.is_fully_specified() and self.task_spec.raw_input == "":
             logger.info("TaskSpec already fully specified, skipping intake parsing")
             return {"status": "pre_specified"}
-
+ 
         try:
             parsed = parse_task(raw, self.config.llm)
-
+ 
             # Merge: user-provided flags override LLM parsing
             if self.task_spec.robot_model:
                 parsed.robot_model = self.task_spec.robot_model
@@ -191,64 +198,62 @@ class ForgeController:
                 parsed.algorithm = self.task_spec.algorithm
             if self.task_spec.push_to_hub:
                 parsed.push_to_hub = self.task_spec.push_to_hub
-
+ 
             # Preserve user settings that aren't parsed
             parsed.time_budget_minutes = self.task_spec.time_budget_minutes
             parsed.num_envs = self.task_spec.num_envs
             parsed.use_world_model = self.task_spec.use_world_model
             parsed.raw_input = raw
-
+ 
             self.task_spec = parsed
             self.state.task_spec = parsed
-
+ 
             logger.info(f"Intake: {parsed.summary()}")
             return {"status": "llm_parsed", "summary": parsed.summary()}
-
+ 
         except Exception as e:
             logger.warning(f"LLM intake failed, using original spec: {e}")
             return {"status": "fallback", "error": str(e)}
-
+ 
     def _stage_scout(self) -> dict:
         """Search for relevant prior work."""
-        
+ 
         card = run_scout(self.task_spec)
         self._knowledge_card = card
-
+ 
         top = card.top_papers(3)
         top_titles = [p["title"][:60] for p in top]
-
+ 
         logger.info(f"Scout: {len(card.papers)} papers found")
-
+ 
         return {
             "num_papers": len(card.papers),
             "total_found": card.total_found,
             "top_papers": top_titles,
             "search_time": card.search_time_seconds,
         }
-
+ 
     def _stage_env_synthesis(self) -> dict:
         """Find or generate an environment matching the TaskSpec."""
-
+ 
         registry = EnvRegistry(self.config.env_registry_path)
-
+ 
         # Try 1: exact match with gymnasium preference
         match = match_task_to_env(self.task_spec, registry, framework="gymnasium")
-
+ 
         # Try 2: any framework
         if match is None:
             match = match_task_to_env(self.task_spec, registry)
-
+ 
         # Try 3: ignore robot_type entirely — just use tags from the description.
         # This catches cases where the LLM mis-classifies (e.g. pendulum as "arm")
         if match is None:
             logger.info("Relaxing robot_type filter — searching by tags only")
-            
             tags = _extract_tags(self.task_spec.task_description)
             if tags:
                 results = registry.search(tags=tags)
                 if results:
                     match_entry = results[0]
-                    
                     tag_score = match_entry.matches_tags(tags)
                     match = EnvMatch(
                         entry=match_entry,
@@ -256,21 +261,21 @@ class ForgeController:
                         match_reason=f"Tag-only fallback: {', '.join(tags[:5])}",
                     )
                     logger.info(f"Tag-only fallback matched: {match_entry.id}")
-
+ 
         if match is None:
             raise RuntimeError(
                 f"No environment found for task: {self.task_spec.task_description}. "
                 "Try adding an environment to configs/env_registry.yaml."
             )
-
+ 
         # Store the matched env in the task spec for downstream stages
         self.task_spec.environment_id = match.entry.id
-
+ 
         logger.info(
             f"Matched environment: {match.entry.name} ({match.entry.env_id}) "
             f"— score {match.score}"
         )
-
+ 
         return {
             "env_id": match.entry.id,
             "env_gym_id": match.entry.env_id,
@@ -278,7 +283,7 @@ class ForgeController:
             "score": match.score,
             "reason": match.match_reason,
         }
-
+ 
     def _stage_reward_design(self) -> dict:
         """Generate and evaluate reward function candidates."""
 
@@ -286,12 +291,12 @@ class ForgeController:
         env_id = self.task_spec.environment_id
         if not env_id:
             raise RuntimeError("No environment matched — run env_synthesis first")
-
+ 
         registry = EnvRegistry(self.config.env_registry_path)
         env_entry = registry.get(env_id)
         if not env_entry:
             raise RuntimeError(f"Environment '{env_id}' not found in registry")
-
+ 
         result = run_reward_design(
             task_spec=self.task_spec,
             env_entry=env_entry,
@@ -299,57 +304,78 @@ class ForgeController:
             search_config=self.config.reward_search,
             num_candidates=self.config.reward_search.candidates_per_iteration,
         )
-
-        # Store the best reward code for downstream stages
-        self._reward_code = result.best_candidate.code
-        self._reward_candidate = result.best_candidate
-
+ 
+        # Keep the best reward across iterations — only replace if new one is better
+        prev_best = getattr(self, "_reward_candidate", None)
+        new_best = result.best_candidate
+ 
+        if prev_best is not None and prev_best.score > new_best.score:
+            logger.info(
+                f"Keeping previous reward (score={prev_best.score:.2f}) "
+                f"over new (score={new_best.score:.2f})"
+            )
+        else:
+            self._reward_code = new_best.code
+            self._reward_candidate = new_best
+ 
         logger.info(
-            f"Reward design complete — best score: {result.best_candidate.score:.2f}, "
+            f"Reward design complete — best score: {self._reward_candidate.score:.2f}, "
             f"generations: {result.generations_run}"
         )
-
+ 
         return {
-            "best_score": result.best_candidate.score,
-            "best_candidate_id": result.best_candidate.candidate_id,
+            "best_score": self._reward_candidate.score,
+            "best_candidate_id": self._reward_candidate.candidate_id,
             "num_valid_candidates": len(result.all_candidates),
             "generations_run": result.generations_run,
         }
-
+ 
     def _stage_training(self) -> dict:
         """Train an RL policy using the generated reward function."""
 
         # We need the reward function from Stage 4
         if not hasattr(self, "_reward_candidate"):
             raise RuntimeError("No reward candidate — run reward_design first")
-
+ 
         env_id = self.task_spec.environment_id
         if not env_id:
             raise RuntimeError("No environment matched — run env_synthesis first")
-
+ 
+        # If evaluation said SWITCH_ALGO, flip the algorithm
+        if self.state.decision_history:
+            last = self.state.decision_history[-1]
+            if last.get("decision") == Decision.SWITCH_ALGO:
+                current = self.task_spec.algorithm
+                if current == Algorithm.PPO or current == Algorithm.AUTO:
+                    self.task_spec.algorithm = Algorithm.SAC
+                    logger.info("Switching algorithm: PPO → SAC")
+                else:
+                    self.task_spec.algorithm = Algorithm.PPO
+                    logger.info("Switching algorithm: SAC → PPO")
+ 
         registry = EnvRegistry(self.config.env_registry_path)
         env_entry = registry.get(env_id)
         if not env_entry:
             raise RuntimeError(f"Environment '{env_id}' not found")
-
+ 
         result = run_training(
             task_spec=self.task_spec,
             env_entry=env_entry,
             reward_candidate=self._reward_candidate,
             artifacts_dir=self.state.artifacts_dir,
         )
-
+ 
         self._training_result = result
-
+ 
         if result.error:
             raise RuntimeError(f"Training failed: {result.error}")
-
+ 
         logger.info(
             f"Training complete — {result.algorithm}, "
             f"reward={result.final_mean_reward:.2f}, "
             f"time={result.training_time_seconds:.1f}s"
         )
-
+ 
         return {
             "algorithm": result.algorithm,
             "total_timesteps": result.total_timesteps,
@@ -357,27 +383,27 @@ class ForgeController:
             "training_time_seconds": result.training_time_seconds,
             "model_path": str(result.model_path) if result.model_path else None,
         }
-
+ 
     def _stage_evaluation(self) -> dict:
         """Evaluate the trained policy against success criteria."""
-
+ 
         if not hasattr(self, "_reward_candidate"):
             raise RuntimeError("No reward candidate — run reward_design first")
-
+ 
         env_id = self.task_spec.environment_id
         if not env_id:
             raise RuntimeError("No environment matched")
-
+ 
         registry = EnvRegistry(self.config.env_registry_path)
         env_entry = registry.get(env_id)
         if not env_entry:
             raise RuntimeError(f"Environment '{env_id}' not found")
-
+ 
         # Get model path from training stage (may be None if training failed)
         model_path = None
         if hasattr(self, "_training_result") and self._training_result.model_path:
             model_path = self._training_result.model_path
-
+ 
         report = run_evaluation(
             task_spec=self.task_spec,
             env_entry=env_entry,
@@ -385,7 +411,10 @@ class ForgeController:
             model_path=model_path,
             num_episodes=10,
         )
-
+ 
+        # Store for delivery stage
+        self._eval_report = report
+ 
         # Record the decision for the controller's iteration logic
         self.state.decision_history.append({
             "decision": report.decision,
@@ -394,11 +423,11 @@ class ForgeController:
             "success_rate": report.success_rate,
             "mean_reward": report.mean_reward,
         })
-
+ 
         logger.info(
             f"Evaluation decision: {report.decision.value} — {report.decision_reason}"
         )
-
+ 
         return {
             "decision": report.decision.value,
             "reason": report.decision_reason,
@@ -408,53 +437,61 @@ class ForgeController:
             "num_episodes": len(report.episodes),
             "criteria": report.criteria_results,
         }
-
+ 
     def _stage_delivery(self) -> dict:
         """Package all artifacts for the run."""
-
+ 
         result = run_delivery(
             state=self.state,
             reward_candidate=getattr(self, "_reward_candidate", None),
             eval_report=getattr(self, "_eval_report", None),
             training_result=getattr(self, "_training_result", None),
         )
-
+ 
         logger.info(f"Delivery: {len(result.files_written)} files → {result.artifacts_dir}")
-
+ 
         return {
             "artifacts_dir": str(result.artifacts_dir),
             "files_written": result.files_written,
             "pushed_to_hub": result.pushed_to_hub,
             "hub_url": result.hub_url,
         }
-
-    # Decision logic
+ 
+    # ── Decision logic ──
+ 
     def _should_skip_stage(self, stage_name: str) -> bool:
         """Determine if a stage should be skipped on this iteration."""
         # User-requested skips (only allowed for non-core stages)
         SKIPPABLE = {"scout", "intake", "delivery"}
         if stage_name in self.config.skip_stages and stage_name in SKIPPABLE:
             return True
-
+ 
         # On iteration 2+, skip stages before the one we're refining
         if self.state.iteration > 1 and self.state.decision_history:
             last = self.state.decision_history[-1]
             decision = last.get("decision")
-
-            if decision == Decision.REFINE_REWARD and stage_name in ("intake", "scout"):
+ 
+            # REFINE_REWARD: skip intake, scout, env — go straight to reward_design
+            if decision == Decision.REFINE_REWARD and stage_name in ("intake", "scout", "env_synthesis"):
                 return True
-            if decision == Decision.ADJUST_ENV and stage_name == "intake":
+ 
+            # SWITCH_ALGO: skip intake, scout, env — keep reward, retrain with different algo
+            if decision == Decision.SWITCH_ALGO and stage_name in ("intake", "scout", "env_synthesis"):
                 return True
-
+ 
+            # ADJUST_ENV: skip intake, scout — go to env_synthesis
+            if decision == Decision.ADJUST_ENV and stage_name in ("intake", "scout"):
+                return True
+ 
         return False
-
+ 
     def _needs_iteration(self) -> bool:
         """Check if the evaluation decided we need to loop back."""
         if not self.state.decision_history:
             return False
         last = self.state.decision_history[-1]
         return last.get("decision") != Decision.ACCEPT
-
+ 
     def _save_state(self) -> None:
         """Persist run state to disk for reproducibility."""
         if self.state.artifacts_dir:
