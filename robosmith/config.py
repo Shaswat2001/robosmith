@@ -74,7 +74,7 @@ class SuccessCriterion(BaseModel):
 
     def __str__(self) -> str:
         return f"{self.metric} {self.operator} {self.threshold}"
-    
+
 class SafetyConstraint(BaseModel):
     """A constraint the policy must never violate."""
 
@@ -84,17 +84,18 @@ class SafetyConstraint(BaseModel):
 
 class TaskSpec(BaseModel):
     """
-    Structured specification of a robotic task. 
+    Structured specification of a robotic task.
 
-    This is the output of Stage 1 and the input to every
+    This is the output of Stage 1 (Task Intake) and the input to every
     subsequent stage. The LLM parses a natural language description into
     this schema.
     """
 
-    # What to do
+    # ── What to do ──
     task_description: str = Field(description="Natural language description of the desired behavior")
     raw_input: str = Field(default="", description="Original user input, preserved for reference")
 
+    # ── Robot ──
     robot_type: RobotType = Field(default=RobotType.ARM, description="Robot morphology")
     robot_model: Optional[str] = Field(
         default=None,
@@ -150,6 +151,7 @@ class TaskSpec(BaseModel):
         model = self.robot_model or self.robot_type.value
         return f"{model} | {self.environment_type.value} | {self.task_description[:60]}"
 
+# Run state
 class StageRecord(BaseModel):
     """Record of a single stage execution."""
 
@@ -191,8 +193,7 @@ class RunState(BaseModel):
             last_decision = self.decision_history[-1] if self.decision_history else {}
             return last_decision.get("decision") == Decision.ACCEPT
         return False
-    
-# Config
+
 class LLMConfig(BaseModel):
     """LLM provider configuration."""
 
@@ -236,6 +237,10 @@ class ForgeConfig(BaseModel):
 
     # ── Behavior ──
     max_iterations: int = Field(default=3, ge=1, le=10, description="Max outer loop iterations")
+    skip_stages: list[str] = Field(
+        default_factory=list,
+        description="Stages to skip: scout, intake, delivery",
+    )
     verbose: bool = Field(default=True)
     dry_run: bool = Field(
         default=False, description="Parse and plan only, don't execute training"

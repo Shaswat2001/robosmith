@@ -1,5 +1,19 @@
 """
 Forge CLI — the main entry point for RoboSmith.
+
+Usage::
+
+    # Full pipeline
+    forge run --task "A Franka arm that picks up a red cube"
+
+    # Dry run (parse + plan only)
+    forge run --task "Quadruped navigating rubble" --dry-run
+
+    # Show version
+    forge version
+
+    # Show config
+    forge config
 """
 
 from __future__ import annotations
@@ -11,7 +25,6 @@ import pyfiglet
 import time as _time
 from loguru import logger
 from typing import Optional
-
 from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
@@ -19,8 +32,8 @@ from rich.text import Text
 
 from robosmith import __version__
 from robosmith.config import StageStatus
-from robosmith.config import RewardSearchConfig
 from robosmith.envs.registry import EnvRegistry
+from robosmith.config import RewardSearchConfig
 from robosmith.controller import ForgeController, STAGES
 from robosmith.config import Algorithm, ForgeConfig, RobotType, TaskSpec
 
@@ -96,6 +109,7 @@ def run(
     num_envs: int = typer.Option(1024, "--num-envs", help="Number of parallel sim environments"),
     push_to_hub: Optional[str] = typer.Option(None, "--push-to-hub", help="HuggingFace repo ID to push to"),
     candidates: int = typer.Option(4, "--candidates", "-c", help="Number of reward function candidates per iteration"),
+    skip: Optional[list[str]] = typer.Option(None, "--skip", "-s", help="Stages to skip: scout, intake, delivery"),
     dry_run: bool = typer.Option(False, "--dry-run", help="Parse and plan only, don't train"),
     verbose: bool = typer.Option(False, "--verbose", "-v", help="Show detailed logs"),
 ) -> None:
@@ -128,9 +142,20 @@ def run(
     )
 
     # Build config
+    # Validate and process skip stages
+    skip_stages = []
+    SKIPPABLE = {"scout", "intake", "delivery"}
+    if skip:
+        for s in skip:
+            if s in SKIPPABLE:
+                skip_stages.append(s)
+            else:
+                console.print(f"  [yellow]Warning: '{s}' cannot be skipped (core stage). Ignoring.[/yellow]")
+
     config = ForgeConfig(
         verbose=verbose,
         dry_run=dry_run,
+        skip_stages=skip_stages,
         reward_search=RewardSearchConfig(candidates_per_iteration=candidates),
     )
 
@@ -198,6 +223,9 @@ def run(
                 extra = ""
                 if stage_name == "intake" and controller.task_spec:
                     extra = f" → [dim]{controller.task_spec.summary()}[/dim]"
+                elif stage_name == "scout" and record.metadata.get("num_papers"):
+                    n = record.metadata["num_papers"]
+                    extra = f" → [bold]{n}[/bold] relevant papers found"
                 elif stage_name == "env_synthesis" and record.metadata.get("env_gym_id"):
                     extra = f" → [bold]{record.metadata['env_gym_id']}[/bold]"
                 elif stage_name == "reward_design" and record.metadata.get("best_score") is not None:
@@ -289,6 +317,7 @@ def _show_task_spec(spec: TaskSpec) -> None:
 
     console.print()
     console.print(table)
+
 
 if __name__ == "__main__":
     app()

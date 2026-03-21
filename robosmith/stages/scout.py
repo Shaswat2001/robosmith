@@ -1,0 +1,183 @@
+"""
+Stage 2: Literature scout.
+
+Searches Semantic Scholar and arXiv for papers relevant to the task.
+Returns a KnowledgeCard with ranked papers, reward function ideas,
+and baseline numbers.
+
+No API key needed — Semantic Scholar's public API allows 100 req/sec.
+"""
+
+from __future__ import annotations
+
+import time
+from dataclasses import dataclass, field
+from typing import Any
+
+import httpx
+from loguru import logger
+
+from robosmith.config import TaskSpec
+
+# Semantic Scholar API (free, no key needed)
+S2_BASE = "https://api.semanticscholar.org/graph/v1"
+S2_FIELDS = "title,year,citationCount,abstract,url,externalIds,authors"
+
+@dataclass
+class KnowledgeCard:
+    """Summary of literature search results for a task."""
+
+    query: str
+    papers: list[dict] = field(default_factory=list)
+    total_found: int = 0
+    search_time_seconds: float = 0.0
+
+    def top_papers(self, n: int = 5) -> list[dict]:
+        """Return the top N papers by citation count."""
+        return sorted(self.papers, key=lambda p: p.get("citations", 0), reverse=True)[:n]
+
+    def summary(self) -> str:
+        if not self.papers:
+            return f"No papers found for: {self.query}"
+        top = self.top_papers(3)
+        lines = [f"Found {len(self.papers)} papers (top {len(top)}):"]
+        for p in top:
+            lines.append(f"  - {p['title'][:70]} ({p.get('year', '?')}, {p.get('citations', 0)} cites)")
+        return "\n".join(lines)
+
+def search_papers(
+    query: str,
+    max_results: int = 20,
+    year_range: str | None = None,
+) -> KnowledgeCard:
+    """
+    Search Semantic Scholar for papers matching a query.
+
+    Args:
+        query: Search query string.
+        max_results: Maximum number of papers to return.
+        year_range: Optional year filter, e.g. "2022-" or "2020-2024".
+
+    Returns:
+        KnowledgeCard with ranked papers.
+    """
+    start = time.time()
+
+    params: dict[str, Any] = {
+        "query": query,
+        "limit": min(max_results, 100),
+        "fields": S2_FIELDS,
+    }
+    if year_range:
+        params["year"] = year_range
+
+    try:
+        with httpx.Client(timeout=15.0) as client:
+            resp = client.get(f"{S2_BASE}/paper/search", params=params)
+            resp.raise_for_status()
+            data = resp.json()
+    except httpx.HTTPStatusError as e:
+        logger.warning(f"Semantic Scholar API error: {e.response.status_code}")
+        return KnowledgeCard(query=query, search_time_seconds=time.time() - start)
+    except Exception as e:
+        logger.warning(f"Semantic Scholar search failed: {e}")
+        return KnowledgeCard(query=query, search_time_seconds=time.time() - start)
+
+    papers = []
+    for item in data.get("data", []):
+        paper = {
+            "title": item.get("title", ""),
+            "year": item.get("year"),
+            "citations": item.get("citationCount", 0),
+            "abstract": (item.get("abstract") or "")[:300],
+            "url": item.get("url", ""),
+            "arxiv_id": (item.get("externalIds") or {}).get("ArXiv"),
+            "authors": [a.get("name", "") for a in (item.get("authors") or [])[:5]],
+        }
+        papers.append(paper)
+
+    elapsed = time.time() - start
+    logger.info(f"Semantic Scholar: {len(papers)} papers for '{query[:50]}' ({elapsed:.1f}s)")
+
+    return KnowledgeCard(
+        query=query,
+        papers=papers,
+        total_found=data.get("total", len(papers)),
+        search_time_seconds=elapsed,
+    )
+
+def build_search_queries(task_spec: TaskSpec) -> list[str]:
+    """
+    Generate search queries from a TaskSpec.
+
+    Creates 2-3 targeted queries combining the task, robot, and
+    relevant keywords.
+    """
+    desc = task_spec.task_description.lower()
+    robot = task_spec.robot_model or task_spec.robot_type.value
+    queries = []
+
+    # Query 1: task + robot + RL
+    queries.append(f"{desc} reinforcement learning")
+
+    # Query 2: robot type + reward design
+    queries.append(f"{robot} reward function design")
+
+    # Query 3: specific technique queries based on task keywords
+    if any(w in desc for w in ("walk", "run", "locomotion", "navigate")):
+        queries.append(f"{robot} locomotion policy learning sim-to-real")
+    elif any(w in desc for w in ("pick", "place", "grasp", "push", "manipulation")):
+        queries.append(f"robot manipulation reward shaping {robot}")
+    elif any(w in desc for w in ("balance", "swing", "pendulum")):
+        queries.append(f"swing-up balance control reinforcement learning")
+    elif any(w in desc for w in ("dexterous", "hand", "finger", "spin")):
+        queries.append(f"dexterous manipulation reward design")
+
+    return queries
+
+def run_scout(
+    task_spec: TaskSpec,
+    max_papers_per_query: int = 10,
+) -> KnowledgeCard:
+    """
+    Run the full scout stage — search multiple queries and merge results.
+
+    Args:
+        task_spec: The task to search for.
+        max_papers_per_query: Max papers per search query.
+
+    Returns:
+        Merged KnowledgeCard with deduplicated, ranked papers.
+    """
+    queries = build_search_queries(task_spec)
+    logger.info(f"Scout: searching {len(queries)} queries")
+
+    all_papers: dict[str, dict] = {}  # deduplicate by title
+    total_found = 0
+
+    for query in queries:
+        card = search_papers(query, max_results=max_papers_per_query, year_range="2022-")
+        total_found += card.total_found
+
+        for paper in card.papers:
+            title_key = paper["title"].lower().strip()
+            if title_key not in all_papers:
+                all_papers[title_key] = paper
+            else:
+                # Merge: keep the one with more citations
+                if paper["citations"] > all_papers[title_key]["citations"]:
+                    all_papers[title_key] = paper
+
+        # Be polite to the API
+        time.sleep(0.3)
+
+    # Sort by citations
+    merged = sorted(all_papers.values(), key=lambda p: p.get("citations", 0), reverse=True)
+
+    logger.info(f"Scout complete: {len(merged)} unique papers from {len(queries)} queries")
+
+    return KnowledgeCard(
+        query=" | ".join(queries),
+        papers=merged,
+        total_found=total_found,
+    )

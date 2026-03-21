@@ -41,8 +41,11 @@ class TestForgeController:
             StageStatus.FAILED,
         )
 
-        # Scout is not implemented
-        assert result.stages["scout"].status == StageStatus.SKIPPED
+        # Scout is now implemented — it should complete (or fail if no network)
+        assert result.stages["scout"].status in (
+            StageStatus.COMPLETED,
+            StageStatus.FAILED,
+        )
 
         # env_synthesis should run
         assert result.stages["env_synthesis"].status in (
