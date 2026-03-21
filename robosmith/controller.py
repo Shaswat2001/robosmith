@@ -1,7 +1,7 @@
 """
 ForgeController — the central pipeline orchestrator.
 
-This is the brain of Embodied Agent Forge. It manages the 7-stage pipeline,
+This is the brain of RoboSmith. It manages the 7-stage pipeline,
 tracks state, handles failures, and makes iteration decisions.
 
 Currently a skeleton — each stage will be implemented as we build them.
@@ -15,7 +15,8 @@ from pathlib import Path
 
 from loguru import logger
 
-from forge.config import (
+from robosmith.config import (
+    Algorithm,
     Decision,
     ForgeConfig,
     RunState,
@@ -24,12 +25,13 @@ from forge.config import (
     TaskSpec,
 )
 
-from forge.envs.registry import EnvRegistry
-from forge.stages.env_synthesis import match_task_to_env
-from forge.stages.reward_design import run_reward_design
-from forge.stages.training import run_training
-from forge.stages.evaluation import run_evaluation
-from forge.stages.delivery import run_delivery
+from robosmith.envs.registry import EnvRegistry
+from robosmith.stages.env_synthesis import match_task_to_env
+from robosmith.stages.reward_design import run_reward_design
+from robosmith.stages.training import run_training
+from robosmith.stages.evaluation import run_evaluation
+from robosmith.stages.delivery import run_delivery
+from robosmith.stages.intake import parse_task
 
 # The pipeline stages, in order
 STAGES = [
@@ -154,10 +156,40 @@ class ForgeController:
     # Stage stubs (to be implemented one at a time)
     def _stage_intake(self) -> dict:
         """Parse natural language into TaskSpec. (Already done if TaskSpec provided.)"""
-        if self.task_spec.is_fully_specified():
+        raw = self.task_spec.raw_input or self.task_spec.task_description
+ 
+        # If user provided explicit --robot flag, keep it. Otherwise, let LLM parse.
+        if self.task_spec.is_fully_specified() and self.task_spec.raw_input == "":
             logger.info("TaskSpec already fully specified, skipping intake parsing")
             return {"status": "pre_specified"}
-        raise NotImplementedError("LLM-based task intake not yet implemented")
+ 
+        try:
+            parsed = parse_task(raw, self.config.llm)
+ 
+            # Merge: user-provided flags override LLM parsing
+            if self.task_spec.robot_model:
+                parsed.robot_model = self.task_spec.robot_model
+            if self.task_spec.algorithm != Algorithm.AUTO:
+                parsed.algorithm = self.task_spec.algorithm
+            if self.task_spec.push_to_hub:
+                parsed.push_to_hub = self.task_spec.push_to_hub
+ 
+            # Preserve user settings that aren't parsed
+            parsed.time_budget_minutes = self.task_spec.time_budget_minutes
+            parsed.num_envs = self.task_spec.num_envs
+            parsed.use_world_model = self.task_spec.use_world_model
+            parsed.raw_input = raw
+ 
+            self.task_spec = parsed
+            self.state.task_spec = parsed
+ 
+            logger.info(f"Intake: {parsed.summary()}")
+            return {"status": "llm_parsed", "summary": parsed.summary()}
+ 
+        except Exception as e:
+            logger.warning(f"LLM intake failed, using original spec: {e}")
+            return {"status": "fallback", "error": str(e)}
+
 
     def _stage_scout(self) -> dict:
         raise NotImplementedError("Literature scout not yet implemented")

@@ -1,10 +1,10 @@
-"""Tests for forge.controller — pipeline orchestration."""
+"""Tests for robosmith.controller — pipeline orchestration."""
 
 import json
 from pathlib import Path
 
-from forge.config import ForgeConfig, RobotType, StageStatus, TaskSpec
-from forge.controller import ForgeController, STAGES
+from robosmith.config import ForgeConfig, RobotType, StageStatus, TaskSpec
+from robosmith.controller import ForgeController, STAGES
 
 
 class TestForgeController:

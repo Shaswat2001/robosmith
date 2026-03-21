@@ -1,9 +1,9 @@
-"""Tests for forge.envs.wrapper — live environment creation."""
+"""Tests for robosmith.envs.wrapper — live environment creation."""
 
 import pytest
 
-from forge.envs.registry import EnvEntry, EnvRegistry
-from forge.envs.wrapper import make_env
+from robosmith.envs.registry import EnvEntry, EnvRegistry
+from robosmith.envs.wrapper import make_env
 
 # Check what's installed so we can skip tests gracefully
 try:

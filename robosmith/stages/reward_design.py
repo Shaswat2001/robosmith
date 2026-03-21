@@ -23,10 +23,10 @@ from dataclasses import dataclass, field
 import numpy as np
 from loguru import logger
 
-from forge.agents.reward_agent import RewardAgent, RewardCandidate
-from forge.config import LLMConfig, RewardSearchConfig, TaskSpec
-from forge.envs.registry import EnvEntry
-from forge.envs.wrapper import make_env
+from robosmith.agents.reward_agent import RewardAgent, RewardCandidate
+from robosmith.config import LLMConfig, RewardSearchConfig, TaskSpec
+from robosmith.envs.registry import EnvEntry
+from robosmith.envs.wrapper import make_env
 
 @dataclass
 class EvalResult:

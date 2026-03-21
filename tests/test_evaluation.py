@@ -1,11 +1,11 @@
-"""Tests for forge.stages.evaluation — policy evaluation and decision making."""
+"""Tests for robosmith.stages.evaluation — policy evaluation and decision making."""
 
 import pytest
 
-from forge.agents.reward_agent import RewardCandidate
-from forge.config import Decision, EnvironmentType, RobotType, SuccessCriterion, TaskSpec
-from forge.envs.registry import EnvRegistry
-from forge.stages.evaluation import EvalReport, EpisodeResult, _build_report, run_evaluation
+from robosmith.agents.reward_agent import RewardCandidate
+from robosmith.config import Decision, EnvironmentType, RobotType, SuccessCriterion, TaskSpec
+from robosmith.envs.registry import EnvRegistry
+from robosmith.stages.evaluation import EvalReport, EpisodeResult, _build_report, run_evaluation
 
 try:
     import gymnasium  # noqa: F401

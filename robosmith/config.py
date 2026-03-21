@@ -1,5 +1,5 @@
 """
-Configuration and data models for Embodied Agent Forge.
+Configuration and data models for RoboSmith.
 
 TaskSpec is the central data structure — every pipeline stage reads from it
 and the controller uses it to make decisions. Getting this right matters more
@@ -228,7 +228,7 @@ class ForgeConfig(BaseModel):
 
     # ── Paths ──
     runs_dir: Path = Field(
-        default=Path("./forge_runs"), description="Base directory for all run artifacts"
+        default=Path("./robosmith_runs"), description="Base directory for all run artifacts"
     )
     env_registry_path: Optional[Path] = Field(
         default=None, description="Path to custom environment registry YAML"

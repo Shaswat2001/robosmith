@@ -20,11 +20,11 @@ from pathlib import Path
 import numpy as np
 from loguru import logger
 
-from forge.agents.reward_agent import RewardCandidate
-from forge.config import Decision, SuccessCriterion, TaskSpec
-from forge.envs.registry import EnvEntry
-from forge.envs.reward_wrapper import ForgeRewardWrapper
-from forge.envs.wrapper import make_env
+from robosmith.agents.reward_agent import RewardCandidate
+from robosmith.config import Decision, SuccessCriterion, TaskSpec
+from robosmith.envs.registry import EnvEntry
+from robosmith.envs.reward_wrapper import ForgeRewardWrapper
+from robosmith.envs.wrapper import make_env
 
 @dataclass
 class EpisodeResult:

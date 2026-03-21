@@ -1,7 +1,7 @@
 """
 Reward agent — generates reward function Python code via LLM.
 
-This is the Eureka-style core of Embodied Agent Forge. Given a task
+This is the Eureka-style core of RoboSmith. Given a task
 description and environment info, the LLM writes executable Python
 reward functions that can be plugged into an RL training loop.
 
@@ -18,8 +18,8 @@ from dataclasses import dataclass, field
 
 from loguru import logger
 
-from forge.agents.base import BaseAgent
-from forge.config import LLMConfig
+from robosmith.agents.base import BaseAgent
+from robosmith.config import LLMConfig
 
 REWARD_SYSTEM_PROMPT = """\
 You are an expert reinforcement learning reward engineer. Your job is to write \

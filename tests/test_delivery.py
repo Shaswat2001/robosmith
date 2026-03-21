@@ -1,14 +1,14 @@
-"""Tests for forge.stages.delivery — artifact packaging."""
+"""Tests for robosmith.stages.delivery — artifact packaging."""
 
 import json
 from pathlib import Path
 
 import pytest
 
-from forge.agents.reward_agent import RewardCandidate
-from forge.config import Decision, RunState, StageRecord, StageStatus, SuccessCriterion, TaskSpec
-from forge.stages.delivery import run_delivery
-from forge.stages.evaluation import EpisodeResult, EvalReport
+from robosmith.agents.reward_agent import RewardCandidate
+from robosmith.config import Decision, RunState, StageRecord, StageStatus, SuccessCriterion, TaskSpec
+from robosmith.stages.delivery import run_delivery
+from robosmith.stages.evaluation import EpisodeResult, EvalReport
 
 
 SAMPLE_REWARD = """\
@@ -120,7 +120,7 @@ class TestRunDelivery:
         assert "Pick up a red cube" in content
         assert "Success rate" in content
         assert "compute_reward" in content
-        assert "Embodied Agent Forge" in content
+        assert "RoboSmith" in content
 
     def test_files_written_list(self, sample_state, sample_candidate, sample_eval_report):
         result = run_delivery(sample_state, reward_candidate=sample_candidate, eval_report=sample_eval_report)

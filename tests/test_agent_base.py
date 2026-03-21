@@ -1,11 +1,11 @@
-"""Tests for forge.agents.base — LLM agent foundation."""
+"""Tests for robosmith.agents.base — LLM agent foundation."""
 
 from unittest.mock import MagicMock, patch
 
 import pytest
 
-from forge.agents.base import BaseAgent
-from forge.config import LLMConfig
+from robosmith.agents.base import BaseAgent
+from robosmith.config import LLMConfig
 
 
 def _mock_response(text: str, input_tokens: int = 10, output_tokens: int = 20):

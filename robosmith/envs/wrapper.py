@@ -11,7 +11,7 @@ from typing import Any
  
 from loguru import logger
  
-from forge.envs.registry import EnvEntry
+from robosmith.envs.registry import EnvEntry
 
 def make_env(entry: EnvEntry, **kwargs: Any):
     """

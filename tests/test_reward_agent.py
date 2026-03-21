@@ -1,12 +1,12 @@
-"""Tests for forge.agents.reward_agent — reward function generation."""
+"""Tests for robosmith.agents.reward_agent — reward function generation."""
 
 from unittest.mock import MagicMock, patch
 
 import numpy as np
 import pytest
 
-from forge.agents.reward_agent import RewardAgent, RewardCandidate
-from forge.config import LLMConfig
+from robosmith.agents.reward_agent import RewardAgent, RewardCandidate
+from robosmith.config import LLMConfig
 
 
 # ── Sample reward functions for testing ──

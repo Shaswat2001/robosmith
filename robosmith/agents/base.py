@@ -15,7 +15,7 @@ from typing import Any
 
 from loguru import logger
 
-from forge.config import LLMConfig
+from robosmith.config import LLMConfig
 
 class BaseAgent:
     """

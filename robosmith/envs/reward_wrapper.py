@@ -67,8 +67,8 @@ class ForgeRewardWrapper(gym.Wrapper):
         self._prev_obs = next_obs_array
  
         # Add metadata to info
-        info["forge_reward"] = custom_reward
-        info["forge_components"] = components
+        info["custom_reward"] = custom_reward
+        info["reward_components"] = components
         info["original_reward"] = original_reward
  
         return next_obs, custom_reward, terminated, truncated, info

@@ -3,12 +3,12 @@ requires = ["setuptools>=68.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
-include = ["forge*"]
+include = ["robosmith*"]
 
 [project]
-name = "embodied-agent-forge"
+name = "robosmith"
 version = "0.1.0"
-description = "Natural language → trained robot policy. An end-to-end autonomous pipeline for embodied AI."
+description = "Natural language to trained robot policy. An autonomous smith that crafts robot behaviors."
 readme = "README.md"
 license = { text = "MIT" }
 requires-python = ">=3.10"
@@ -69,15 +69,15 @@ dev = [
     "pre-commit>=3.7",
 ]
 all = [
-    "embodied-agent-forge[sim,train,hub,dev]",
+    "robosmith[sim,train,hub,dev]",
 ]
 
 [project.scripts]
-forge = "forge.cli:app"
+robosmith = "robosmith.cli:app"
 
 [project.urls]
-Homepage = "https://github.com/Shaswat2001/embodied-agent-forge"
-Issues = "https://github.com/Shaswat2001/embodied-agent-forge/issues"
+Homepage = "https://github.com/Shaswat2001/robosmith"
+Issues = "https://github.com/Shaswat2001/robosmith/issues"
 
 # ── Tool configs ──
 

@@ -17,8 +17,8 @@ from dataclasses import dataclass
 
 from loguru import logger
 
-from forge.config import TaskSpec
-from forge.envs.registry import EnvEntry, EnvRegistry
+from robosmith.config import TaskSpec
+from robosmith.envs.registry import EnvEntry, EnvRegistry
 
 @dataclass
 class EnvMatch:

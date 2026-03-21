@@ -1,5 +1,5 @@
 """
-Forge CLI — the main entry point for Embodied Agent Forge.
+Forge CLI — the main entry point for RoboSmith.
 """
 
 from __future__ import annotations
@@ -14,15 +14,15 @@ from rich.panel import Panel
 from rich.table import Table
 from rich.text import Text
 
-from forge import __version__
-from forge.config import RewardSearchConfig
-from forge.controller import ForgeController
-from forge.envs.registry import EnvRegistry
-from forge.config import Algorithm, ForgeConfig, RobotType, TaskSpec
+from robosmith import __version__
+from robosmith.config import RewardSearchConfig
+from robosmith.controller import ForgeController
+from robosmith.envs.registry import EnvRegistry
+from robosmith.config import Algorithm, ForgeConfig, RobotType, TaskSpec
 
 app = typer.Typer(
-    name="forge",
-    help="Embodied Agent Forge — Natural language → trained robot policy.",
+    name="robosmith",
+    help="RoboSmith — Natural language → trained robot policy.",
     no_args_is_help=True,
     rich_markup_mode="rich",
 )
@@ -30,12 +30,12 @@ console = Console()
 
 # Banner
 def _banner() -> None:
-    ascii_art = pyfiglet.figlet_format("FORGE", font="ansi_shadow")
+    ascii_art = pyfiglet.figlet_format("ROBOSMITH", font="ansi_shadow")
     text = Text()
-    text.append(ascii_art, style="bold red")
-    text.append(f"  Embodied Agent Forge v{__version__}\n", style="dim")
+    text.append(ascii_art, style="bold cyan")
+    text.append(f"  RoboSmith v{__version__}\n", style="dim")
     text.append("  Natural language → trained robot policy", style="italic bright_black")
-    console.print(Panel(text, border_style="red", padding=(0, 2)))
+    console.print(Panel(text, border_style="cyan", padding=(0, 2)))
 
 @app.command()
 def envs(
@@ -142,7 +142,7 @@ def run(
 @app.command()
 def version() -> None:
     """Show Forge version."""
-    console.print(f"Embodied Agent Forge v{__version__}")
+    console.print(f"RoboSmith v{__version__}")
 
 @app.command()
 def config() -> None:
@@ -177,7 +177,7 @@ def _show_task_spec(spec: TaskSpec) -> None:
 
 def _show_result(state) -> None:  # noqa: ANN001
     """Pretty-print the pipeline result."""
-    from forge.config import StageStatus
+    from robosmith.config import StageStatus
 
     console.print()
 

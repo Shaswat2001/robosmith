@@ -19,11 +19,11 @@ from dataclasses import dataclass, field
 import numpy as np
 from loguru import logger
 
-from forge.agents.reward_agent import RewardCandidate
-from forge.config import Algorithm, TaskSpec
-from forge.envs.registry import EnvEntry
-from forge.envs.reward_wrapper import ForgeRewardWrapper
-from forge.envs.wrapper import make_env
+from robosmith.agents.reward_agent import RewardCandidate
+from robosmith.config import Algorithm, TaskSpec
+from robosmith.envs.registry import EnvEntry
+from robosmith.envs.reward_wrapper import ForgeRewardWrapper
+from robosmith.envs.wrapper import make_env
 
 @dataclass
 class TrainingResult:

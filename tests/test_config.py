@@ -1,6 +1,6 @@
-"""Tests for forge.config — the data backbone."""
+"""Tests for robosmith.config — the data backbone."""
 
-from forge.config import (
+from robosmith.config import (
     Algorithm,
     Decision,
     ForgeConfig,

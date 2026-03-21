@@ -1,4 +1,4 @@
-"""Tests for forge.stages.training — RL policy training.
+"""Tests for robosmith.stages.training — RL policy training.
 
 These tests require PyTorch + SB3 + MuJoCo and a GPU. They will be
 skipped in memory-constrained environments (like CI containers).
@@ -14,10 +14,10 @@ torch = pytest.importorskip("torch", reason="PyTorch required for training tests
 
 import numpy as np
 
-from forge.agents.reward_agent import RewardCandidate
-from forge.config import Algorithm, EnvironmentType, RobotType, TaskSpec
-from forge.envs.registry import EnvRegistry
-from forge.stages.training import (
+from robosmith.agents.reward_agent import RewardCandidate
+from robosmith.config import Algorithm, EnvironmentType, RobotType, TaskSpec
+from robosmith.envs.registry import EnvRegistry
+from robosmith.stages.training import (
     TrainingResult,
     _create_training_env,
     _select_algorithm,
@@ -100,9 +100,9 @@ class TestRewardWrapper:
         next_obs, reward, terminated, truncated, info = env.step(action)
 
         # Should have our custom reward, not the original
-        assert "forge_reward" in info
+        assert "custom_reward" in info
         assert "original_reward" in info
-        assert "forge_components" in info
+        assert "reward_components" in info
         assert isinstance(reward, float)
         env.close()
 
@@ -118,7 +118,7 @@ class TestRewardWrapper:
         _, reward, _, _, info = env.step(env.action_space.sample())
 
         assert reward == 0.0  # Clamped
-        assert "_error" in info["forge_components"]
+        assert "_error" in info["reward_components"]
         env.close()
 
 

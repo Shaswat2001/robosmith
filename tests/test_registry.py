@@ -1,8 +1,8 @@
-"""Tests for forge.envs.registry — environment catalog."""
+"""Tests for robosmith.envs.registry — environment catalog."""
 
 import pytest
 
-from forge.envs.registry import EnvRegistry
+from robosmith.envs.registry import EnvRegistry
 
 
 @pytest.fixture
