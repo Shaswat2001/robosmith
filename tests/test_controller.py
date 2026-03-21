@@ -50,12 +50,11 @@ class TestForgeController:
             StageStatus.FAILED,
         )
 
-        # These are still truly not implemented
-        for stage in ["scout", "delivery"]:
-            assert result.stages[stage].status == StageStatus.SKIPPED
+        # Only scout is truly not implemented
+        assert result.stages["scout"].status == StageStatus.SKIPPED
 
-        # Training and evaluation are implemented but may fail without prior stages
-        for stage in ["training", "evaluation"]:
+        # All other implemented stages: may complete or fail depending on deps
+        for stage in ["training", "evaluation", "delivery"]:
             assert result.stages[stage].status in (
                 StageStatus.COMPLETED,
                 StageStatus.FAILED,

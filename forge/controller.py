@@ -29,6 +29,7 @@ from forge.stages.env_synthesis import match_task_to_env
 from forge.stages.reward_design import run_reward_design
 from forge.stages.training import run_training
 from forge.stages.evaluation import run_evaluation
+from forge.stages.delivery import run_delivery
 
 # The pipeline stages, in order
 STAGES = [
@@ -326,7 +327,23 @@ class ForgeController:
         }
 
     def _stage_delivery(self) -> dict:
-        raise NotImplementedError("Delivery not yet implemented")
+        """Package all artifacts for the run."""
+ 
+        result = run_delivery(
+            state=self.state,
+            reward_candidate=getattr(self, "_reward_candidate", None),
+            eval_report=getattr(self, "_eval_report", None),
+            training_result=getattr(self, "_training_result", None),
+        )
+ 
+        logger.info(f"Delivery: {len(result.files_written)} files → {result.artifacts_dir}")
+ 
+        return {
+            "artifacts_dir": str(result.artifacts_dir),
+            "files_written": result.files_written,
+            "pushed_to_hub": result.pushed_to_hub,
+            "hub_url": result.hub_url,
+        }
 
     # Decision logic
     def _should_skip_stage(self, stage_name: str) -> bool:
