@@ -4,20 +4,24 @@ Forge CLI — the main entry point for RoboSmith.
 
 from __future__ import annotations
 
-from pathlib import Path
+import sys
+import typer
+import logging
+import pyfiglet
+import time as _time
+from loguru import logger
 from typing import Optional
 
-import typer
-import pyfiglet
 from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
 from rich.text import Text
 
 from robosmith import __version__
+from robosmith.config import StageStatus
 from robosmith.config import RewardSearchConfig
-from robosmith.controller import ForgeController
 from robosmith.envs.registry import EnvRegistry
+from robosmith.controller import ForgeController, STAGES
 from robosmith.config import Algorithm, ForgeConfig, RobotType, TaskSpec
 
 app = typer.Typer(
@@ -82,7 +86,6 @@ def envs(
     console.print()
     console.print(table)
 
-# Commands
 @app.command()
 def run(
     task: str = typer.Option(..., "--task", "-t", help="Natural language task description"),
@@ -94,15 +97,23 @@ def run(
     push_to_hub: Optional[str] = typer.Option(None, "--push-to-hub", help="HuggingFace repo ID to push to"),
     candidates: int = typer.Option(4, "--candidates", "-c", help="Number of reward function candidates per iteration"),
     dry_run: bool = typer.Option(False, "--dry-run", help="Parse and plan only, don't train"),
-    verbose: bool = typer.Option(True, "--verbose/--quiet", help="Verbose output"),
+    verbose: bool = typer.Option(False, "--verbose", "-v", help="Show detailed logs"),
 ) -> None:
     """
-    Run the full Forge pipeline.
+    Run the full RoboSmith pipeline.
 
-    Provide a natural language task description, and Forge handles everything:
+    Provide a natural language task description, and RoboSmith handles everything:
     environment setup, reward design, training, evaluation, and packaging.
     """
     _banner()
+
+    # Suppress all noisy loggers — we handle output ourselves
+    logger.remove()
+    if verbose:
+        logger.add(sys.stderr, level="DEBUG", format="{time:HH:mm:ss} | {level:<7} | {message}")
+
+    for noisy in ("LiteLLM", "litellm", "httpx", "httpcore"):
+        logging.getLogger(noisy).setLevel(logging.CRITICAL)
 
     # Build TaskSpec
     task_spec = TaskSpec(
@@ -118,8 +129,8 @@ def run(
 
     # Build config
     config = ForgeConfig(
-        verbose=verbose, 
-        dry_run=dry_run, 
+        verbose=verbose,
+        dry_run=dry_run,
         reward_search=RewardSearchConfig(candidates_per_iteration=candidates),
     )
 
@@ -130,18 +141,122 @@ def run(
         console.print("\n[yellow]Dry run — stopping before execution.[/yellow]")
         return
 
-    # Run pipeline
+    # Run pipeline with live stage-by-stage progress
     controller = ForgeController(task_spec, config)
-
     console.print()
-    with console.status("[bold red]Running Forge pipeline...", spinner="dots"):
-        result = controller.run()
 
-    _show_result(result)
+    STAGE_LABELS = {
+        "intake": "Parsing task description",
+        "scout": "Searching literature",
+        "env_synthesis": "Finding simulation environment",
+        "reward_design": "Designing reward functions",
+        "training": "Training RL policy",
+        "evaluation": "Evaluating policy",
+        "delivery": "Packaging artifacts",
+    }
+
+    STAGE_COLORS = {
+        "intake": "cyan",
+        "scout": "blue",
+        "env_synthesis": "magenta",
+        "reward_design": "yellow",
+        "training": "green",
+        "evaluation": "blue",
+        "delivery": "cyan",
+    }
+
+    # Run the pipeline stage by stage with live output
+    _critical_failure = False
+
+    while not controller.state.is_complete() and not _critical_failure:
+        controller.state.iteration += 1
+        if controller.state.iteration > 1:
+            console.print(f"\n  [dim]Iteration {controller.state.iteration}/{controller.state.max_iterations}[/dim]")
+
+        for stage_name in STAGES:
+            if controller._should_skip_stage(stage_name):
+                continue
+
+            label = STAGE_LABELS.get(stage_name, stage_name)
+            color = STAGE_COLORS.get(stage_name, "white")
+
+            # Show "running" status
+            console.print(f"  [cyan]⟳[/cyan] [{color}]{label}[/{color}]...", end="")
+
+            start = _time.time()
+            controller._run_stage(stage_name)
+            elapsed = _time.time() - start
+
+            record = controller.state.stages.get(stage_name)
+            if record is None:
+                console.print(" [dim]?[/dim]")
+                continue
+
+            # Overwrite the line with result
+            if record.status == StageStatus.COMPLETED:
+                # Show extra info for key stages
+                extra = ""
+                if stage_name == "intake" and controller.task_spec:
+                    extra = f" → [dim]{controller.task_spec.summary()}[/dim]"
+                elif stage_name == "env_synthesis" and record.metadata.get("env_gym_id"):
+                    extra = f" → [bold]{record.metadata['env_gym_id']}[/bold]"
+                elif stage_name == "reward_design" and record.metadata.get("best_score") is not None:
+                    extra = f" → best score: [bold]{record.metadata['best_score']:.2f}[/bold]"
+                elif stage_name == "training" and record.metadata.get("algorithm"):
+                    extra = f" → {record.metadata['algorithm']}, reward={record.metadata.get('final_mean_reward', 0):.2f}"
+                elif stage_name == "evaluation" and record.metadata.get("success_rate") is not None:
+                    sr = record.metadata["success_rate"]
+                    decision = record.metadata.get("decision", "")
+                    extra = f" → success={sr:.0%}, decision=[bold]{decision}[/bold]"
+
+                console.print(f"\r  [green]✓[/green] [{color}]{label}[/{color}] [dim]({elapsed:.1f}s)[/dim]{extra}")
+
+            elif record.status == StageStatus.FAILED:
+                console.print(f"\r  [red]✗[/red] [{color}]{label}[/{color}] [dim]({elapsed:.1f}s)[/dim]")
+                if record.error:
+                    err = record.error.split("\n")[0][:80]
+                    console.print(f"    [dim red]{err}[/dim red]")
+
+                if stage_name in ("env_synthesis", "reward_design", "training"):
+                    _critical_failure = True
+                    break
+
+            elif record.status == StageStatus.SKIPPED:
+                console.print(f"\r  [dim]–[/dim] [dim]{label} (skipped)[/dim]")
+
+            # Check if evaluation decided to iterate
+            if controller._needs_iteration():
+                break
+
+    # Save state
+    controller._save_state()
+
+    # Show remaining stages that weren't reached
+    for stage_name in STAGES:
+        if stage_name not in controller.state.stages:
+            label = STAGE_LABELS.get(stage_name, stage_name)
+            console.print(f"  [dim]○ {label}[/dim]")
+
+    # Summary
+    console.print()
+    result = controller.state
+
+    eval_stage = result.stages.get("evaluation")
+    if eval_stage and eval_stage.status == StageStatus.COMPLETED:
+        sr = eval_stage.metadata.get("success_rate")
+        mr = eval_stage.metadata.get("mean_reward")
+        decision = eval_stage.metadata.get("decision", "")
+        if sr is not None:
+            console.print(f"  Success: [bold]{sr:.0%}[/bold]  |  Reward: [bold]{mr:.2f}[/bold]  |  Decision: [bold]{decision}[/bold]")
+
+    console.print(f"  Run: [dim]{result.run_id}[/dim]")
+    if result.artifacts_dir:
+        console.print(f"  Artifacts: [dim]{result.artifacts_dir}[/dim]")
+    console.print()
 
 @app.command()
 def version() -> None:
-    """Show Forge version."""
+    """Show RoboSmith version."""
     console.print(f"RoboSmith v{__version__}")
 
 @app.command()
@@ -174,36 +289,6 @@ def _show_task_spec(spec: TaskSpec) -> None:
 
     console.print()
     console.print(table)
-
-def _show_result(state) -> None:  # noqa: ANN001
-    """Pretty-print the pipeline result."""
-    from robosmith.config import StageStatus
-
-    console.print()
-
-    table = Table(title="Pipeline result", border_style="dim")
-    table.add_column("Stage", style="bold")
-    table.add_column("Status")
-    table.add_column("Time")
-
-    status_styles = {
-        StageStatus.COMPLETED: "[green]completed[/green]",
-        StageStatus.FAILED: "[red]failed[/red]",
-        StageStatus.SKIPPED: "[yellow]skipped[/yellow]",
-        StageStatus.PENDING: "[dim]pending[/dim]",
-        StageStatus.RUNNING: "[blue]running[/blue]",
-    }
-
-    for name, record in state.stages.items():
-        table.add_row(
-            name,
-            status_styles.get(record.status, str(record.status)),
-            f"{record.duration_seconds:.1f}s",
-        )
-
-    console.print(table)
-    console.print(f"\nRun ID: [bold]{state.run_id}[/bold]")
-    console.print(f"Artifacts: [dim]{state.artifacts_dir}[/dim]")
 
 if __name__ == "__main__":
     app()

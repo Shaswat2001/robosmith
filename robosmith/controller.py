@@ -74,7 +74,7 @@ class ForgeController:
             artifacts_dir=artifacts_dir,
         )
 
-        logger.info(f"Forge run initialized: {run_id}")
+        logger.info(f"RoboSmith run initialized: {run_id}")
         logger.info(f"Task: {task_spec.summary()}")
         logger.info(f"Artifacts: {artifacts_dir}")
 
@@ -84,9 +84,11 @@ class ForgeController:
 
         Returns the final RunState with all results and artifacts.
         """
-        logger.info("Starting Forge pipeline")
+        logger.info("Starting RoboSmith pipeline")
 
-        while not self.state.is_complete():
+        _critical_failure = False
+
+        while not self.state.is_complete() and not _critical_failure:
             self.state.iteration += 1
             logger.info(f"Outer iteration {self.state.iteration}/{self.state.max_iterations}")
 
@@ -104,6 +106,7 @@ class ForgeController:
                             f"Critical stage '{stage_name}' failed — stopping pipeline. "
                             f"Error: {record.error}"
                         )
+                        _critical_failure = True
                         break
 
                 # Check if we need to break out of the stage loop
