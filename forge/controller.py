@@ -27,6 +27,8 @@ from forge.config import (
 from forge.envs.registry import EnvRegistry
 from forge.stages.env_synthesis import match_task_to_env
 from forge.stages.reward_design import run_reward_design
+from forge.stages.training import run_training
+from forge.stages.evaluation import run_evaluation
 
 # The pipeline stages, in order
 STAGES = [
@@ -231,10 +233,97 @@ class ForgeController:
         }
 
     def _stage_training(self) -> dict:
-        raise NotImplementedError("Policy training not yet implemented")
+        """Train an RL policy using the generated reward function."""
+ 
+        # We need the reward function from Stage 4
+        if not hasattr(self, "_reward_candidate"):
+            raise RuntimeError("No reward candidate — run reward_design first")
+ 
+        env_id = self.task_spec.environment_id
+        if not env_id:
+            raise RuntimeError("No environment matched — run env_synthesis first")
+ 
+        registry = EnvRegistry(self.config.env_registry_path)
+        env_entry = registry.get(env_id)
+        if not env_entry:
+            raise RuntimeError(f"Environment '{env_id}' not found")
+ 
+        result = run_training(
+            task_spec=self.task_spec,
+            env_entry=env_entry,
+            reward_candidate=self._reward_candidate,
+            artifacts_dir=self.state.artifacts_dir,
+        )
+ 
+        self._training_result = result
+ 
+        if result.error:
+            raise RuntimeError(f"Training failed: {result.error}")
+ 
+        logger.info(
+            f"Training complete — {result.algorithm}, "
+            f"reward={result.final_mean_reward:.2f}, "
+            f"time={result.training_time_seconds:.1f}s"
+        )
+ 
+        return {
+            "algorithm": result.algorithm,
+            "total_timesteps": result.total_timesteps,
+            "final_mean_reward": result.final_mean_reward,
+            "training_time_seconds": result.training_time_seconds,
+            "model_path": str(result.model_path) if result.model_path else None,
+        }
 
     def _stage_evaluation(self) -> dict:
-        raise NotImplementedError("Evaluation not yet implemented")
+        """Evaluate the trained policy against success criteria."""
+ 
+        if not hasattr(self, "_reward_candidate"):
+            raise RuntimeError("No reward candidate — run reward_design first")
+ 
+        env_id = self.task_spec.environment_id
+        if not env_id:
+            raise RuntimeError("No environment matched")
+ 
+        registry = EnvRegistry(self.config.env_registry_path)
+        env_entry = registry.get(env_id)
+        if not env_entry:
+            raise RuntimeError(f"Environment '{env_id}' not found")
+ 
+        # Get model path from training stage (may be None if training failed)
+        model_path = None
+        if hasattr(self, "_training_result") and self._training_result.model_path:
+            model_path = self._training_result.model_path
+ 
+        report = run_evaluation(
+            task_spec=self.task_spec,
+            env_entry=env_entry,
+            reward_candidate=self._reward_candidate,
+            model_path=model_path,
+            num_episodes=10,
+        )
+ 
+        # Record the decision for the controller's iteration logic
+        self.state.decision_history.append({
+            "decision": report.decision,
+            "reason": report.decision_reason,
+            "iteration": self.state.iteration,
+            "success_rate": report.success_rate,
+            "mean_reward": report.mean_reward,
+        })
+ 
+        logger.info(
+            f"Evaluation decision: {report.decision.value} — {report.decision_reason}"
+        )
+ 
+        return {
+            "decision": report.decision.value,
+            "reason": report.decision_reason,
+            "success_rate": report.success_rate,
+            "mean_reward": report.mean_reward,
+            "std_reward": report.std_reward,
+            "num_episodes": len(report.episodes),
+            "criteria": report.criteria_results,
+        }
 
     def _stage_delivery(self) -> dict:
         raise NotImplementedError("Delivery not yet implemented")
