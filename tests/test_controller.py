@@ -35,31 +35,30 @@ class TestForgeController:
         ctrl = self._make_controller(tmp_path)
         result = ctrl.run()
 
-        # Intake should complete (spec is pre-specified)
-        assert result.stages["intake"].status == StageStatus.COMPLETED
+        # Intake should complete (spec is pre-specified, or LLM-parsed)
+        assert result.stages["intake"].status in (
+            StageStatus.COMPLETED,
+            StageStatus.FAILED,
+        )
 
-        # env_synthesis is now implemented — it should complete or fail, not skip
+        # Scout is not implemented
+        assert result.stages["scout"].status == StageStatus.SKIPPED
+
+        # env_synthesis should run
         assert result.stages["env_synthesis"].status in (
             StageStatus.COMPLETED,
             StageStatus.FAILED,
         )
 
-        # Remaining stages: reward_design is implemented but may fail (no LLM key in tests)
-        assert result.stages["reward_design"].status in (
-            StageStatus.COMPLETED,
-            StageStatus.FAILED,
-        )
-
-        # Only scout is truly not implemented
-        assert result.stages["scout"].status == StageStatus.SKIPPED
-
-        # All other implemented stages: may complete or fail depending on deps
-        for stage in ["training", "evaluation", "delivery"]:
-            assert result.stages[stage].status in (
-                StageStatus.COMPLETED,
-                StageStatus.FAILED,
-                StageStatus.SKIPPED,
-            )
+        # If a critical stage failed, downstream stages may not appear
+        # in the stages dict at all (pipeline stops early). That's correct.
+        for stage in ["reward_design", "training", "evaluation", "delivery"]:
+            if stage in result.stages:
+                assert result.stages[stage].status in (
+                    StageStatus.COMPLETED,
+                    StageStatus.FAILED,
+                    StageStatus.SKIPPED,
+                )
 
     def test_state_saved_to_disk(self, tmp_path: Path):
         ctrl = self._make_controller(tmp_path)

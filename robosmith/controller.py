@@ -96,6 +96,16 @@ class ForgeController:
 
                 self._run_stage(stage_name)
 
+                # If a critical stage failed, stop — don't cascade errors
+                record = self.state.stages.get(stage_name)
+                if record and record.status == StageStatus.FAILED:
+                    if stage_name in ("env_synthesis", "reward_design", "training"):
+                        logger.error(
+                            f"Critical stage '{stage_name}' failed — stopping pipeline. "
+                            f"Error: {record.error}"
+                        )
+                        break
+
                 # Check if we need to break out of the stage loop
                 # (e.g., evaluation decided to refine reward)
                 if self._needs_iteration():
@@ -205,6 +215,23 @@ class ForgeController:
         # Fallback: try any framework
         if match is None:
             match = match_task_to_env(self.task_spec, registry)
+
+        if match is None:
+            logger.info("Relaxing robot_type filter — searching by tags only")
+            from robosmith.stages.env_synthesis import _extract_tags
+            tags = _extract_tags(self.task_spec.task_description)
+            if tags:
+                results = registry.search(tags=tags)
+                if results:
+                    match_entry = results[0]
+                    from robosmith.stages.env_synthesis import EnvMatch
+                    tag_score = match_entry.matches_tags(tags)
+                    match = EnvMatch(
+                        entry=match_entry,
+                        score=round(tag_score / max(len(tags), 1), 2),
+                        match_reason=f"Tag-only fallback: {', '.join(tags[:5])}",
+                    )
+                    logger.info(f"Tag-only fallback matched: {match_entry.id}")
 
         if match is None:
             raise RuntimeError(

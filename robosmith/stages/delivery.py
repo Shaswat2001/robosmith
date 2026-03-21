@@ -41,9 +41,9 @@ def run_delivery(
     training_result: object | None = None,
 ) -> DeliveryResult:
     """
-    Package all artifacts from a Forge run.
+    Package all artifacts from a RoboSmith run.
     """
-    artifacts_dir = Path(state.artifacts_dir) if state.artifacts_dir else Path("./forge_output")
+    artifacts_dir = Path(state.artifacts_dir) if state.artifacts_dir else Path("./robosmith_output")
     artifacts_dir.mkdir(parents=True, exist_ok=True)
  
     files_written: list[str] = []
