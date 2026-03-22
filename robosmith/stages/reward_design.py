@@ -7,13 +7,6 @@ The evolutionary loop:
   3. Evaluate each candidate by running N episodes with random actions
   4. Score candidates by total reward and episode length
   5. Optionally: evolve — feed the best + feedback to the LLM for improvement
-
-The "evaluate with random actions" step is a quick sanity check, not
-real RL training. It answers: "does this reward function produce a
-signal at all, or is it always zero / NaN / crashing?"
-
-Real RL training happens in Stage 5. This stage just finds a reward
-function worth training with.
 """
 
 from __future__ import annotations
@@ -26,6 +19,7 @@ from loguru import logger
 from robosmith.agents.reward_agent import RewardAgent, RewardCandidate
 from robosmith.config import LLMConfig, RewardSearchConfig, TaskSpec
 from robosmith.envs.registry import EnvEntry
+from robosmith.agents.base import BaseAgent
 from robosmith.envs.wrapper import make_env
 
 @dataclass
@@ -40,7 +34,6 @@ class EvalResult:
     had_errors: bool = False
     error_message: str = ""
 
-
 @dataclass
 class RewardDesignResult:
     """Output of the full reward design stage."""
@@ -50,15 +43,25 @@ class RewardDesignResult:
     eval_results: list[EvalResult]
     generations_run: int
 
-def extract_space_info(env, env_entry=None) -> tuple[str, str]:  # noqa: ANN001
+def extract_space_info(env, env_entry=None, llm_config=None) -> tuple[str, str]:  # noqa: ANN001
     """
-    Extract human-readable observation and action space descriptions
-    from a gymnasium environment. This is what the LLM sees as context.
+    Extract human-readable observation and action space descriptions.
+
+    Three-tier strategy:
+    1. Runtime introspection — pull docs from the env class/metadata
+    2. Sample-based analysis — reset/step the env and describe what we see
+    3. LLM lookup fallback — ask the LLM to look up the env's obs layout
+
+    This is what the reward-writing LLM sees as context, so the more
+    detail we can extract, the better the reward functions will be.
     """
     obs_space = env.observation_space
     act_space = env.action_space
+    env_id = env_entry.env_id if env_entry else ""
 
-    # Observation space
+    # ── Observation space ──
+
+    # Basic shape info
     if hasattr(obs_space, "shape"):
         obs_info = f"{type(obs_space).__name__}(shape={obs_space.shape}, dtype={obs_space.dtype})"
         if hasattr(obs_space, "low") and hasattr(obs_space, "high"):
@@ -66,7 +69,6 @@ def extract_space_info(env, env_entry=None) -> tuple[str, str]:  # noqa: ANN001
             high = np.max(obs_space.high)
             obs_info += f" range=[{low:.1f}, {high:.1f}]"
     elif hasattr(obs_space, "spaces"):
-        # Dict observation space (e.g. Fetch envs)
         parts = []
         for key, space in obs_space.spaces.items():
             parts.append(f"{key}: {type(space).__name__}({getattr(space, 'shape', '?')})")
@@ -74,13 +76,22 @@ def extract_space_info(env, env_entry=None) -> tuple[str, str]:  # noqa: ANN001
     else:
         obs_info = str(obs_space)
 
-    # Add env-specific observation docs
-    env_id = env_entry.env_id if env_entry else ""
-    obs_doc = _get_obs_documentation(env_id)
+    # Tier 1: Extract docs from the environment class itself
+    obs_doc = _introspect_env_obs(env, env_id)
+
+    # Tier 2: Sample-based analysis if no docs found
+    if not obs_doc:
+        obs_doc = _analyze_obs_by_sampling(env)
+
+    # Tier 3: LLM lookup for unknown environments
+    if not obs_doc and llm_config:
+        obs_doc = _llm_lookup_obs(env_id, obs_space, llm_config)
+
     if obs_doc:
         obs_info += "\n" + obs_doc
 
-    # Action space
+    # ── Action space ──
+
     if hasattr(act_space, "shape"):
         act_info = f"{type(act_space).__name__}(shape={act_space.shape}, dtype={act_space.dtype})"
         if hasattr(act_space, "low") and hasattr(act_space, "high"):
@@ -90,89 +101,152 @@ def extract_space_info(env, env_entry=None) -> tuple[str, str]:  # noqa: ANN001
 
     return obs_info, act_info
 
-# Known observation layouts for common environments
-_ENV_OBS_DOCS = {
-    "Ant-v5": """Ant observation layout (105 dims with default settings):
-  obs[0:13] = qpos (generalized positions): [x, y, z, qw, qx, qy, qz, hip1, ankle1, hip2, ankle2, hip3, ankle3, hip4, ankle4]
-  Note: x,y are EXCLUDED from obs by default. obs actually starts at z (torso height).
-  obs[0] = z_position (torso height, ~0.75 when standing)
-  obs[1:5] = quaternion orientation (w, x, y, z)
-  obs[5:13] = joint angles (8 joints: 4 hips + 4 ankles)
-  obs[13:27] = qvel (generalized velocities): [dx, dy, dz, wx, wy, wz, joint_vels...]
-  obs[13] = x_velocity (forward speed — THIS IS THE KEY METRIC for walking)
-  obs[14] = y_velocity (lateral speed — should be ~0)
-  obs[15] = z_velocity (vertical speed)
-  obs[27:105] = contact forces (clipped to [-1, 1])
-  
-  KEY: To reward forward walking, use obs[13] (x_velocity).
-  To penalize falling, check obs[0] (z_position < 0.3 means fallen).""",
+def _introspect_env_obs(env, env_id: str) -> str:
+    """
+    Tier 1: Extract observation documentation from the environment itself.
 
-    "Humanoid-v5": """Humanoid observation layout:
-  obs[0] = z_position (torso height, ~1.4 when standing)
-  obs[1:5] = quaternion orientation
-  obs[5:28] = joint angles (23 joints)
-  obs[28:51] = joint velocities
-  obs[28] = x_velocity (forward speed)
-  obs[29] = y_velocity (lateral)
-  
-  KEY: Forward velocity = obs[28]. Height = obs[0]. Fallen if z < 0.7.""",
+    Checks: class docstring, metadata, MuJoCo model names, space field names.
+    """
+    lines = []
 
-    "HalfCheetah-v5": """HalfCheetah observation layout (17 dims):
-  obs[0:8] = joint angles (rootz, bthigh, bshin, bfoot, fthigh, fshin, ffoot)
-  obs[8] = rootx velocity (forward speed — THIS IS THE KEY METRIC)
-  obs[9:17] = angular velocities of joints
-  
-  KEY: Forward velocity = obs[8]. Maximize this for running.""",
+    # Check if the unwrapped env has observation documentation
+    unwrapped = env.unwrapped if hasattr(env, "unwrapped") else env
 
-    "Hopper-v5": """Hopper observation layout (11 dims):
-  obs[0] = z_position (torso height, ~1.25 when standing)  
-  obs[1] = angle (torso tilt)
-  obs[2:5] = joint angles (thigh, leg, foot)
-  obs[5] = x_velocity (forward speed)
-  obs[6] = z_velocity (vertical)
-  obs[7:11] = angular velocities
-  
-  KEY: Forward velocity = obs[5]. Height = obs[0]. Fallen if z < 0.7.""",
+    # Pull from class docstring — many gymnasium envs document obs layout there
+    doc = type(unwrapped).__doc__ or ""
+    if "observation" in doc.lower() and "obs[" in doc.lower():
+        # Extract just the observation section
+        obs_section = _extract_section(doc, ["observation", "obs space", "state space"])
+        if obs_section:
+            lines.append("From env documentation:")
+            lines.append(obs_section[:500])  # Truncate
 
-    "Walker2d-v5": """Walker2d observation layout (17 dims):
-  obs[0] = z_position (torso height, ~1.25 when upright)
-  obs[1] = angle (torso tilt)
-  obs[2:8] = joint angles
-  obs[8] = x_velocity (forward speed)
-  obs[9:17] = angular velocities
-  
-  KEY: Forward velocity = obs[8]. Height = obs[0].""",
+    # Check for MuJoCo-specific model info
+    if hasattr(unwrapped, "model") and hasattr(unwrapped.model, "body_names"):
+        try:
+            body_names = [unwrapped.model.body(i).name for i in range(unwrapped.model.nbody)]
+            joint_names = [unwrapped.model.joint(i).name for i in range(unwrapped.model.njnt)]
+            if body_names:
+                lines.append(f"MuJoCo bodies: {', '.join(body_names[:10])}")
+            if joint_names:
+                lines.append(f"MuJoCo joints: {', '.join(joint_names[:10])}")
+        except Exception:
+            pass
 
-    "Pendulum-v1": """Pendulum observation layout (3 dims):
-  obs[0] = cos(theta) — 1.0 when upright, -1.0 when hanging
-  obs[1] = sin(theta)
-  obs[2] = angular velocity (theta_dot), range [-8, 8]
-  
-  KEY: Upright = cos(theta) close to 1.0. Balanced = low angular velocity.""",
+    # Check for named observation fields (GoalEnv, dict spaces)
+    if hasattr(env.observation_space, "spaces"):
+        lines.append("Named observation fields:")
+        for key, space in env.observation_space.spaces.items():
+            shape = getattr(space, "shape", "?")
+            lines.append(f"  {key}: shape={shape}")
 
-    "Swimmer-v5": """Swimmer observation layout (8 dims):
-  obs[0:3] = joint angles
-  obs[3] = x_velocity (forward speed)
-  obs[4] = y_velocity
-  obs[5:8] = angular velocities
-  
-  KEY: Forward velocity = obs[3].""",
+    # Check env metadata
+    if hasattr(unwrapped, "metadata"):
+        meta = unwrapped.metadata
+        if "obs_keys" in meta:
+            lines.append(f"Observation keys: {meta['obs_keys']}")
 
-    "Reacher-v5": """Reacher observation layout (11 dims):
-  obs[0:2] = cos/sin of joint 1 angle
-  obs[2:4] = cos/sin of joint 2 angle
-  obs[4:6] = target position (x, y)
-  obs[6:8] = joint angular velocities
-  obs[8:10] = fingertip-to-target vector (dx, dy)
-  obs[10] = z distance (usually 0)
-  
-  KEY: Minimize distance = obs[8:10]. Target at obs[4:6].""",
-}
+    return "\n".join(lines) if lines else ""
 
+def _analyze_obs_by_sampling(env) -> str:
+    """
+    Tier 2: Sample the environment and describe what we see.
 
-def _get_obs_documentation(env_id: str) -> str:
-    """Get env-specific observation documentation if available."""
-    return _ENV_OBS_DOCS.get(env_id, "")
+    Resets and steps the env to get actual observation values,
+    then describes their ranges and characteristics.
+    """
+    try:
+        obs, info = env.reset()
+        action = env.action_space.sample()
+        next_obs, reward, terminated, truncated, step_info = env.step(action)
+
+        obs_flat = np.asarray(obs).flatten() if not isinstance(obs, dict) else None
+        next_flat = np.asarray(next_obs).flatten() if not isinstance(next_obs, dict) else None
+
+        if obs_flat is None:
+            return ""
+
+        lines = [f"Sample observation analysis ({len(obs_flat)} dims):"]
+
+        # Analyze ranges of observation dimensions
+        if len(obs_flat) <= 30:
+            # Small enough to show per-dimension stats
+            for i in range(len(obs_flat)):
+                val = obs_flat[i]
+                delta = next_flat[i] - obs_flat[i] if next_flat is not None else 0
+                lines.append(f"  obs[{i}] = {val:.4f} (delta after 1 step: {delta:+.4f})")
+        else:
+            # Too many dims — show summary blocks
+            block_size = max(1, len(obs_flat) // 8)
+            for start in range(0, len(obs_flat), block_size):
+                end = min(start + block_size, len(obs_flat))
+                block = obs_flat[start:end]
+                lines.append(
+                    f"  obs[{start}:{end}] range=[{block.min():.3f}, {block.max():.3f}] "
+                    f"mean={block.mean():.3f}"
+                )
+
+        # Check info dict for useful keys
+        useful_info_keys = [k for k in step_info.keys() if k not in ("TimeLimit.truncated",)]
+        if useful_info_keys:
+            lines.append(f"  info keys: {', '.join(useful_info_keys)}")
+
+        return "\n".join(lines)
+
+    except Exception as e:
+        logger.debug(f"Obs sampling failed: {e}")
+        return ""
+
+def _llm_lookup_obs(env_id: str, obs_space, llm_config) -> str:
+    """
+    Tier 3: Ask the LLM to look up the observation layout.
+
+    Uses the fast model to describe what each observation dimension means
+    based on its knowledge of the environment.
+    """
+    try:
+
+        agent = BaseAgent(llm_config, use_fast_model=True)
+
+        shape = getattr(obs_space, "shape", "?")
+        prompt = f"""Describe the observation space layout for the gymnasium environment '{env_id}'.
+The observation space has shape {shape}.
+
+For each important dimension or group of dimensions, explain:
+- What it represents (position, velocity, angle, etc.)
+- Its typical range
+- Which dimensions are most important for reward design
+
+Be concise — this will be used as context for reward function generation.
+Focus on the KEY dimensions for the task.
+Respond with the observation layout description only, no preamble."""
+
+        response = agent.chat(prompt, temperature=0.3)
+        return f"LLM-retrieved observation layout for {env_id}:\n{response[:600]}"
+
+    except Exception as e:
+        logger.debug(f"LLM obs lookup failed: {e}")
+        return ""
+
+def _extract_section(text: str, keywords: list[str]) -> str:
+    """Extract a section from a docstring by keyword."""
+    lines = text.split("\n")
+    capturing = False
+    captured = []
+
+    for line in lines:
+        lower = line.lower().strip()
+        if any(kw in lower for kw in keywords):
+            capturing = True
+            continue
+        if capturing:
+            if line.strip() == "" and captured:
+                break  # End of section
+            if line.strip().startswith("##") or line.strip().startswith("==="):
+                break  # Next section
+            captured.append(line)
+
+    return "\n".join(captured).strip()
 
 def evaluate_candidate(
     candidate: RewardCandidate,
@@ -280,7 +354,6 @@ def evaluate_candidate(
         error_message="; ".join(errors[:3]) if errors else "",
     )
 
-
 def run_reward_design(
     task_spec: TaskSpec,
     env_entry: EnvEntry,
@@ -307,7 +380,7 @@ def run_reward_design(
     # Step 1: Extract space info from the environment
     logger.info(f"Extracting space info from {env_entry.env_id}")
     env = make_env(env_entry)
-    obs_info, act_info = extract_space_info(env, env_entry)
+    obs_info, act_info = extract_space_info(env, env_entry, llm_config)
     env.close()
 
     logger.info(f"Obs space: {obs_info}")
@@ -324,7 +397,7 @@ def run_reward_design(
 
         # Step 2: Generate candidates
         if gen == 0:
-            # First generation: generate from scratch with literature context
+            # First generation: generate from scratch
             # Include literature context + training reflection from previous outer iteration
             combined_context = literature_context
             if training_reflection:
@@ -332,13 +405,13 @@ def run_reward_design(
                     (combined_context + "\n\n" if combined_context else "")
                     + training_reflection
                 )
-            
+
             candidates = agent.generate(
                 task_description=task_spec.task_description,
                 obs_space_info=obs_info,
                 action_space_info=act_info,
                 num_candidates=num_candidates,
-                literature_context=combined_context
+                literature_context=combined_context,
             )
         else:
             # Later generations: evolve from the best so far
@@ -346,7 +419,7 @@ def run_reward_design(
             # Append training reflection if available
             if training_reflection:
                 feedback = feedback + "\n\n" + training_reflection
-            
+
             candidates = agent.evolve(
                 task_description=task_spec.task_description,
                 obs_space_info=obs_info,
@@ -428,7 +501,7 @@ def run_reward_design(
 def _format_feedback(best: RewardCandidate, recent_evals: list[EvalResult]) -> str:
     """
     Format evaluation results as human-readable feedback for the LLM.
- 
+
     This is the 'reward reflection' step from Eureka — telling the LLM
     what happened so it can improve.
     """
@@ -438,7 +511,7 @@ def _format_feedback(best: RewardCandidate, recent_evals: list[EvalResult]) -> s
         "",
         "  All candidates this generation:",
     ]
- 
+
     # Show all candidates, ranked
     sorted_evals = sorted(recent_evals, key=lambda e: e.mean_reward, reverse=True)
     for rank, ev in enumerate(sorted_evals, 1):
@@ -450,7 +523,7 @@ def _format_feedback(best: RewardCandidate, recent_evals: list[EvalResult]) -> s
                 f"reward={ev.mean_reward:.2f} (±{ev.std_reward:.2f}), "
                 f"ep_length={ev.mean_episode_length:.0f}"
             )
- 
+
     # Score spread analysis
     valid_scores = [ev.mean_reward for ev in recent_evals if not ev.had_errors]
     if len(valid_scores) >= 2:
@@ -461,7 +534,7 @@ def _format_feedback(best: RewardCandidate, recent_evals: list[EvalResult]) -> s
             lines.append("  NOTE: Very narrow spread — candidates are too similar. Try more diverse approaches.")
         elif spread > 100:
             lines.append("  NOTE: Wide spread — some approaches work much better. Focus on what the best one does differently.")
- 
+
     # Component breakdown from best candidate
     if best.metrics:
         lines.append("")
@@ -471,7 +544,7 @@ def _format_feedback(best: RewardCandidate, recent_evals: list[EvalResult]) -> s
                 lines.append(f"    {k}: {v:.4f}")
             else:
                 lines.append(f"    {k}: {v}")
- 
+
     lines.append("")
     lines.append(
         "INSTRUCTIONS: Write an improved reward function that addresses the issues above. "
@@ -479,7 +552,7 @@ def _format_feedback(best: RewardCandidate, recent_evals: list[EvalResult]) -> s
         "If positive but low, focus on strengthening the task-relevant components. "
         "Keep reward components well-scaled (roughly [-1, 1] each) and use dense signals."
     )
- 
+
     return "\n".join(lines)
 
 def _flatten_obs(obs) -> np.ndarray:  # noqa: ANN001
