@@ -357,6 +357,7 @@ def _flatten(obs: Any) -> np.ndarray:
 
 def _build_networks(obs_dim: int, act_dim: int, discrete: bool, device: str):
     """Build actor and critic networks."""
+    import torch
     import torch.nn as nn
 
     class Critic(nn.Module):

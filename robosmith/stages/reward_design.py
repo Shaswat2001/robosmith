@@ -50,7 +50,7 @@ class RewardDesignResult:
     eval_results: list[EvalResult]
     generations_run: int
 
-def extract_space_info(env) -> tuple[str, str]:  # noqa: ANN001
+def extract_space_info(env, env_entry=None) -> tuple[str, str]:  # noqa: ANN001
     """
     Extract human-readable observation and action space descriptions
     from a gymnasium environment. This is what the LLM sees as context.
@@ -74,6 +74,12 @@ def extract_space_info(env) -> tuple[str, str]:  # noqa: ANN001
     else:
         obs_info = str(obs_space)
 
+    # Add env-specific observation docs
+    env_id = env_entry.env_id if env_entry else ""
+    obs_doc = _get_obs_documentation(env_id)
+    if obs_doc:
+        obs_info += "\n" + obs_doc
+
     # Action space
     if hasattr(act_space, "shape"):
         act_info = f"{type(act_space).__name__}(shape={act_space.shape}, dtype={act_space.dtype})"
@@ -83,6 +89,90 @@ def extract_space_info(env) -> tuple[str, str]:  # noqa: ANN001
         act_info = str(act_space)
 
     return obs_info, act_info
+
+# Known observation layouts for common environments
+_ENV_OBS_DOCS = {
+    "Ant-v5": """Ant observation layout (105 dims with default settings):
+  obs[0:13] = qpos (generalized positions): [x, y, z, qw, qx, qy, qz, hip1, ankle1, hip2, ankle2, hip3, ankle3, hip4, ankle4]
+  Note: x,y are EXCLUDED from obs by default. obs actually starts at z (torso height).
+  obs[0] = z_position (torso height, ~0.75 when standing)
+  obs[1:5] = quaternion orientation (w, x, y, z)
+  obs[5:13] = joint angles (8 joints: 4 hips + 4 ankles)
+  obs[13:27] = qvel (generalized velocities): [dx, dy, dz, wx, wy, wz, joint_vels...]
+  obs[13] = x_velocity (forward speed — THIS IS THE KEY METRIC for walking)
+  obs[14] = y_velocity (lateral speed — should be ~0)
+  obs[15] = z_velocity (vertical speed)
+  obs[27:105] = contact forces (clipped to [-1, 1])
+  
+  KEY: To reward forward walking, use obs[13] (x_velocity).
+  To penalize falling, check obs[0] (z_position < 0.3 means fallen).""",
+
+    "Humanoid-v5": """Humanoid observation layout:
+  obs[0] = z_position (torso height, ~1.4 when standing)
+  obs[1:5] = quaternion orientation
+  obs[5:28] = joint angles (23 joints)
+  obs[28:51] = joint velocities
+  obs[28] = x_velocity (forward speed)
+  obs[29] = y_velocity (lateral)
+  
+  KEY: Forward velocity = obs[28]. Height = obs[0]. Fallen if z < 0.7.""",
+
+    "HalfCheetah-v5": """HalfCheetah observation layout (17 dims):
+  obs[0:8] = joint angles (rootz, bthigh, bshin, bfoot, fthigh, fshin, ffoot)
+  obs[8] = rootx velocity (forward speed — THIS IS THE KEY METRIC)
+  obs[9:17] = angular velocities of joints
+  
+  KEY: Forward velocity = obs[8]. Maximize this for running.""",
+
+    "Hopper-v5": """Hopper observation layout (11 dims):
+  obs[0] = z_position (torso height, ~1.25 when standing)  
+  obs[1] = angle (torso tilt)
+  obs[2:5] = joint angles (thigh, leg, foot)
+  obs[5] = x_velocity (forward speed)
+  obs[6] = z_velocity (vertical)
+  obs[7:11] = angular velocities
+  
+  KEY: Forward velocity = obs[5]. Height = obs[0]. Fallen if z < 0.7.""",
+
+    "Walker2d-v5": """Walker2d observation layout (17 dims):
+  obs[0] = z_position (torso height, ~1.25 when upright)
+  obs[1] = angle (torso tilt)
+  obs[2:8] = joint angles
+  obs[8] = x_velocity (forward speed)
+  obs[9:17] = angular velocities
+  
+  KEY: Forward velocity = obs[8]. Height = obs[0].""",
+
+    "Pendulum-v1": """Pendulum observation layout (3 dims):
+  obs[0] = cos(theta) — 1.0 when upright, -1.0 when hanging
+  obs[1] = sin(theta)
+  obs[2] = angular velocity (theta_dot), range [-8, 8]
+  
+  KEY: Upright = cos(theta) close to 1.0. Balanced = low angular velocity.""",
+
+    "Swimmer-v5": """Swimmer observation layout (8 dims):
+  obs[0:3] = joint angles
+  obs[3] = x_velocity (forward speed)
+  obs[4] = y_velocity
+  obs[5:8] = angular velocities
+  
+  KEY: Forward velocity = obs[3].""",
+
+    "Reacher-v5": """Reacher observation layout (11 dims):
+  obs[0:2] = cos/sin of joint 1 angle
+  obs[2:4] = cos/sin of joint 2 angle
+  obs[4:6] = target position (x, y)
+  obs[6:8] = joint angular velocities
+  obs[8:10] = fingertip-to-target vector (dx, dy)
+  obs[10] = z distance (usually 0)
+  
+  KEY: Minimize distance = obs[8:10]. Target at obs[4:6].""",
+}
+
+
+def _get_obs_documentation(env_id: str) -> str:
+    """Get env-specific observation documentation if available."""
+    return _ENV_OBS_DOCS.get(env_id, "")
 
 def evaluate_candidate(
     candidate: RewardCandidate,
@@ -217,7 +307,7 @@ def run_reward_design(
     # Step 1: Extract space info from the environment
     logger.info(f"Extracting space info from {env_entry.env_id}")
     env = make_env(env_entry)
-    obs_info, act_info = extract_space_info(env)
+    obs_info, act_info = extract_space_info(env, env_entry)
     env.close()
 
     logger.info(f"Obs space: {obs_info}")

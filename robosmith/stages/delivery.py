@@ -27,6 +27,7 @@ from dataclasses import dataclass
 from robosmith.config import RunState, TaskSpec
 from robosmith.envs.registry import EnvRegistry
 from robosmith.stages.evaluation import EvalReport
+from robosmith.trainers.registry import TrainerRegistry
 from robosmith.agents.reward_agent import RewardCandidate
 
 @dataclass
@@ -120,6 +121,39 @@ def run_delivery(
         hub_url=hub_url,
     )
 
+def _load_policy_for_video(model_path: Path):
+    """
+    Load a trained policy for video recording.
+
+    Tries the trainer registry first, falls back to SB3 direct loading.
+    Returns an object with a .predict(obs, deterministic=True) method.
+    """
+    # Try trainer registry
+    try:
+        registry = TrainerRegistry()
+
+        name = model_path.stem.lower()
+        if "cleanrl" in name:
+            backend = "cleanrl"
+        elif "il" in name:
+            backend = "il_trainer"
+        elif "offline" in name:
+            backend = "offline_rl_trainer"
+        else:
+            backend = "sb3"
+
+        trainer = registry.get_trainer(backend=backend)
+        return trainer.load_policy(model_path)
+    except Exception:
+        pass
+
+    # Fallback: direct SB3
+    from stable_baselines3 import PPO, SAC, TD3
+    algo_name = model_path.stem.replace("policy_", "").lower()
+    algo_map = {"ppo": PPO, "sac": SAC, "td3": TD3}
+    AlgoClass = algo_map.get(algo_name, PPO)
+    return AlgoClass.load(str(model_path))
+
 def _record_policy_video(
     state: RunState,
     model_path: Path,
@@ -148,12 +182,7 @@ def _record_policy_video(
 
         # Try to load the trained model
         try:
-            from stable_baselines3 import PPO, SAC, TD3
-
-            algo_name = model_path.stem.replace("policy_", "").lower()
-            algo_map = {"ppo": PPO, "sac": SAC, "td3": TD3}
-            AlgoClass = algo_map.get(algo_name, PPO)
-            model = AlgoClass.load(str(model_path))
+            model = _load_policy_for_video(model_path)
         except Exception as e:
             logger.warning(f"Could not load model for video: {e}")
             return None
@@ -183,14 +212,12 @@ def _record_policy_video(
                         break
             env.close()
 
-            video_files = list(video_dir.glob("*.mp4"))
+            video_files = sorted(video_dir.glob("*.mp4"))
             if video_files:
-                latest = max(video_files, key=lambda p: p.stat().st_mtime)
                 final_path = artifacts_dir / "policy_rollout.mp4"
-                if final_path.exists():
-                    final_path.unlink()
-                shutil.move(str(latest), str(final_path))
+                video_files[-1].rename(final_path)
                 shutil.rmtree(video_dir, ignore_errors=True)
+                logger.info(f"Recorded policy video → {final_path}")
                 return final_path
 
         except Exception as e:
@@ -202,8 +229,8 @@ def _record_policy_video(
 
         # Method 2: manual frame capture with imageio
         try:
-            env = gym.make(env_id, render_mode="rgb_array")
-            frames = []
+            env = gym.make(env_entry.env_id, render_mode="rgb_array")
+            frames: list = []
 
             for ep in range(num_episodes):
                 obs, info = env.reset()
@@ -217,6 +244,9 @@ def _record_policy_video(
                     frames.append(frame)
 
                 for step in range(max_steps):
+                    frame = env.render()
+                    if frame is not None:
+                        frames.append(np.asarray(frame))
                     action, _ = model.predict(obs, deterministic=True)
                     obs, reward, terminated, truncated, info = env.step(action)
 
@@ -237,9 +267,10 @@ def _record_policy_video(
                 frames = [f for f in frames if f.shape == first_shape]
 
                 video_path = artifacts_dir / "policy_rollout.mp4"
-                imageio.mimwrite(str(video_path), frames, fps=30, macro_block_size=None)
+                imageio.mimwrite(str(video_path), frames, fps=30)
 
                 shutil.rmtree(video_dir, ignore_errors=True)
+                logger.info(f"Recorded policy video → {video_path}")
                 return video_path
         except ImportError:
             logger.info("For video recording: pip install imageio[ffmpeg] moviepy")

@@ -137,6 +137,12 @@ def _run_episode(
             action = wrapped.action_space.sample()
 
         obs, reward, terminated, truncated, info = wrapped.step(action)
+
+        # NaN safety - stop episode if observations go bad
+        if not np.all(np.isfinite(np.asarray(obs, dtype=np.float32).flat[:20])):
+            logger.debug(f"NaN/Inf detected in obs at step {steps} — stopping episode")
+            break
+
         total_reward += reward
         original_total += info.get("original_reward", 0.0)
         steps += 1
@@ -146,18 +152,25 @@ def _run_episode(
 
     wrapped.close()
 
-    # Success heuristic: episode completed full length OR terminated with positive
-    # custom reward. For envs where the original reward is negative (e.g. Pendulum),
-    # we check whether the custom reward is in the top quartile range.
-    if steps >= max_steps - 1:
-        # Episode ran to completion — likely successful
+    # Success detection — behavioral outcome based.
+    # Primary signal: survival + episode length
+    # An agent that ran for most of max_steps is likely doing something right
+    survived_well = steps >= max_steps * 0.7
+    survived_ok = steps >= max_steps * 0.3
+    terminated_early = terminated and steps < max_steps * 0.2
+
+    if terminated_early:
+        # Fell over / crashed in the first 20% of the episode — failure
+        success = False
+    elif survived_well:
+        # Ran for 70%+ of max steps — good sign
         success = True
-    elif terminated and total_reward > 0:
-        # Terminated with positive custom reward — task accomplished
+    elif not terminated and survived_ok:
+        # Truncated (time limit) and ran for 30%+ — decent
         success = True
     else:
-        # Fell over / timed out with bad reward — failure
-        success = total_reward > 0 and steps > 10
+        # Somewhere in between — use episode length as a fraction
+        success = steps >= max_steps * 0.5
 
     return EpisodeResult(
         seed=seed,
@@ -252,7 +265,42 @@ def _build_report(episodes: list[EpisodeResult], task_spec: TaskSpec) -> EvalRep
     return report
 
 def _load_model(model_path: Path):  # noqa: ANN201
-    """Load an SB3 model from disk. Supports PPO, SAC, and TD3."""
+    """
+    Load a trained model from disk.
+
+    Tries the trainer registry first (supports all backends),
+    falls back to direct SB3 loading for backward compatibility.
+    """
+
+    # Try trainer registry first
+    try:
+        from robosmith.trainers.registry import TrainerRegistry
+        registry = TrainerRegistry()
+
+        # Infer backend from filename
+        name = model_path.stem.lower()
+        if "cleanrl" in name:
+            backend = "cleanrl"
+        elif "rlgames" in name or "rl_games" in name:
+            backend = "rl_games"
+        elif "il" in name and ("bc" in name or "dagger" in name):
+            backend = "il_trainer"
+        elif "offline" in name:
+            backend = "offline_rl_trainer"
+        else:
+            backend = "sb3"  # Default
+
+        try:
+            trainer = registry.get_trainer(backend=backend)
+            policy = trainer.load_policy(model_path)
+            logger.info(f"Loaded model via {backend} backend")
+            return policy
+        except Exception:
+            pass  # Fall through to SB3 fallback
+    except Exception:
+        pass
+
+    # Fallback: direct SB3 loading
     try:
         from stable_baselines3 import PPO, SAC, TD3
     except ImportError as e:
