@@ -22,9 +22,9 @@ from robosmith.trainers.base import (
     TrainingResult,
 )
 
-from robosmith.envs.wrapper import make_env
 from robosmith.envs.reward_wrapper import ForgeRewardWrapper
-        
+from robosmith.envs.wrapper import make_env
+
 class SB3Policy:
     """Wraps an SB3 model to conform to the Policy protocol."""
 

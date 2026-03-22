@@ -55,6 +55,9 @@ class TrainerRegistry:
         self._known_backends = {
             "sb3": ("robosmith.trainers.sb3_trainer", "SB3Trainer"),
             "cleanrl": ("robosmith.trainers.cleanrl_trainer", "CleanRLTrainer"),
+            "rl_games": ("robosmith.trainers.rl_games_trainer", "RLGamesTrainer"),
+            "il_trainer": ("robosmith.trainers.il_trainer", "ILTrainer"),
+            "offline_rl_trainer": ("robosmith.trainers.offline_rl_trainer", "OfflineRLTrainer"),
         }
 
     def _ensure_loaded(self, name: str) -> None:

@@ -4,6 +4,10 @@ CleanRL trainer backend.
 Uses CleanRL-style single-file implementations for PPO, SAC, TD3.
 More transparent than SB3 — you can see exactly what's happening.
 Good for: research, debugging, custom modifications.
+
+Note: This is a self-contained implementation inspired by CleanRL's
+approach, not a wrapper around the cleanrl package. This means it
+works without installing cleanrl separately.
 """
 
 from __future__ import annotations
@@ -20,14 +24,11 @@ from robosmith.trainers.base import (
     Policy,
     Trainer,
     TrainingConfig,
-    TrainingResult
+    TrainingResult,
 )
 
-from robosmith.envs.wrapper import make_env
-from robosmith.envs.reward_wrapper import ForgeRewardWrapper
-
 class TorchPolicy:
-    """Wraps a PyTorch actor network to confirm to the Policy protocol."""
+    """Wraps a PyTorch actor network to conform to the Policy protocol."""
 
     def __init__(self, actor: Any, device: str = "cpu") -> None:
         self._actor = actor
@@ -54,7 +55,7 @@ class TorchPolicy:
             action = action.cpu().numpy().squeeze(0)
 
         return action, None
-    
+
 class CleanRLTrainer(Trainer):
     """
     CleanRL-style training backend.
@@ -65,7 +66,7 @@ class CleanRLTrainer(Trainer):
 
     name = "cleanrl"
     paradigm = LearningParadigm.REINFORCEMENT_LEARNING
-    algorithms = ["ppo"]
+    algorithms = ["ppo"]  # Start with PPO, the most commonly needed
     requires = ["torch"]
 
     def train(self, config: TrainingConfig) -> TrainingResult:
@@ -76,15 +77,19 @@ class CleanRLTrainer(Trainer):
             import torch.optim as optim
         except ImportError as e:
             raise ImportError("PyTorch is required for CleanRL. Install: pip install torch") from e
-        
+
+        from robosmith.envs.reward_wrapper import ForgeRewardWrapper
+        from robosmith.envs.wrapper import make_env
+
         if config.env_entry is None:
-            raise ValueError("env_entry is required.")
-        
+            raise ValueError("env_entry is required")
+
         algo_name = config.algorithm.lower()
         if algo_name not in ("ppo", "auto"):
             raise ValueError(f"CleanRL backend currently supports PPO only, got '{algo_name}'")
         algo_name = "ppo"
 
+        # Create environment
         env = make_env(config.env_entry)
         if config.reward_fn is not None:
             env = ForgeRewardWrapper(env, config.reward_fn)
@@ -335,6 +340,7 @@ class CleanRLTrainer(Trainer):
 
         return TorchPolicy(actor, device="cpu")
 
+# Helper functions
 def _resolve_device(device: str) -> str:
     """Resolve 'auto' to actual device."""
     if device != "auto":
@@ -429,5 +435,3 @@ def _compute_gae(rewards, values, dones, next_value, gamma, gae_lambda):
 
     returns = advantages + values
     return advantages, returns
-
-

@@ -61,7 +61,6 @@ train = [
 video = [
     "imageio>=2.34",
     "imageio-ffmpeg>=0.4",
-    "pygame"
 ]
 hub = [
     "huggingface-hub>=0.23",

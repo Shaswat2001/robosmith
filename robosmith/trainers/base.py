@@ -3,7 +3,7 @@ Abstract trainer protocol.
 
 This defines the interface that ALL policy learning backends must implement,
 whether they're RL (SB3, CleanRL, rl_games), imitation learning, VLA
-fine-tuning, diffusion policies or anything else.
+fine-tuning, diffusion policies, or anything else.
 
 The key insight: RoboSmith doesn't care HOW a policy is learned — only that
 given a task + environment + reward signal, a backend produces a trained
@@ -20,6 +20,7 @@ from typing import Any, Callable, Protocol, runtime_checkable
 
 import numpy as np
 
+# Policy protocol
 @runtime_checkable
 class Policy(Protocol):
     """
@@ -61,31 +62,45 @@ class TrainingConfig:
     """
     Universal training configuration.
 
-    Backend-specific options go in `extra`. This keeps the core
-    interface clean while allowing any backend to accept custom params.
+    Supports all learning paradigms:
+    - RL: env + reward_fn + timesteps
+    - Imitation: env + demonstrations
+    - Offline RL: dataset + optional env for eval
+    - VLA/Diffusion: dataset + model checkpoint
+
+    Backend-specific options go in `extra`.
     """
 
     # Task
     task_description: str = ""
     algorithm: str = "auto"
+    paradigm: LearningParadigm = LearningParadigm.REINFORCEMENT_LEARNING
 
-    # Environment
+    # Environment (for RL, IL, eval)
     env_id: str = ""
     env_entry: Any = None  # EnvEntry from registry
 
     # Reward (for RL backends)
     reward_fn: Callable | None = None
 
+    # Demonstrations (for IL backends)
+    demo_paths: list[Path] = field(default_factory=list)
+    num_demos: int = 0
+
+    # Dataset (for offline RL / VLA)
+    dataset_path: Path | None = None
+
     # Budget
     total_timesteps: int = 50_000
-    time_limit_seconds: float = 300.0  # 5 minutes default
+    total_epochs: int = 100  # For supervised methods (IL, VLA)
+    time_limit_seconds: float = 300.0
 
     # Paths
     artifacts_dir: Path | None = None
 
     # Reproducibility
     seed: int = 42
-    device: str = "auto"  # "auto", "cpu", "cuda", "cuda:0"
+    device: str = "auto"
 
     # Backend-specific options
     extra: dict = field(default_factory=dict)
@@ -93,12 +108,12 @@ class TrainingConfig:
 @dataclass
 class TrainingResult:
     """
-    Univeral training result.
+    Universal training result.
 
     Every backend must return this, regardless of the learning paradigm.
     """
 
-    # core outputs
+    # Core outputs
     model_path: Path | None = None
     algorithm: str = ""
     paradigm: LearningParadigm = LearningParadigm.REINFORCEMENT_LEARNING
@@ -120,11 +135,11 @@ class TrainingResult:
     @property
     def success(self) -> bool:
         return self.error is None and self.model_path is not None
-    
+
 # Abstract trainer
 class Trainer(ABC):
     """
-    Abstract base class for all policy learning backends. 
+    Abstract base class for all policy learning backends.
 
     Subclass this to add a new training backend (RL library,
     imitation learning framework, VLA trainer, etc.)
