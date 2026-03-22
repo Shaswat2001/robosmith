@@ -160,8 +160,9 @@ def _record_policy_video(
 
         # Create env with render_mode="rgb_array" for video capture
 
-        video_dir = artifacts_dir / "video"
-        video_dir.mkdir(exist_ok=True)
+        video_dir = artifacts_dir / "_tmp_video"
+        shutil.rmtree(video_dir, ignore_errors=True)
+        video_dir.mkdir(parents=True, exist_ok=True)
 
         # Method 1: gymnasium RecordVideo (needs moviepy)
         try:
@@ -182,42 +183,64 @@ def _record_policy_video(
                         break
             env.close()
 
-            video_files = sorted(video_dir.glob("*.mp4"))
+            video_files = list(video_dir.glob("*.mp4"))
             if video_files:
+                latest = max(video_files, key=lambda p: p.stat().st_mtime)
                 final_path = artifacts_dir / "policy_rollout.mp4"
-                video_files[-1].rename(final_path)
-                
+                if final_path.exists():
+                    final_path.unlink()
+                shutil.move(str(latest), str(final_path))
                 shutil.rmtree(video_dir, ignore_errors=True)
-                logger.info(f"Recorded policy video → {final_path}")
                 return final_path
 
         except Exception as e:
             logger.debug(f"RecordVideo failed ({e}), trying imageio")
+            try:
+                env.close()
+            except Exception:
+                pass
 
         # Method 2: manual frame capture with imageio
         try:
-            env = gym.make(env_entry.env_id, render_mode="rgb_array")
-            frames: list = []
+            env = gym.make(env_id, render_mode="rgb_array")
+            frames = []
 
             for ep in range(num_episodes):
                 obs, info = env.reset()
+
+                # capture initial frame
+                frame = env.render()
+                if frame is not None:
+                    frame = np.asarray(frame)
+                    if frame.dtype != np.uint8:
+                        frame = frame.astype(np.uint8)
+                    frames.append(frame)
+
                 for step in range(max_steps):
-                    frame = env.render()
-                    if frame is not None:
-                        frames.append(np.asarray(frame))
                     action, _ = model.predict(obs, deterministic=True)
                     obs, reward, terminated, truncated, info = env.step(action)
+
+                    frame = env.render()
+                    if frame is not None:
+                        frame = np.asarray(frame)
+                        if frame.dtype != np.uint8:
+                            frame = frame.astype(np.uint8)
+                        frames.append(frame)
+
                     if terminated or truncated:
                         break
+
             env.close()
 
             if frames:
-                video_path = artifacts_dir / "policy_rollout.mp4"
-                imageio.mimwrite(str(video_path), frames, fps=30)
-                shutil.rmtree(video_dir, ignore_errors=True)
-                logger.info(f"Recorded policy video → {video_path}")
-                return video_path
+                first_shape = frames[0].shape
+                frames = [f for f in frames if f.shape == first_shape]
 
+                video_path = artifacts_dir / "policy_rollout.mp4"
+                imageio.mimwrite(str(video_path), frames, fps=30, macro_block_size=None)
+
+                shutil.rmtree(video_dir, ignore_errors=True)
+                return video_path
         except ImportError:
             logger.info("For video recording: pip install imageio[ffmpeg] moviepy")
         except Exception as e:
