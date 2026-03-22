@@ -111,6 +111,7 @@ def run(
     push_to_hub: Optional[str] = typer.Option(None, "--push-to-hub", help="HuggingFace repo ID to push to"),
     candidates: int = typer.Option(4, "--candidates", "-c", help="Number of reward function candidates per iteration"),
     skip: Optional[list[str]] = typer.Option(None, "--skip", "-s", help="Stages to skip: scout, intake, delivery"),
+    backend: Optional[str] = typer.Option(None, "--backend", "-b", help="Training backend: sb3, cleanrl (default: auto)"),
     config_file: Optional[Path] = typer.Option(None, "--config", help="Path to robosmith.yaml config file"),
     dry_run: bool = typer.Option(False, "--dry-run", help="Parse and plan only, don't train"),
     verbose: bool = typer.Option(False, "--verbose", "-v", help="Show detailed logs"),
@@ -220,6 +221,10 @@ def run(
         env_registry_path=Path(env_registry_path) if env_registry_path else None,
         max_iterations=file_config.get("max_iterations", 3),
     )
+
+    # Store training backend preference (not a Pydantic field, just an attribute)
+    if backend or file_config.get("training_backend"):
+        config._training_backend = backend or file_config.get("training_backend")
 
     # Show plan
     _show_task_spec(task_spec)

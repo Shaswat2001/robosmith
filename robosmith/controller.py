@@ -31,12 +31,12 @@ from robosmith.stages.env_synthesis import EnvMatch
 
 from robosmith.stages.scout import run_scout
 from robosmith.stages.intake import parse_task
-from robosmith.stages.training import run_training
 from robosmith.stages.delivery import run_delivery
 from robosmith.stages.evaluation import run_evaluation
 from robosmith.stages.env_synthesis import _extract_tags
 from robosmith.stages.env_synthesis import match_task_to_env
 from robosmith.stages.reward_design import run_reward_design
+from robosmith.stages.training import run_training, run_training_v2
 
 # The pipeline stages, in order
 STAGES = [
@@ -382,11 +382,13 @@ class ForgeController:
         if not env_entry:
             raise RuntimeError(f"Environment '{env_id}' not found")
 
-        result = run_training(
+        backend = getattr(self.config, "_training_backend", None)
+        result = run_training_v2(
             task_spec=self.task_spec,
             env_entry=env_entry,
             reward_candidate=self._reward_candidate,
             artifacts_dir=self.state.artifacts_dir,
+            backend=backend,
         )
  
         self._training_result = result

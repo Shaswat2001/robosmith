@@ -25,6 +25,9 @@ from robosmith.envs.registry import EnvEntry
 from robosmith.envs.reward_wrapper import ForgeRewardWrapper
 from robosmith.envs.wrapper import make_env
 
+from robosmith.trainers.base import TrainingConfig
+from robosmith.trainers.registry import TrainerRegistry
+
 @dataclass
 class TrainingResult:
     """Output of the training stage."""
@@ -245,4 +248,78 @@ def run_training(
         final_std_reward=final_std,
         converged=True,
         metrics_history=metrics_history,
+    )
+
+def run_training_v2(
+    task_spec: TaskSpec,
+    env_entry: EnvEntry,
+    reward_candidate: RewardCandidate,
+    artifacts_dir: Path | None = None,
+    total_timesteps: int | None = None,
+    backend: str | None = None,
+) -> TrainingResult:
+    """
+    Train a policy using the trainer registry.
+
+    This is the new entry point that supports multiple backends
+    (SB3, CleanRL, etc.). Falls back to run_training() if the
+    registry isn't available.
+
+    Args:
+        task_spec: The task specification.
+        env_entry: Which environment to train in.
+        reward_candidate: The reward function to use.
+        artifacts_dir: Where to save checkpoints and logs.
+        total_timesteps: Override training length.
+        backend: Force a specific backend ("sb3", "cleanrl"). None = auto.
+
+    Returns:
+        TrainingResult with model path and metrics (compatible with old format).
+    """
+
+    # Select algorithm
+    algo_name = _select_algorithm(task_spec, env_entry)
+
+    # Guard: off-policy algos don't support discrete
+    if algo_name in ("sac", "td3") and env_entry.action_type == "discrete":
+        logger.warning(f"{algo_name.upper()} doesn't support discrete — falling back to PPO")
+        algo_name = "ppo"
+
+    # Compute timesteps
+    if total_timesteps is None:
+        total_timesteps = task_spec.time_budget_minutes * 10_000
+    total_timesteps = min(total_timesteps, 500_000)
+
+    # Build trainer config
+    config = TrainingConfig(
+        task_description=task_spec.task_description,
+        algorithm=algo_name,
+        env_id=env_entry.env_id,
+        env_entry=env_entry,
+        reward_fn=reward_candidate.get_function(),
+        total_timesteps=total_timesteps,
+        time_limit_seconds=task_spec.time_budget_minutes * 60,
+        artifacts_dir=Path(artifacts_dir) if artifacts_dir else None,
+        seed=42,
+    )
+
+    # Get trainer from registry
+    registry = TrainerRegistry()
+    trainer = registry.get_trainer(algorithm=algo_name, backend=backend)
+    logger.info(f"Using trainer: {trainer.name} ({algo_name})")
+
+    # Train
+    result = trainer.train(config)
+
+    # Convert to legacy TrainingResult for backward compatibility
+    return TrainingResult(
+        model_path=result.model_path,
+        algorithm=result.algorithm,
+        total_timesteps=result.total_timesteps,
+        training_time_seconds=result.training_time_seconds,
+        final_mean_reward=result.final_mean_reward,
+        final_std_reward=result.final_std_reward,
+        converged=result.converged,
+        error=result.error,
+        metrics_history=result.metrics_history,
     )
