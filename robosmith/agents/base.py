@@ -135,20 +135,39 @@ class BaseAgent:
         code fences if the LLM wraps the response in them.
         """
         prompt = user_message + "\n\nRespond with valid JSON only. No explanation, no markdown."
-        raw = self.chat(prompt, temperature=temperature)
 
-        # Strip markdown code fences if present
-        cleaned = raw.strip()
-        if cleaned.startswith("```"):
-            # Remove first line (```json or ```) and last line (```)
-            lines = cleaned.split("\n")
-            cleaned = "\n".join(lines[1:-1] if lines[-1].strip() == "```" else lines[1:])
+        for attempt in range(2):
+            raw = self.chat(prompt, temperature=temperature)
 
-        try:
-            return json.loads(cleaned)
-        except json.JSONDecodeError as e:
-            logger.error(f"Failed to parse LLM response as JSON: {e}\nRaw: {raw[:200]}")
-            raise ValueError(f"LLM returned invalid JSON: {e}") from e
+            # Strip markdown code fences if present
+            cleaned = raw.strip()
+            if cleaned.startswith("```"):
+                lines = cleaned.split("\n")
+                cleaned = "\n".join(lines[1:-1] if lines[-1].strip() == "```" else lines[1:])
+
+            # Try to extract JSON from mixed content (LLM sometimes adds text before/after)
+            cleaned = cleaned.strip()
+            if not cleaned.startswith(("{", "[")):
+                # Try to find JSON in the response
+                for start_char in ("{", "["):
+                    idx = cleaned.find(start_char)
+                    if idx != -1:
+                        cleaned = cleaned[idx:]
+                        break
+
+            try:
+                return json.loads(cleaned)
+            except json.JSONDecodeError as e:
+                if attempt == 0:
+                    logger.warning(f"JSON parse failed (attempt 1), retrying with stricter prompt")
+                    prompt = (
+                        user_message
+                        + "\n\nYou MUST respond with ONLY valid JSON. "
+                        "No text before or after. No markdown. Start with { or [."
+                    )
+                else:
+                    logger.error(f"Failed to parse LLM response as JSON: {e}\nRaw: {raw[:200]}")
+                    raise ValueError(f"LLM returned invalid JSON: {e}") from e
 
     def usage_summary(self) -> dict:
         """Return a summary of token usage across all calls."""

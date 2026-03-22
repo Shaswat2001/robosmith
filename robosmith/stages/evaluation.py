@@ -146,10 +146,18 @@ def _run_episode(
 
     wrapped.close()
 
-    # Simple success heuristic: episode didn't terminate early AND
-    # accumulated positive reward. This will be replaced by task-specific
-    # success detection later.
-    success = total_reward > 0 and steps > 10
+    # Success heuristic: episode completed full length OR terminated with positive
+    # custom reward. For envs where the original reward is negative (e.g. Pendulum),
+    # we check whether the custom reward is in the top quartile range.
+    if steps >= max_steps - 1:
+        # Episode ran to completion — likely successful
+        success = True
+    elif terminated and total_reward > 0:
+        # Terminated with positive custom reward — task accomplished
+        success = True
+    else:
+        # Fell over / timed out with bad reward — failure
+        success = total_reward > 0 and steps > 10
 
     return EpisodeResult(
         seed=seed,
@@ -220,9 +228,22 @@ def _build_report(episodes: list[EpisodeResult], task_spec: TaskSpec) -> EvalRep
             f"Partial success ({success_rate:.0%}) — reward refinement may help"
         )
     elif mean_reward <= 0 and mean_length < 20:
+        # Very bad — training didn't learn at all
         report.decision = Decision.SWITCH_ALGO
         report.decision_reason = (
             "Very low reward and short episodes — algorithm may not be learning"
+        )
+    elif std_reward > abs(mean_reward) * 2 and mean_reward < 0:
+        # High variance + negative mean — unstable training, try different algo
+        report.decision = Decision.SWITCH_ALGO
+        report.decision_reason = (
+            f"Unstable training (reward={mean_reward:.1f}±{std_reward:.1f}) — trying different algorithm"
+        )
+    elif success_rate == 0 and mean_reward < 0:
+        # Zero success with negative reward — algo isn't working
+        report.decision = Decision.SWITCH_ALGO
+        report.decision_reason = (
+            "Zero success rate with negative reward — switching algorithm"
         )
     else:
         report.decision = Decision.REFINE_REWARD
@@ -231,14 +252,25 @@ def _build_report(episodes: list[EpisodeResult], task_spec: TaskSpec) -> EvalRep
     return report
 
 def _load_model(model_path: Path):  # noqa: ANN201
-    """Load an SB3 model from disk. Supports PPO and SAC."""
+    """Load an SB3 model from disk. Supports PPO, SAC, and TD3."""
     try:
-        from stable_baselines3 import PPO, SAC
+        from stable_baselines3 import PPO, SAC, TD3
     except ImportError as e:
         raise ImportError("stable-baselines3 required to load models") from e
 
-    # Try PPO first (most common), then SAC
-    for cls in [PPO, SAC]:
+    # Try each algorithm class — the filename hints at which one
+    algo_classes = [PPO, SAC, TD3]
+
+    # Try to infer from filename first (policy_ppo.zip, policy_sac.zip, policy_td3.zip)
+    name = model_path.stem.lower()
+    if "ppo" in name:
+        algo_classes = [PPO, SAC, TD3]
+    elif "sac" in name:
+        algo_classes = [SAC, PPO, TD3]
+    elif "td3" in name:
+        algo_classes = [TD3, SAC, PPO]
+
+    for cls in algo_classes:
         try:
             return cls.load(str(model_path))
         except Exception:

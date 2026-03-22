@@ -32,7 +32,7 @@ You must respond with valid JSON only, no explanation. The JSON schema:
   "robot_type": "arm" | "quadruped" | "biped" | "dexterous_hand" | "mobile_base" | "custom",
   "robot_model": "franka" | "fetch" | "ur5" | "unitree_go2" | "shadow_hand" | "ant" | "humanoid" | null,
   "environment_type": "tabletop" | "floor" | "terrain" | "aerial" | "aquatic",
-  "algorithm": "ppo" | "sac" | "auto",
+  "algorithm": "ppo" | "sac" | "td3" | "auto",
   "success_criteria": [
     {"metric": "success_rate", "operator": ">=", "threshold": 0.8}
   ],

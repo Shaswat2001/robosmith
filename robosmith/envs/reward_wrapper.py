@@ -29,10 +29,12 @@ class ForgeRewardWrapper(gym.Wrapper):
     def __init__(
         self,
         env: gym.Env,
-        reward_fn: Callable
+        reward_fn: Callable,
+        reward_clip: float = 100.0,
     ) -> None:
         super().__init__(env)
         self.reward_fn = reward_fn
+        self.reward_clip = reward_clip
         self._prev_obs: np.ndarray | None = None
 
     def reset(self, **kwargs: Any) -> tuple[Any, dict]:
@@ -58,6 +60,9 @@ class ForgeRewardWrapper(gym.Wrapper):
             if not np.isfinite(custom_reward):
                 custom_reward = 0.0
                 components["_error"] = "non-finite reward, clamped to 0"
+            else:
+                # Clip to prevent destabilized training
+                custom_reward = float(np.clip(custom_reward, -self.reward_clip, self.reward_clip))
  
         except Exception as e:
             custom_reward = 0.0

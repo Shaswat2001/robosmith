@@ -148,10 +148,11 @@ def _record_policy_video(
 
         # Try to load the trained model
         try:
-            from stable_baselines3 import PPO, SAC
+            from stable_baselines3 import PPO, SAC, TD3
 
-            algo_name = model_path.stem.replace("policy_", "")
-            AlgoClass = PPO if "ppo" in algo_name.lower() else SAC
+            algo_name = model_path.stem.replace("policy_", "").lower()
+            algo_map = {"ppo": PPO, "sac": SAC, "td3": TD3}
+            AlgoClass = algo_map.get(algo_name, PPO)
             model = AlgoClass.load(str(model_path))
         except Exception as e:
             logger.warning(f"Could not load model for video: {e}")

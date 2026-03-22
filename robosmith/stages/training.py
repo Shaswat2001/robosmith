@@ -41,19 +41,46 @@ class TrainingResult:
 
 def _select_algorithm(task_spec: TaskSpec, env_entry: EnvEntry) -> str:
     """
-    Pick the best RL algorithm based on task and env properties. 
-    """
+    Pick the best RL algorithm based on task and env properties.
 
+    Selection logic:
+    - User override → use whatever they said
+    - Discrete actions → PPO (only option that supports discrete)
+    - Continuous locomotion → PPO (stable, good for high-dim action spaces)
+    - Continuous manipulation (low-dim) → SAC (sample efficient)
+    - Continuous dexterous / high-dim → TD3 (handles complex continuous well)
+    - Classic control → PPO (simple, fast)
+    - Default → SAC
+    """
     if task_spec.algorithm != Algorithm.AUTO:
         return task_spec.algorithm.value
-    
+
     if env_entry.action_type == "discrete":
         return "ppo"
-    
-    locomotion_tags = {"locomotion", "walk", "run", "hop", "balance"}
-    if locomotion_tags & set(env_entry.task_tags):
+
+    tags = set(env_entry.task_tags)
+
+    # Classic control — PPO is fast and reliable
+    classic_tags = {"classic", "simple", "cartpole", "pendulum", "acrobot"}
+    if classic_tags & tags:
         return "ppo"
- 
+
+    # Locomotion — PPO is the standard
+    locomotion_tags = {"locomotion", "walk", "run", "hop", "balance", "swim", "forward"}
+    if locomotion_tags & tags:
+        return "ppo"
+
+    # Dexterous manipulation — TD3 handles high-dim continuous well
+    dexterous_tags = {"dexterous", "hand", "fingers", "in-hand", "rotate", "spin"}
+    if dexterous_tags & tags:
+        return "td3"
+
+    # General manipulation — SAC for sample efficiency
+    manipulation_tags = {"manipulation", "pick", "place", "push", "grasp", "reach", "slide"}
+    if manipulation_tags & tags:
+        return "sac"
+
+    # Default: SAC
     return "sac"
 
 def _create_training_env(env_entry: EnvEntry, reward_fn: Any) -> ForgeRewardWrapper:
@@ -74,7 +101,7 @@ def run_training(
     """
 
     try:
-        from stable_baselines3 import PPO, SAC
+        from stable_baselines3 import PPO, SAC, TD3
         from stable_baselines3.common.callbacks import BaseCallback
     except ImportError as e:
         raise ImportError(
@@ -85,6 +112,11 @@ def run_training(
     # Step 1: Select algorithm
     algo_name = _select_algorithm(task_spec, env_entry)
     logger.info(f"Selected algorithm: {algo_name}")
+
+    # Guard: SAC and TD3 don't support discrete action spaces
+    if algo_name in ("sac", "td3") and env_entry.action_type == "discrete":
+        logger.warning(f"{algo_name.upper()} does not support discrete actions — falling back to PPO")
+        algo_name = "ppo"
  
     # Step 2: Create wrapped environment
     reward_fn = reward_candidate.get_function()
@@ -97,16 +129,19 @@ def run_training(
     total_timesteps = min(total_timesteps, 500_000)  # Cap for safety
     logger.info(f"Training for {total_timesteps:,} timesteps")
 
+    time_limit_seconds = task_spec.time_budget_minutes * 60
+
     # Step 4: Create model
-    algo_cls = {"ppo": PPO, "sac": SAC}.get(algo_name)
+    algo_cls = {"ppo": PPO, "sac": SAC, "td3": TD3}.get(algo_name)
     if algo_cls is None:
-        raise ValueError(f"Unsupported algorithm: {algo_name}")
-    
+        raise ValueError(f"Unsupported algorithm: {algo_name}. Supported: ppo, sac")
+
     model = algo_cls(
         "MlpPolicy",
         env,
         verbose=0,
         device="auto",
+        seed=42,
     )
  
     # Step 5: Train with monitoring
@@ -122,6 +157,12 @@ def run_training(
             self._log_interval = max(total_timesteps // 20, 1000)
  
         def _on_step(self) -> bool:
+            # Hard time limit
+            elapsed = time.time() - start_time
+            if elapsed > time_limit_seconds:
+                logger.info(f"Time limit reached ({task_spec.time_budget_minutes}min) — stopping training")
+                return False  # Stop training
+            
             if self.num_timesteps - self._last_log_step >= self._log_interval:
                 self._last_log_step = self.num_timesteps
  

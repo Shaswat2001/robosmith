@@ -289,15 +289,21 @@ def run_reward_design(
                 improved = global_best is None or gen_best.score > global_best.score
                 old_score = global_best.score if global_best else None
                 global_best = gen_best
+                _gens_without_improvement = 0
                 logger.info(
                     f"Generation {gen + 1} best: {gen_best.score:.2f}"
                     + (f" (improved from {old_score:.2f})" if old_score is not None and improved else "")
                 )
             else:
+                _gens_without_improvement += 1
                 logger.info(
                     f"Generation {gen + 1} best: {gen_best.score:.2f} "
                     f"(no improvement over {global_best.score:.2f})"
                 )
+                # Early termination: no improvement for 2+ generations
+                if _gens_without_improvement >= 2 and gen < num_iterations - 1:
+                    logger.info("Reward converged — stopping early (no improvement for 2 generations)")
+                    break
 
     if global_best is None:
         raise RuntimeError("All reward candidates across all generations failed evaluation")

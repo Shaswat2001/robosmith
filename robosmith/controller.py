@@ -25,6 +25,7 @@ from robosmith.config import (
     TaskSpec,
 )
 
+from robosmith.config import RobotType
 from robosmith.envs.registry import EnvRegistry
 from robosmith.stages.env_synthesis import EnvMatch
 
@@ -192,6 +193,8 @@ class ForgeController:
             parsed = parse_task(raw, self.config.llm)
  
             # Merge: user-provided flags override LLM parsing
+            if self.task_spec.robot_type != RobotType.ARM:  # ARM is the default
+                parsed.robot_type = self.task_spec.robot_type
             if self.task_spec.robot_model:
                 parsed.robot_model = self.task_spec.robot_model
             if self.task_spec.algorithm != Algorithm.AUTO:
@@ -349,24 +352,28 @@ class ForgeController:
         env_id = self.task_spec.environment_id
         if not env_id:
             raise RuntimeError("No environment matched — run env_synthesis first")
- 
-        # If evaluation said SWITCH_ALGO, flip the algorithm
+
+        # If evaluation said SWITCH_ALGO, cycle to the next algorithm
         if self.state.decision_history:
             last = self.state.decision_history[-1]
             if last.get("decision") == Decision.SWITCH_ALGO:
                 current = self.task_spec.algorithm
-                if current == Algorithm.PPO or current == Algorithm.AUTO:
-                    self.task_spec.algorithm = Algorithm.SAC
-                    logger.info("Switching algorithm: PPO → SAC")
-                else:
-                    self.task_spec.algorithm = Algorithm.PPO
-                    logger.info("Switching algorithm: SAC → PPO")
- 
+                # Cycle: PPO → SAC → TD3 → PPO
+                algo_cycle = {
+                    Algorithm.PPO: Algorithm.SAC,
+                    Algorithm.SAC: Algorithm.TD3,
+                    Algorithm.TD3: Algorithm.PPO,
+                    Algorithm.AUTO: Algorithm.SAC,  # AUTO defaults to PPO, so try SAC next
+                }
+                next_algo = algo_cycle.get(current, Algorithm.SAC)
+                logger.info(f"Switching algorithm: {current.value} → {next_algo.value}")
+                self.task_spec.algorithm = next_algo
+
         registry = EnvRegistry(self.config.env_registry_path)
         env_entry = registry.get(env_id)
         if not env_entry:
             raise RuntimeError(f"Environment '{env_id}' not found")
- 
+
         result = run_training(
             task_spec=self.task_spec,
             env_entry=env_entry,

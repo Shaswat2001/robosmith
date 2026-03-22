@@ -16,6 +16,24 @@ import yaml
 # Default registry file ships with the package
 _DEFAULT_REGISTRY = Path(__file__).parent.parent.parent / "configs" / "env_registry.yaml"
 
+def _stem(word: str) -> str:
+    """Simple suffix-stripping stemmer for tag matching."""
+    w = word.lower()
+    # Handle -ing: running→run, walking→walk, swimming→swim
+    if w.endswith("ing") and len(w) > 4:
+        base = w[:-3]
+        # Doubled consonant: running→run, hopping→hop, swimming→swim
+        if len(base) >= 2 and base[-1] == base[-2]:
+            return base[:-1]
+        return base
+    # Handle other suffixes
+    for suffix in ("tion", "ment", "ness", "ed", "er", "ly", "es"):
+        if w.endswith(suffix) and len(w) - len(suffix) >= 3:
+            return w[: -len(suffix)]
+    if w.endswith("s") and not w.endswith("ss") and len(w) > 3:
+        return w[:-1]
+    return w
+
 @dataclass
 class EnvEntry:
     """A single environment in the registry."""
@@ -34,9 +52,25 @@ class EnvEntry:
     source: str
 
     def matches_tags(self, tags: list[str]) -> int:
-        """Count how many of the given tags this entry matches."""
+        """Count how many of the given tags this entry matches (with stemming + prefix)."""
         entry_tags = set(self.task_tags)
-        return sum(1 for t in tags if t in entry_tags)
+        # Build lookup: original tags + their stems
+        entry_stems = set()
+        for t in entry_tags:
+            entry_stems.add(t)
+            entry_stems.add(_stem(t))
+
+        count = 0
+        for t in tags:
+            t_lower = t.lower()
+            t_stemmed = _stem(t_lower)
+            # Exact or stem match
+            if t_lower in entry_stems or t_stemmed in entry_stems:
+                count += 1
+            # Prefix match (handles balanc→balance, manipulat→manipulation)
+            elif any(et.startswith(t_stemmed) or t_stemmed.startswith(et) for et in entry_stems if len(et) >= 3):
+                count += 1
+        return count
     
     def summary(self) -> str:
         """One-line summary for display."""

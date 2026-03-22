@@ -134,13 +134,27 @@ def run(
     for noisy in ("LiteLLM", "litellm", "httpx", "httpcore"):
         logging.getLogger(noisy).setLevel(logging.CRITICAL)
 
+    try:
+        robot_type = RobotType(robot) if robot else RobotType.ARM
+    except ValueError:
+        valid = ", ".join(r.value for r in RobotType)
+        console.print(f"  [red]Invalid robot type '{robot}'. Valid: {valid}[/red]")
+        raise typer.Exit(1)
+
+    try:
+        algo = Algorithm(algorithm) if algorithm else Algorithm.AUTO
+    except ValueError:
+        valid = ", ".join(a.value for a in Algorithm)
+        console.print(f"  [red]Invalid algorithm '{algorithm}'. Valid: {valid}[/red]")
+        raise typer.Exit(1)
+
     # Build TaskSpec
     task_spec = TaskSpec(
         task_description=task,
         raw_input=task,
-        robot_type=RobotType(robot) if robot else RobotType.ARM,
+        robot_type=robot_type,
         robot_model=model,
-        algorithm=Algorithm(algorithm) if algorithm else Algorithm.AUTO,
+        algorithm=algo,
         time_budget_minutes=time_budget,
         num_envs=num_envs,
         push_to_hub=push_to_hub,
