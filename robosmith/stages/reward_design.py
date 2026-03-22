@@ -199,6 +199,7 @@ def run_reward_design(
     num_candidates: int = 4,
     num_eval_episodes: int = 5,
     literature_context: str = "",
+    training_reflection: str = "",
 ) -> RewardDesignResult:
     """
     Run the full evolutionary reward design stage.
@@ -226,6 +227,7 @@ def run_reward_design(
     all_candidates: list[RewardCandidate] = []
     all_eval_results: list[EvalResult] = []
     global_best: RewardCandidate | None = None
+    _gens_without_improvement = 0
 
     for gen in range(num_iterations):
         logger.info(f"Reward evolution — generation {gen + 1}/{num_iterations}")
@@ -233,16 +235,28 @@ def run_reward_design(
         # Step 2: Generate candidates
         if gen == 0:
             # First generation: generate from scratch with literature context
+            # Include literature context + training reflection from previous outer iteration
+            combined_context = literature_context
+            if training_reflection:
+                combined_context = (
+                    (combined_context + "\n\n" if combined_context else "")
+                    + training_reflection
+                )
+            
             candidates = agent.generate(
                 task_description=task_spec.task_description,
                 obs_space_info=obs_info,
                 action_space_info=act_info,
                 num_candidates=num_candidates,
-                literature_context=literature_context
+                literature_context=combined_context
             )
         else:
             # Later generations: evolve from the best so far
             feedback = _format_feedback(global_best, all_eval_results[-num_candidates:])
+            # Append training reflection if available
+            if training_reflection:
+                feedback = feedback + "\n\n" + training_reflection
+            
             candidates = agent.evolve(
                 task_description=task_spec.task_description,
                 obs_space_info=obs_info,
@@ -324,41 +338,58 @@ def run_reward_design(
 def _format_feedback(best: RewardCandidate, recent_evals: list[EvalResult]) -> str:
     """
     Format evaluation results as human-readable feedback for the LLM.
-
+ 
     This is the 'reward reflection' step from Eureka — telling the LLM
     what happened so it can improve.
     """
     lines = [
-        f"Previous best reward function scored {best.score:.2f}.",
+        "REWARD EVALUATION RESULTS (random policy rollouts):",
+        f"  Best candidate scored {best.score:.2f}.",
         "",
-        "Evaluation results across candidates:",
+        "  All candidates this generation:",
     ]
-
-    for ev in recent_evals:
+ 
+    # Show all candidates, ranked
+    sorted_evals = sorted(recent_evals, key=lambda e: e.mean_reward, reverse=True)
+    for rank, ev in enumerate(sorted_evals, 1):
         if ev.had_errors:
-            lines.append(f"  Candidate {ev.candidate_id}: FAILED — {ev.error_message}")
+            lines.append(f"    #{rank} Candidate {ev.candidate_id}: CRASHED — {ev.error_message[:80]}")
         else:
             lines.append(
-                f"  Candidate {ev.candidate_id}: "
-                f"mean_reward={ev.mean_reward:.2f}, "
-                f"std={ev.std_reward:.2f}, "
+                f"    #{rank} Candidate {ev.candidate_id}: "
+                f"reward={ev.mean_reward:.2f} (±{ev.std_reward:.2f}), "
                 f"ep_length={ev.mean_episode_length:.0f}"
             )
-
+ 
+    # Score spread analysis
+    valid_scores = [ev.mean_reward for ev in recent_evals if not ev.had_errors]
+    if len(valid_scores) >= 2:
+        spread = max(valid_scores) - min(valid_scores)
+        lines.append("")
+        lines.append(f"  Score spread: {spread:.2f} (max={max(valid_scores):.2f}, min={min(valid_scores):.2f})")
+        if spread < 5:
+            lines.append("  NOTE: Very narrow spread — candidates are too similar. Try more diverse approaches.")
+        elif spread > 100:
+            lines.append("  NOTE: Wide spread — some approaches work much better. Focus on what the best one does differently.")
+ 
+    # Component breakdown from best candidate
     if best.metrics:
         lines.append("")
-        lines.append("Best candidate reward components:")
+        lines.append("  Best candidate metrics:")
         for k, v in best.metrics.items():
-            lines.append(f"  {k}: {v}")
-
+            if isinstance(v, float):
+                lines.append(f"    {k}: {v:.4f}")
+            else:
+                lines.append(f"    {k}: {v}")
+ 
     lines.append("")
     lines.append(
-        "Improve the reward function. Focus on: "
-        "making the task reward signal stronger, "
-        "ensuring reward components are well-scaled, "
-        "and adding shaping terms if the agent isn't making progress."
+        "INSTRUCTIONS: Write an improved reward function that addresses the issues above. "
+        "If the best score is negative, the reward function needs fundamental changes. "
+        "If positive but low, focus on strengthening the task-relevant components. "
+        "Keep reward components well-scaled (roughly [-1, 1] each) and use dense signals."
     )
-
+ 
     return "\n".join(lines)
 
 def _flatten_obs(obs) -> np.ndarray:  # noqa: ANN001

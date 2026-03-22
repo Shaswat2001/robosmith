@@ -308,13 +308,21 @@ class ForgeController:
             if lit_context:
                 logger.info("Passing literature context to reward design")
 
+        # Build training reflection from previous iteration (if available)
+        training_reflection = ""
+        prev_training = getattr(self, "_training_result", None)
+        if prev_training and prev_training.metrics_history:
+            training_reflection = _build_training_reflection(prev_training)
+            logger.info("Passing training curve analysis to reward design")
+
         result = run_reward_design(
             task_spec=self.task_spec,
             env_entry=env_entry,
             llm_config=self.config.llm,
             search_config=self.config.reward_search,
             num_candidates=self.config.reward_search.candidates_per_iteration,
-            literature_context=lit_context
+            literature_context=lit_context,
+            training_reflection=training_reflection
         )
  
         # Keep the best reward across iterations — only replace if new one is better
@@ -514,3 +522,86 @@ class ForgeController:
             state_path = Path(self.state.artifacts_dir) / "run_state.json"
             state_path.write_text(self.state.model_dump_json(indent=2))
             logger.info(f"Run state saved to {state_path}")
+
+def _build_training_reflection(training_result) -> str:
+    """
+    Analyze training curves and build actionable feedback for the reward LLM
+
+    Detects:
+    - Plateau (reward stopped improving)
+    - Collapse (reward dropped after initial progress)
+    - Steady improvement (keep going, just refine)
+    - Oscillation (reward bouncing around)
+    - Stagnation (reward never left zero)
+    """
+
+    history = training_result.metrics_history
+    if not history or len(history) < 3:
+        return ""
+ 
+    rewards = [h["mean_reward"] for h in history]
+    lengths = [h.get("mean_ep_length", 0) for h in history]
+ 
+    # Basic stats
+    first_third = rewards[: len(rewards) // 3] if len(rewards) >= 3 else rewards[:1]
+    last_third = rewards[-(len(rewards) // 3):] if len(rewards) >= 3 else rewards[-1:]
+    peak = max(rewards)
+    final = rewards[-1]
+    peak_idx = rewards.index(peak)
+ 
+    lines = [
+        "TRAINING CURVE ANALYSIS (from actual RL training):",
+        f"  Algorithm: {training_result.algorithm}",
+        f"  Timesteps: {training_result.total_timesteps:,}",
+        f"  Training time: {training_result.training_time_seconds:.1f}s",
+        "",
+        f"  Reward trajectory: {' → '.join(f'{r:.1f}' for r in rewards[::max(1, len(rewards)//6)])}",
+        f"  Start: {rewards[0]:.2f} → Peak: {peak:.2f} (step {history[peak_idx]['timestep']:,}) → Final: {final:.2f}",
+        "",
+    ]
+ 
+    # Detect curve shape
+    mean_first = sum(first_third) / len(first_third) if first_third else 0
+    mean_last = sum(last_third) / len(last_third) if last_third else 0
+    improvement = mean_last - mean_first
+ 
+    if abs(improvement) < abs(mean_first) * 0.1 and abs(mean_first) > 0:
+        # Stagnation — reward barely moved
+        lines.append("  DIAGNOSIS: Reward STAGNATED — barely changed during training.")
+        lines.append("  SUGGESTION: The reward signal may be too weak or too noisy.")
+        lines.append("  Try: increase reward magnitude, simplify components, or add stronger shaping.")
+    elif peak > final * 1.5 and peak_idx < len(rewards) * 0.7:
+        # Collapse — peaked early then dropped
+        lines.append(f"  DIAGNOSIS: Reward COLLAPSED — peaked at {peak:.1f} then dropped to {final:.1f}.")
+        lines.append("  SUGGESTION: The reward may be exploitable or have conflicting components.")
+        lines.append("  Try: clip extreme values, reduce shaping term weights, add regularization.")
+    elif improvement > 0 and mean_last > mean_first:
+        # Improvement — check if plateaued
+        late_half = rewards[len(rewards) // 2:]
+        late_improvement = late_half[-1] - late_half[0] if len(late_half) > 1 else 0
+        if abs(late_improvement) < abs(improvement) * 0.1:
+            lines.append(f"  DIAGNOSIS: Reward PLATEAUED — improved early but stalled at {final:.1f}.")
+            lines.append("  SUGGESTION: The agent learned the easy part. Need better shaping for the hard part.")
+            lines.append("  Try: add curriculum-like terms, increase reward for final task completion.")
+        else:
+            lines.append(f"  DIAGNOSIS: IMPROVING — reward went from {mean_first:.1f} to {mean_last:.1f}.")
+            lines.append("  SUGGESTION: Training is working. Refine the reward to push further.")
+            lines.append("  Try: increase weight on the primary task component, reduce penalty terms.")
+    elif improvement < 0:
+        lines.append(f"  DIAGNOSIS: Reward DECREASING — got worse during training ({mean_first:.1f} → {mean_last:.1f}).")
+        lines.append("  SUGGESTION: The reward function may be adversarial or have sign errors.")
+        lines.append("  Try: verify signs of all components, ensure task reward dominates penalties.")
+    else:
+        lines.append(f"  DIAGNOSIS: FLAT — reward stayed near {final:.1f} throughout.")
+        lines.append("  SUGGESTION: Agent may not be receiving useful gradient signal.")
+        lines.append("  Try: make reward denser, add intermediate progress terms.")
+ 
+    # Episode length analysis
+    if lengths and any(l > 0 for l in lengths):
+        mean_len = sum(lengths) / len(lengths)
+        lines.append("")
+        lines.append(f"  Mean episode length: {mean_len:.0f} steps")
+        if mean_len < 20:
+            lines.append("  WARNING: Very short episodes — agent is failing/dying quickly.")
+ 
+    return "\n".join(lines)
