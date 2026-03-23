@@ -40,14 +40,14 @@ class TestMakeEnvErrors:
             description="A fake env",
             source="fake",
         )
-        with pytest.raises(RuntimeError, match="Unknown framework"):
+        with pytest.raises(RuntimeError, match="No adapter found"):
             make_env(entry)
 
-    def test_isaac_lab_not_yet_wired(self, registry: EnvRegistry):
+    def test_isaac_lab_not_installed(self, registry: EnvRegistry):
         entry = registry.get("isaac-franka-lift")
         if entry is None:
             pytest.skip("No Isaac Lab entry in registry")
-        with pytest.raises(RuntimeError, match="Isaac Lab"):
+        with pytest.raises((RuntimeError, ImportError)):
             make_env(entry)
 
 

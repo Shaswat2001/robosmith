@@ -1,75 +1,55 @@
 """
-Environment wrapper - instantiate a live simulation from registry entry.
+Environment wrapper — instantiate a live simulation from a registry entry.
 
-This is the bridge between the registry (which env to use) and the
-training loop (a running you can step through).
+Routes through the EnvAdapterRegistry to support multiple frameworks
+(Gymnasium, Isaac Lab, LIBERO, ManiSkill, custom MJCF/URDF).
+
+Usage::
+
+    from robosmith.envs.registry import EnvRegistry
+    from robosmith.envs.wrapper import make_env
+
+    registry = EnvRegistry()
+    entry = registry.get("mujoco-ant")
+    env = make_env(entry)
+
+    obs, info = env.reset()
+    obs, reward, terminated, truncated, info = env.step(env.action_space.sample())
+    env.close()
 """
 
 from __future__ import annotations
- 
+
 from typing import Any
- 
+
 from loguru import logger
- 
+
+from robosmith.envs.adapters import EnvConfig
 from robosmith.envs.registry import EnvEntry
 
-def make_env(entry: EnvEntry, **kwargs: Any):
+def make_env(entry: EnvEntry, **kwargs: Any):  # noqa: ANN201
     """
-    Create a gymnasium environment from a registry entry.
-    """
+    Create an environment from a registry entry.
 
-    if entry.framework == "gymnasium":
-        return _make_gymnasium(entry, **kwargs)
-    elif entry.framework == "isaac_lab":
-        raise RuntimeError(
-            f"Isaac Lab environments not yet wired. "
-            f"Entry '{entry.id}' requires Isaac Lab support (coming soon)."
-        )
-    elif entry.framework == "mjlab":
-        raise RuntimeError(
-            f"mjlab environments not yet wired. "
-            f"Entry '{entry.id}' requires mjlab support (coming soon)."
-        )
-    else:
-        raise RuntimeError(f"Unknown framework: {entry.framework}")
-    
-def _make_gymnasium(entry: EnvEntry, **kwargs: Any):  # noqa: ANN201
-    """Create a standard gymnasium / gymnasium-robotics environment."""
-    try:
-        import gymnasium as gym
-    except ImportError as e:
-        raise ImportError(
-            "gymnasium is required for this environment. "
-            "Install it with: pip install gymnasium"
-        ) from e
- 
-    env_id = entry.env_id
- 
-    # Check if this needs gymnasium-robotics (Fetch, Hand envs)
-    if entry.source == "gymnasium-robotics":
-        try:
-            import gymnasium_robotics  # noqa: F401
-        except ImportError as e:
-            raise ImportError(
-                f"Environment '{entry.id}' requires gymnasium-robotics. "
-                "Install it with: pip install gymnasium-robotics"
-            ) from e
- 
-    # Check if this needs mujoco
-    if entry.source in ("gymnasium[mujoco]", "gymnasium-robotics"):
-        try:
-            import mujoco  # noqa: F401
-        except ImportError as e:
-            raise ImportError(
-                f"Environment '{entry.id}' requires mujoco. "
-                "Install it with: pip install mujoco"
-            ) from e
- 
-    logger.info(f"Creating gymnasium env: {env_id}")
-    env = gym.make(env_id, **kwargs)
-    logger.info(
-        f"Env created — obs_space: {env.observation_space}, "
-        f"act_space: {env.action_space}"
+    Routes to the appropriate adapter based on the entry's framework.
+    Supports: gymnasium, isaac_lab, libero, maniskill, custom MJCF/URDF.
+
+    Args:
+        entry: An EnvEntry from the registry.
+        **kwargs: Extra arguments (render_mode, max_episode_steps, etc.)
+
+    Returns:
+        An environment instance with reset(), step(), close().
+    """
+    from robosmith.envs.adapter_registry import EnvAdapterRegistry
+
+    config = EnvConfig(
+        render_mode=kwargs.pop("render_mode", None),
+        max_episode_steps=kwargs.pop("max_episode_steps", None),
+        seed=kwargs.pop("seed", None),
+        num_envs=kwargs.pop("num_envs", 1),
+        extra=kwargs,
     )
- 
-    return env
+
+    registry = EnvAdapterRegistry()
+    return registry.make_from_entry(entry, config)
