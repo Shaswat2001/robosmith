@@ -139,8 +139,11 @@ def run_training(
     if algo_cls is None:
         raise ValueError(f"Unsupported algorithm: {algo_name}. Supported: ppo, sac")
 
+    # Auto-detect policy type
+    policy_type = "MultiInputPolicy" if hasattr(env.observation_space, "spaces") else "MlpPolicy"
+
     model = algo_cls(
-        "MlpPolicy",
+        policy_type,
         env,
         verbose=0,
         device="auto",

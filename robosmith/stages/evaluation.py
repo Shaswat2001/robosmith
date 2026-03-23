@@ -97,7 +97,14 @@ def run_evaluation(
     episodes: list[EpisodeResult] = []
 
     for i, seed in enumerate(eval_seeds):
-        result = _run_episode(env_entry, reward_fn, model, seed, max_steps)
+        try:
+            result = _run_episode(env_entry, reward_fn, model, seed, max_steps)
+        except Exception as e:
+            logger.warning(f"Eval episode {i + 1} crashed: {e}")
+            result = EpisodeResult(
+                seed=seed, total_reward=0.0, episode_length=0,
+                success=False, original_total_reward=0.0,
+            )
         episodes.append(result)
 
         if (i + 1) % 5 == 0 or i == len(eval_seeds) - 1:
@@ -138,10 +145,17 @@ def _run_episode(
 
         obs, reward, terminated, truncated, info = wrapped.step(action)
 
-        # NaN safety - stop episode if observations go bad
-        if not np.all(np.isfinite(np.asarray(obs, dtype=np.float32).flat[:20])):
-            logger.debug(f"NaN/Inf detected in obs at step {steps} — stopping episode")
-            break
+        # NaN safety — stop episode if observations go bad
+        try:
+            if isinstance(obs, dict):
+                obs_flat = np.concatenate([np.asarray(v).flatten() for v in obs.values()])
+            else:
+                obs_flat = np.asarray(obs).flatten()
+            if not np.all(np.isfinite(obs_flat[:20])):
+                logger.debug(f"NaN/Inf detected in obs at step {steps} — stopping episode")
+                break
+        except Exception:
+            pass  # Can't check, continue anyway
 
         total_reward += reward
         original_total += info.get("original_reward", 0.0)

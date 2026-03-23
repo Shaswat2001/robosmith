@@ -61,18 +61,33 @@ def extract_space_info(env, env_entry=None, llm_config=None) -> tuple[str, str]:
 
     # ── Observation space ──
 
-    # Basic shape info
-    if hasattr(obs_space, "shape"):
+    # Check for dict/goal-conditioned spaces FIRST (Dict has shape=None)
+    if hasattr(obs_space, "spaces") and hasattr(obs_space.spaces, "items"):
+        parts = []
+        for key, space in obs_space.spaces.items():
+            shape = getattr(space, "shape", "?")
+            parts.append(f"{key}: {type(space).__name__}({shape})")
+        obs_info = "Dict(" + ", ".join(parts) + ")"
+        obs_info += "\n\nIMPORTANT: This is a Dict observation space (GoalEnv)."
+        obs_info += "\nThe obs passed to compute_reward is a FLAT numpy array, concatenated as:"
+        offset = 0
+        for key, space in obs_space.spaces.items():
+            dim = int(np.prod(space.shape)) if hasattr(space, "shape") else 0
+            obs_info += f"\n  obs[{offset}:{offset + dim}] = '{key}' ({dim} dims)"
+            offset += dim
+        obs_info += f"\nTotal flattened size: {offset}"
+        if "achieved_goal" in obs_space.spaces and "desired_goal" in obs_space.spaces:
+            obs_info += "\n\nThis is a GOAL-CONDITIONED environment:"
+            obs_info += "\n  - 'observation': robot state (joint positions, velocities)"
+            obs_info += "\n  - 'achieved_goal': current state of the thing being controlled"
+            obs_info += "\n  - 'desired_goal': target state we want to reach"
+            obs_info += "\n  KEY: Reward should minimize distance between achieved_goal and desired_goal."
+    elif hasattr(obs_space, "shape") and obs_space.shape is not None:
         obs_info = f"{type(obs_space).__name__}(shape={obs_space.shape}, dtype={obs_space.dtype})"
         if hasattr(obs_space, "low") and hasattr(obs_space, "high"):
             low = np.min(obs_space.low)
             high = np.max(obs_space.high)
             obs_info += f" range=[{low:.1f}, {high:.1f}]"
-    elif hasattr(obs_space, "spaces"):
-        parts = []
-        for key, space in obs_space.spaces.items():
-            parts.append(f"{key}: {type(space).__name__}({getattr(space, 'shape', '?')})")
-        obs_info = "Dict(" + ", ".join(parts) + ")"
     else:
         obs_info = str(obs_space)
 
@@ -415,20 +430,41 @@ def run_reward_design(
             )
         else:
             # Later generations: evolve from the best so far
-            feedback = _format_feedback(global_best, all_eval_results[-num_candidates:])
-            # Append training reflection if available
-            if training_reflection:
-                feedback = feedback + "\n\n" + training_reflection
+            # If no global best yet (all previous candidates errored), regenerate from scratch
+            if global_best is None:
+                # Collect error messages from failed candidates to help the LLM
+                error_msgs = [r.error_message for r in gen_eval_results if r.had_errors and r.error_message]
+                error_context = ""
+                if error_msgs:
+                    unique_errors = list(set(e[:100] for e in error_msgs))[:3]
+                    error_context = (
+                        "\n\nPREVIOUS CANDIDATES ALL FAILED WITH THESE ERRORS:\n"
+                        + "\n".join(f"  - {e}" for e in unique_errors)
+                        + "\n\nFix these issues in your next attempt. "
+                        "Make sure array indexing matches the observation layout described above."
+                    )
+                logger.warning(f"Generation {gen + 1}: no viable best from previous gen — regenerating from scratch")
+                candidates = agent.generate(
+                    task_description=task_spec.task_description,
+                    obs_space_info=obs_info + error_context,
+                    action_space_info=act_info,
+                    num_candidates=num_candidates,
+                    literature_context=combined_context if gen == 1 else "",
+                )
+            else:
+                feedback = _format_feedback(global_best, all_eval_results[-num_candidates:])
+                if training_reflection:
+                    feedback = feedback + "\n\n" + training_reflection
 
-            candidates = agent.evolve(
-                task_description=task_spec.task_description,
-                obs_space_info=obs_info,
-                action_space_info=act_info,
-                previous_best=global_best,
-                training_feedback=feedback,
-                generation=gen,
-                num_candidates=num_candidates,
-            )
+                candidates = agent.evolve(
+                    task_description=task_spec.task_description,
+                    obs_space_info=obs_info,
+                    action_space_info=act_info,
+                    previous_best=global_best,
+                    training_feedback=feedback,
+                    generation=gen,
+                    num_candidates=num_candidates,
+                )
 
         if not candidates:
             logger.warning(f"Generation {gen + 1} produced zero valid candidates")

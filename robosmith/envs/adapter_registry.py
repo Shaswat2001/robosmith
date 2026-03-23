@@ -14,17 +14,22 @@ from robosmith.envs.registry import EnvEntry
 from robosmith.envs.adapters import EnvAdapter, EnvConfig
 
 class EnvAdapterRegistry:
-    """Central registry of environment adapters."""
+    """Central registry of environment adapters (singleton)."""
 
-    def __init__(self) -> None:
-        self._adapters: dict[str, EnvAdapter] = {}
-        self._known_adapters: dict[str, tuple[str, str]] = {
-            "gymnasium": ("robosmith.envs.adapters.gymnasium_adapter", "GymnasiumAdapter"),
-            "isaac_lab": ("robosmith.envs.adapters.isaac_lab_adapter", "IsaacLabAdapter"),
-            "libero": ("robosmith.envs.adapters.libero_adapter", "LIBEROAdapter"),
-            "maniskill": ("robosmith.envs.adapters.maniskill_adapter", "ManiSkillAdapter"),
-            "custom_mjcf": ("robosmith.envs.adapters.custom_mjcf_adapter", "CustomMJCFAdapter"),
-        }
+    _instance: EnvAdapterRegistry | None = None
+
+    def __new__(cls) -> EnvAdapterRegistry:
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+            cls._instance._adapters = {}
+            cls._instance._known_adapters = {
+                "gymnasium": ("robosmith.envs.adapters.gymnasium_adapter", "GymnasiumAdapter"),
+                "isaac_lab": ("robosmith.envs.adapters.isaac_lab_adapter", "IsaacLabAdapter"),
+                "libero": ("robosmith.envs.adapters.libero_adapter", "LIBEROAdapter"),
+                "maniskill": ("robosmith.envs.adapters.maniskill_adapter", "ManiSkillAdapter"),
+                "custom_mjcf": ("robosmith.envs.adapters.custom_mjcf_adapter", "CustomMJCFAdapter"),
+            }
+        return cls._instance
 
     def _ensure_loaded(self, name: str) -> None:
         """Lazy-load an adapter when first needed."""

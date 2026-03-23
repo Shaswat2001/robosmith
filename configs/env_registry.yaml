@@ -300,7 +300,7 @@ environments:
   - id: hand-reach
     name: Shadow Hand Reach
     framework: gymnasium
-    env_id: HandReach-v2
+    env_id: HandReach-v3
     robot_type: dexterous_hand
     robot_model: shadow_hand
     env_type: tabletop

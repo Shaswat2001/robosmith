@@ -19,9 +19,14 @@ class TrainerRegistry:
     for a given algorithm + task combination.
     """
 
-    def __init__(self) -> None:
-        self._trainers: dict[str, Trainer] = {}
-        self._auto_discover()
+    _instance: TrainerRegistry | None = None
+
+    def __new__(cls) -> TrainerRegistry:
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+            cls._instance._trainers = {}
+            cls._instance._auto_discover()
+        return cls._instance
 
     def register(self, trainer: Trainer) -> None:
         """Register a trainer backend."""

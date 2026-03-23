@@ -22,9 +22,6 @@ from robosmith.trainers.base import (
     TrainingResult,
 )
 
-from robosmith.envs.reward_wrapper import ForgeRewardWrapper
-from robosmith.envs.wrapper import make_env
-
 class SB3Policy:
     """Wraps an SB3 model to conform to the Policy protocol."""
 
@@ -52,6 +49,9 @@ class SB3Trainer(Trainer):
                 "stable-baselines3 is required. Install: pip install stable-baselines3"
             ) from e
 
+        from robosmith.envs.reward_wrapper import ForgeRewardWrapper
+        from robosmith.envs.wrapper import make_env
+
         # Create wrapped environment
         if config.env_entry is None:
             raise ValueError("env_entry is required for SB3 training")
@@ -78,9 +78,15 @@ class SB3Trainer(Trainer):
 
         logger.info(f"SB3 training: {algo_name.upper()}, {config.total_timesteps:,} steps")
 
+        # Auto-detect policy type based on observation space
+        default_policy = "MlpPolicy"
+        if hasattr(env.observation_space, "spaces"):
+            default_policy = "MultiInputPolicy"
+            logger.info("Dict observation space detected — using MultiInputPolicy")
+
         # Create model with SB3-specific options
         sb3_kwargs = {
-            "policy": config.extra.get("policy", "MlpPolicy"),
+            "policy": config.extra.get("policy", default_policy),
             "env": env,
             "verbose": 0,
             "device": config.device,
