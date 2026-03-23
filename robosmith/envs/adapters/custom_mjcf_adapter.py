@@ -10,10 +10,9 @@ environments on the fly.
 
 from __future__ import annotations
 
-from pathlib import Path
-from typing import Any
-
 import numpy as np
+from typing import Any
+from pathlib import Path
 from loguru import logger
 
 from robosmith.envs.adapters import EnvAdapter, EnvConfig

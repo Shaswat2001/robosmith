@@ -26,6 +26,7 @@ from loguru import logger
 
 from robosmith.envs.adapters import EnvConfig
 from robosmith.envs.registry import EnvEntry
+from robosmith.envs.adapter_registry import EnvAdapterRegistry
 
 def make_env(entry: EnvEntry, **kwargs: Any):  # noqa: ANN201
     """
@@ -33,15 +34,7 @@ def make_env(entry: EnvEntry, **kwargs: Any):  # noqa: ANN201
 
     Routes to the appropriate adapter based on the entry's framework.
     Supports: gymnasium, isaac_lab, libero, maniskill, custom MJCF/URDF.
-
-    Args:
-        entry: An EnvEntry from the registry.
-        **kwargs: Extra arguments (render_mode, max_episode_steps, etc.)
-
-    Returns:
-        An environment instance with reset(), step(), close().
     """
-    from robosmith.envs.adapter_registry import EnvAdapterRegistry
 
     config = EnvConfig(
         render_mode=kwargs.pop("render_mode", None),

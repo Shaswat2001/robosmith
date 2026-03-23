@@ -21,9 +21,9 @@ class ForgeRewardWrapper(gym.Wrapper):
         def compute_reward(obs, action, next_obs, info) -> tuple[float, dict]
  
     The wrapper:
-    - Stores the previous obs so it can pass (obs, action, next_obs, info)
-    - Replaces the step reward with our custom reward
-    - Adds the original reward and component breakdown to info
+        - Stores the previous obs so it can pass (obs, action, next_obs, info)
+        - Replaces the step reward with our custom reward
+        - Adds the original reward and component breakdown to info
     """
 
     def __init__(

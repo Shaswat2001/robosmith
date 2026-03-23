@@ -49,18 +49,34 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-# Install these when you're ready for each phase
+
+# ── Core simulation ──
 sim = [
     "mujoco>=3.0",
     "gymnasium>=1.0",
 ]
+
+# ── Training backends ──
 train = [
     "torch>=2.2",
     "stable-baselines3>=2.3",
 ]
+
+# ── Env suites (install what you need) ──
+robotics = [
+    "gymnasium-robotics>=1.2",
+]
+maniskill = [
+    "mani-skill>=3.0",
+]
+# Note: libero, isaac_lab, rl_games have non-pip install steps.
+# See: robosmith deps --help
+
+# ── Extras ──
 video = [
     "imageio>=2.34",
     "imageio-ffmpeg>=0.4",
+    "moviepy>=1.0",
 ]
 hub = [
     "huggingface-hub>=0.23",
@@ -73,7 +89,7 @@ dev = [
     "pre-commit>=3.7",
 ]
 all = [
-    "robosmith[sim,train,video,hub,dev]",
+    "robosmith[sim,train,robotics,video,hub,dev]",
 ]
 
 [project.scripts]

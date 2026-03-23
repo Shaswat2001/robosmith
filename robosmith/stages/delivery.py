@@ -195,7 +195,7 @@ def _record_policy_video(
 
         # Method 1: gymnasium RecordVideo (needs moviepy)
         try:
-            env = gym.make(env_entry.env_id, render_mode="rgb_array")
+            env = gym.make(env_entry, render_mode="rgb_array")
             env = gym.wrappers.RecordVideo(
                 env,
                 video_folder=str(video_dir),
@@ -229,7 +229,7 @@ def _record_policy_video(
 
         # Method 2: manual frame capture with imageio
         try:
-            env = gym.make(env_entry.env_id, render_mode="rgb_array")
+            env = gym.make(env_entry, render_mode="rgb_array")
             frames: list = []
 
             for ep in range(num_episodes):

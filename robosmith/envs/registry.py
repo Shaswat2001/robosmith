@@ -8,10 +8,9 @@ matches a task. Actually *creating* the environment is a separate step
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-from pathlib import Path
-
 import yaml
+from pathlib import Path
+from dataclasses import dataclass
 
 # Default registry file ships with the package
 _DEFAULT_REGISTRY = Path(__file__).parent.parent.parent / "configs" / "env_registry.yaml"

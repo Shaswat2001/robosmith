@@ -380,6 +380,103 @@ def config() -> None:
     cfg = ForgeConfig()
     console.print_json(cfg.model_dump_json(indent=2))
 
+@app.command()
+def deps() -> None:
+    """Show installed dependencies and how to install missing ones."""
+    _banner()
+    console.print()
+
+    # ── Environment adapters ──
+    console.print("[bold]Environment Adapters[/bold]")
+    console.print()
+
+    env_deps = [
+        ("gymnasium", "gymnasium", "pip install gymnasium", "Core simulation (MuJoCo, classic control)"),
+        ("mujoco", "mujoco", "pip install mujoco", "MuJoCo physics engine"),
+        ("gymnasium_robotics", "gymnasium-robotics", "pip install gymnasium-robotics", "Fetch, Shadow Hand envs"),
+        ("mani_skill", "mani-skill", "pip install mani-skill", "ManiSkill manipulation envs"),
+        ("libero", "libero", "pip install libero", "LIBERO benchmark (130 tasks)"),
+        ("isaaclab", "isaaclab", "See: https://isaac-sim.github.io/IsaacLab/", "Isaac Lab GPU-parallel envs"),
+    ]
+
+    for module, package, install_cmd, description in env_deps:
+        try:
+            __import__(module)
+            console.print(f"  [green]✓[/green] {package:25} {description}")
+        except ImportError:
+            console.print(f"  [red]✗[/red] {package:25} {description}")
+            console.print(f"    [dim]{install_cmd}[/dim]")
+
+    # ── Training backends ──
+    console.print()
+    console.print("[bold]Training Backends[/bold]")
+    console.print()
+
+    train_deps = [
+        ("stable_baselines3", "stable-baselines3", "pip install stable-baselines3", "PPO, SAC, TD3, A2C, DQN"),
+        ("torch", "pytorch", "pip install torch", "PyTorch (CleanRL, IL, Offline RL)"),
+        ("rl_games", "rl-games", "pip install rl-games", "GPU-accelerated PPO"),
+    ]
+
+    for module, package, install_cmd, description in train_deps:
+        try:
+            __import__(module)
+            console.print(f"  [green]✓[/green] {package:25} {description}")
+        except ImportError:
+            console.print(f"  [red]✗[/red] {package:25} {description}")
+            console.print(f"    [dim]{install_cmd}[/dim]")
+
+    # ── Extras ──
+    console.print()
+    console.print("[bold]Extras[/bold]")
+    console.print()
+
+    extras = [
+        ("imageio", "imageio", "pip install imageio[ffmpeg]", "Video recording"),
+        ("moviepy", "moviepy", "pip install moviepy", "Video encoding (RecordVideo)"),
+        ("huggingface_hub", "huggingface-hub", "pip install huggingface-hub", "Model sharing"),
+        ("httpx", "httpx", "pip install httpx", "Semantic Scholar API (scout)"),
+    ]
+
+    for module, package, install_cmd, description in extras:
+        try:
+            __import__(module)
+            console.print(f"  [green]✓[/green] {package:25} {description}")
+        except ImportError:
+            console.print(f"  [red]✗[/red] {package:25} {description}")
+            console.print(f"    [dim]{install_cmd}[/dim]")
+
+    console.print()
+    console.print("[dim]Quick install groups:[/dim]")
+    console.print('  [dim]pip install robosmith[sim]       # MuJoCo + Gymnasium[/dim]')
+    console.print('  [dim]pip install robosmith[train]     # SB3 + PyTorch[/dim]')
+    console.print('  [dim]pip install robosmith[robotics]  # Gymnasium-Robotics[/dim]')
+    console.print('  [dim]pip install robosmith[video]     # Video recording[/dim]')
+    console.print('  [dim]pip install robosmith[all]       # Everything[/dim]')
+    console.print()
+
+
+@app.command()
+def trainers() -> None:
+    """Show available training backends and algorithms."""
+    _banner()
+    console.print()
+
+    from robosmith.trainers.registry import TrainerRegistry
+    registry = TrainerRegistry()
+
+    console.print("[bold]Training Backends[/bold]")
+    console.print()
+
+    for info in registry.list_all():
+        status = "[green]✓[/green]" if info["available"] else "[red]✗[/red]"
+        algos = ", ".join(info["algorithms"])
+        console.print(f"  {status} [bold]{info['name']:15}[/bold] | {info['paradigm']:12} | {algos}")
+        if not info["available"]:
+            console.print(f"    [dim]Requires: {', '.join(info['requires'])}[/dim]")
+
+    console.print()
+
 # Display helpers
 def _show_task_spec(spec: TaskSpec) -> None:
     """Pretty-print the parsed task specification."""
