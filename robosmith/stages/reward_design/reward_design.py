@@ -11,8 +11,6 @@ The evolutionary loop:
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-
 import numpy as np
 from loguru import logger
 
@@ -22,26 +20,7 @@ from robosmith.envs.registry import EnvEntry
 from robosmith.agents.base import BaseAgent
 from robosmith.envs.wrapper import make_env
 
-@dataclass
-class EvalResult:
-    """Result of evaluating one reward candidate on the environment."""
-
-    candidate_id: int
-    mean_reward: float
-    std_reward: float
-    mean_episode_length: float
-    num_episodes: int
-    had_errors: bool = False
-    error_message: str = ""
-
-@dataclass
-class RewardDesignResult:
-    """Output of the full reward design stage."""
-
-    best_candidate: RewardCandidate
-    all_candidates: list[RewardCandidate]
-    eval_results: list[EvalResult]
-    generations_run: int
+from .utils import EvalResult, RewardDesignResult
 
 def extract_space_info(env, env_entry=None, llm_config=None) -> tuple[str, str]:  # noqa: ANN001
     """

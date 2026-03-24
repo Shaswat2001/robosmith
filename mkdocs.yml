@@ -1,0 +1,77 @@
+site_name: RoboSmith
+site_description: Natural language → trained robot policy
+site_url: https://shaswat2001.github.io/robosmith/
+repo_url: https://github.com/Shaswat2001/robosmith
+repo_name: Shaswat2001/robosmith
+
+theme:
+  name: material
+  palette:
+    - scheme: default
+      primary: deep purple
+      accent: amber
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: deep purple
+      accent: amber
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - search.highlight
+    - content.code.copy
+    - content.tabs.link
+  icon:
+    repo: fontawesome/brands/github
+
+nav:
+  - Home: index.md
+  - Getting Started:
+    - Installation: getting-started/installation.md
+    - Quick Start: getting-started/quickstart.md
+    - Configuration: getting-started/configuration.md
+  - Pipeline:
+    - Overview: pipeline/overview.md
+    - Intake: pipeline/intake.md
+    - Scout: pipeline/scout.md
+    - Environment Synthesis: pipeline/env-synthesis.md
+    - Reward Design: pipeline/reward-design.md
+    - Training: pipeline/training.md
+    - Evaluation: pipeline/evaluation.md
+    - Delivery: pipeline/delivery.md
+  - Extending:
+    - Custom Trainers: extending/trainers.md
+    - Custom Environments: extending/environments.md
+    - Custom Agents: extending/agents.md
+  - API Reference:
+    - Config: api/config.md
+    - Trainers: api/trainers.md
+    - Environments: api/environments.md
+    - Stages: api/stages.md
+  - Contributing: contributing.md
+
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - admonition
+  - pymdownx.details
+  - attr_list
+  - md_in_html
+  - toc:
+      permalink: true
+
+plugins:
+  - search

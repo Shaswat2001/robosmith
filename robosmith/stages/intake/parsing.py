@@ -13,6 +13,8 @@ from robosmith.config import (
     TaskSpec
 )
 
+from .prompt import INTAKE_SYSTEM_PROMPT
+
 def parse_task(
     raw_input: str,
     llm_config: LLMConfig | None = None

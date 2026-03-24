@@ -126,7 +126,7 @@ class TestBuildSearchQueries:
 
 
 class TestSearchPapers:
-    @patch("robosmith.stages.scout.httpx.Client")
+    @patch("robosmith.stages.scout.search.httpx.Client")
     def test_returns_papers(self, mock_client_cls):
         mock_client = MagicMock()
         mock_client.__enter__ = MagicMock(return_value=mock_client)
@@ -142,7 +142,7 @@ class TestSearchPapers:
         assert card.papers[0]["citations"] == 150
         assert card.papers[0]["arxiv_id"] == "2310.12931"
 
-    @patch("robosmith.stages.scout.httpx.Client")
+    @patch("robosmith.stages.scout.search.httpx.Client")
     def test_handles_none_fields(self, mock_client_cls):
         mock_client = MagicMock()
         mock_client.__enter__ = MagicMock(return_value=mock_client)
@@ -157,7 +157,7 @@ class TestSearchPapers:
         assert obscure["abstract"] == ""
         assert obscure["arxiv_id"] is None
 
-    @patch("robosmith.stages.scout.httpx.Client")
+    @patch("robosmith.stages.scout.search.httpx.Client")
     def test_api_error_returns_empty(self, mock_client_cls):
         mock_client = MagicMock()
         mock_client.__enter__ = MagicMock(return_value=mock_client)
