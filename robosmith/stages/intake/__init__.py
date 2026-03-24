@@ -7,5 +7,6 @@ type, success criteria and safety constraints from plain English.
 """
 
 from .parsing import RobotType, parse_task, _parse_criteria, _parse_safety, _safe_enum
+from .prompt import INTAKE_SYSTEM_PROMPT
 
-__all__ = ["RobotType", "parse_task", "_parse_criteria", "_parse_safety", "_safe_enum"]
+__all__ = ["RobotType", "parse_task", "_parse_criteria", "_parse_safety", "_safe_enum", "INTAKE_SYSTEM_PROMPT"]

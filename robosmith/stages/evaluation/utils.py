@@ -17,9 +17,48 @@ from __future__ import annotations
 import numpy as np
 from pathlib import Path
 from loguru import logger
+from dataclasses import dataclass, field
 
-from .run import EpisodeResult, EvalReport
 from robosmith.config import Decision, TaskSpec
+
+@dataclass
+class EpisodeResult:
+    """Result of running one evaluation episode."""
+
+    seed: int
+    total_reward: float
+    episode_length: int
+    success: bool
+    original_total_reward: float = 0.0
+
+@dataclass
+class EvalReport:
+    """Complete evaluation report across all episodes."""
+
+    episodes: list[EpisodeResult]
+
+    # Aggregate metrics
+    success_rate: float = 0.0
+    mean_reward: float = 0.0
+    std_reward: float = 0.0
+    mean_episode_length: float = 0.0
+    worst_reward: float = 0.0
+    best_reward: float = 0.0
+
+    # Decision
+    decision: Decision = Decision.REFINE_REWARD
+    decision_reason: str = ""
+
+    # Which criteria passed/failed
+    criteria_results: dict = field(default_factory=dict)
+
+    def summary(self) -> str:
+        return (
+            f"Eval: {len(self.episodes)} episodes | "
+            f"success={self.success_rate:.0%} | "
+            f"reward={self.mean_reward:.2f}±{self.std_reward:.2f} | "
+            f"decision={self.decision.value}"
+        )
 
 def _build_report(episodes: list[EpisodeResult], task_spec: TaskSpec) -> EvalReport:
     """Compute aggregate metrics and make a decision."""

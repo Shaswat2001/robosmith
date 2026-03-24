@@ -34,10 +34,9 @@ from robosmith.stages.scout import run_scout
 from robosmith.stages.intake import parse_task
 from robosmith.stages.delivery import run_delivery
 from robosmith.stages.evaluation import run_evaluation
-from robosmith.stages.env_synthesis import _extract_tags
-from robosmith.stages.env_synthesis import match_task_to_env
 from robosmith.stages.reward_design import run_reward_design
 from robosmith.stages.training import run_training, run_training_v2
+from robosmith.stages.env_synthesis import _extract_tags, match_task_to_env
 
 # The pipeline stages, in order
 STAGES = [

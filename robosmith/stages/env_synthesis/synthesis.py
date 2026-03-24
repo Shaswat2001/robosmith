@@ -1,16 +1,3 @@
-"""
-Stage 3: Environment synthesis.
-
-This stage takes a TaskSpec and finds (or generates) a simulation
-environment for it. Currently supports:
-
-  - Registry matching: search the catalog for the best existing env
-
-Coming later:
-  - LLM-based MJCF generation for novel tasks
-  - Composable scene assembly from primitives
-"""
-
 from __future__ import annotations
 
 from dataclasses import dataclass

@@ -8,6 +8,6 @@ and baseline numbers.
 No API key needed — Semantic Scholar's public API allows 100 req/sec.
 """
 
-from .search import build_literature_context, build_search_queries, run_scout
+from .search import build_literature_context, build_search_queries, run_scout, search_papers, KnowledgeCard
 
-__all__ = ["build_literature_context", "build_search_queries", "run_scout"]
+__all__ = ["build_literature_context", "build_search_queries", "run_scout", "search_papers", "KnowledgeCard"]
