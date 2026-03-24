@@ -390,7 +390,20 @@ def run_reward_design(
       5. Repeat for N iterations
     """
     config = search_config or RewardSearchConfig()
-    num_iterations = config.num_iterations
+
+    # Adaptive budget: simple envs need fewer iterations
+    obs_dim = _get_obs_dim(env_entry)
+    if obs_dim <= 10:
+        # Simple env (Pendulum, CartPole) — 2 gens, 3 candidates
+        num_iterations = min(config.num_iterations, 2)
+        num_candidates = min(num_candidates, 3)
+        logger.info(f"Simple env (obs_dim={obs_dim}) — reduced budget: {num_iterations} gens, {num_candidates} candidates")
+    elif obs_dim >= 50:
+        # Complex env (Humanoid, HandReach) — use full budget
+        num_iterations = config.num_iterations
+        logger.info(f"Complex env (obs_dim={obs_dim}) — full budget: {num_iterations} gens, {num_candidates} candidates")
+    else:
+        num_iterations = config.num_iterations
 
     # Step 1: Extract space info from the environment
     logger.info(f"Extracting space info from {env_entry.env_id}")
@@ -597,3 +610,21 @@ def _flatten_obs(obs) -> np.ndarray:  # noqa: ANN001
         arrays = [np.asarray(v).flatten() for v in obs.values()]
         return np.concatenate(arrays)
     return np.asarray(obs).flatten()
+
+def _get_obs_dim(env_entry) -> int:
+    """Get observation dimensionality without creating the env."""
+    try:
+        env = make_env(env_entry)
+        obs_space = env.observation_space
+        if hasattr(obs_space, "spaces"):
+            # Dict space — sum all sub-spaces
+            dim = sum(int(np.prod(s.shape)) for s in obs_space.spaces.values() if hasattr(s, "shape"))
+        elif hasattr(obs_space, "shape") and obs_space.shape:
+            dim = int(np.prod(obs_space.shape))
+        else:
+            dim = 0
+        env.close()
+        return dim
+    except Exception:
+        return 20  # Default assumption
+

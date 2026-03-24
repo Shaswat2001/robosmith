@@ -144,12 +144,12 @@ class TestRunDelivery:
 
     def test_video_recording_skipped_without_env(self, tmp_path):
         """Video recording is gracefully skipped when no environment ID is set."""
-        from robosmith.stages.delivery import _record_policy_video
+        from robosmith.stages.delivery import record_policy_video
 
         spec = TaskSpec(task_description="test")  # No environment_id
         state = RunState(run_id="test", task_spec=spec, artifacts_dir=str(tmp_path))
 
-        result = _record_policy_video(
+        result = record_policy_video(
             state=state,
             model_path=Path("/nonexistent/model.zip"),
             artifacts_dir=tmp_path,

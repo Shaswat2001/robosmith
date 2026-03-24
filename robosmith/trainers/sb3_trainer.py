@@ -22,6 +22,9 @@ from robosmith.trainers.base import (
     TrainingResult,
 )
 
+from robosmith.envs.wrapper import make_env
+from robosmith.envs.reward_wrapper import ForgeRewardWrapper
+
 class SB3Policy:
     """Wraps an SB3 model to conform to the Policy protocol."""
 
@@ -48,9 +51,6 @@ class SB3Trainer(Trainer):
             raise ImportError(
                 "stable-baselines3 is required. Install: pip install stable-baselines3"
             ) from e
-
-        from robosmith.envs.reward_wrapper import ForgeRewardWrapper
-        from robosmith.envs.wrapper import make_env
 
         # Create wrapped environment
         if config.env_entry is None:
@@ -144,6 +144,17 @@ class SB3Trainer(Trainer):
                         f"ep_len={mean_len:>6.1f} | "
                         f"time={elapsed:>5.1f}s"
                     )
+
+                    # Stall detection: if reward hasn't changed for 8+ checkpoints, stop early
+                    if len(metrics_history) >= 8:
+                        recent_r = [m["mean_reward"] for m in metrics_history[-8:]]
+                        spread = max(recent_r) - min(recent_r)
+                        if spread < 0.01 * (abs(recent_r[-1]) + 1e-6):
+                            logger.warning(
+                                f"Training stalled — reward flat at {recent_r[-1]:.2f} "
+                                f"for {len(recent_r)} checkpoints. Stopping early."
+                            )
+                            return False
 
                 return True
 

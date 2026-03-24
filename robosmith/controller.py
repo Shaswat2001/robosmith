@@ -28,6 +28,7 @@ from robosmith.config import (
 from robosmith.config import RobotType
 from robosmith.envs.registry import EnvRegistry
 from robosmith.stages.env_synthesis import EnvMatch
+from robosmith.agents.decision_agent import DecisionAgent
 
 from robosmith.stages.scout import run_scout
 from robosmith.stages.intake import parse_task
@@ -440,7 +441,29 @@ class ForgeController:
  
         # Store for delivery stage
         self._eval_report = report
- 
+
+        # If rule-based decision is NOT accept, get LLM second opinion
+        if report.decision != Decision.ACCEPT:
+            try:
+                decision_agent = DecisionAgent(self.config.llm)
+                llm_decision = decision_agent.decide(
+                    eval_report=report,
+                    training_result=getattr(self, "_training_result", None),
+                    task_spec=self.task_spec,
+                    reward_code=getattr(self, "_reward_code", ""),
+                    iteration=self.state.iteration,
+                    max_iterations=self.state.max_iterations,
+                )
+                # Use LLM decision if it's confident
+                if llm_decision.confidence >= 0.6:
+                    report.decision = llm_decision.action
+                    report.decision_reason = llm_decision.reasoning
+                    if llm_decision.suggestions:
+                        report.decision_reason += " | Suggestions: " + "; ".join(llm_decision.suggestions[:2])
+                    logger.info(f"LLM decision agent: {llm_decision.action.value} (confidence={llm_decision.confidence:.1f})")
+            except Exception as e:
+                logger.debug(f"Decision agent skipped: {e}")
+
         # Record the decision for the controller's iteration logic
         self.state.decision_history.append({
             "decision": report.decision,
