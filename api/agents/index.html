@@ -10,13 +10,9 @@
       
       
       
-        <link rel="canonical" href="https://shaswat2001.github.io/robosmith/api/config/">
+        <link rel="canonical" href="https://shaswat2001.github.io/robosmith/api/agents/">
       
       
-        <link rel="prev" href="../../extending/agents/">
-      
-      
-        <link rel="next" href="../trainers/">
       
       
         
@@ -27,7 +23,7 @@
     
     
       
-        <title>Config - RoboSmith</title>
+        <title>Agents API Reference - RoboSmith</title>
       
     
     
@@ -78,7 +74,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#config-api-reference" class="md-skip">
+        <a href="#agents-api-reference" class="md-skip">
           Skip to content
         </a>
       
@@ -112,7 +108,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Config
+              Agents API Reference
             
           </span>
         </div>
@@ -300,13 +296,11 @@
   
   
   
-    
-  
   
     
     
-      <li class="md-tabs__item md-tabs__item--active">
-        <a href="./" class="md-tabs__link">
+      <li class="md-tabs__item">
+        <a href="../config/" class="md-tabs__link">
           
   
   
@@ -988,31 +982,28 @@
       
   
   
-    
   
   
-  
     
     
     
     
-      
-        
-        
       
       
         
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
-        
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" checked>
         
           
-          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
             
   
   
@@ -1030,7 +1021,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_5">
             <span class="md-nav__icon md-icon"></span>
             
@@ -1045,37 +1036,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Config
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../config/" class="md-nav__link">
         
   
   
@@ -1091,181 +1055,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#enums" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Enums
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Enums">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#robottype" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        RobotType
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#environmenttype" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        EnvironmentType
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#algorithmchoice" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        AlgorithmChoice
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#stagestatus" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        StageStatus
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#decision" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Decision
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#data-models" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Data Models
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Data Models">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#successcriterion" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        SuccessCriterion
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#taskspec" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        TaskSpec
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#llmconfig" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        LLMConfig
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#forgeconfig" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        ForgeConfig
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#stageresult" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        StageResult
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#runstate" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        RunState
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -1416,22 +1205,22 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#enums" class="md-nav__link">
+  <a href="#baseagent" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Enums
+        BaseAgent
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Enums">
+    <nav class="md-nav" aria-label="BaseAgent">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#robottype" class="md-nav__link">
+  <a href="#chat" class="md-nav__link">
     <span class="md-ellipsis">
       
-        RobotType
+        chat()
       
     </span>
   </a>
@@ -1439,43 +1228,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#environmenttype" class="md-nav__link">
+  <a href="#chat_json" class="md-nav__link">
     <span class="md-ellipsis">
       
-        EnvironmentType
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#algorithmchoice" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        AlgorithmChoice
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#stagestatus" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        StageStatus
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#decision" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Decision
+        chat_json()
       
     </span>
   </a>
@@ -1488,22 +1244,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#data-models" class="md-nav__link">
+  <a href="#rewardagent" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Data Models
+        RewardAgent
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Data Models">
+    <nav class="md-nav" aria-label="RewardAgent">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#successcriterion" class="md-nav__link">
+  <a href="#rewardcandidate" class="md-nav__link">
     <span class="md-ellipsis">
       
-        SuccessCriterion
+        RewardCandidate
       
     </span>
   </a>
@@ -1511,10 +1267,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#taskspec" class="md-nav__link">
+  <a href="#generate" class="md-nav__link">
     <span class="md-ellipsis">
       
-        TaskSpec
+        generate()
       
     </span>
   </a>
@@ -1522,10 +1278,38 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#llmconfig" class="md-nav__link">
+  <a href="#evolve" class="md-nav__link">
     <span class="md-ellipsis">
       
-        LLMConfig
+        evolve()
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#decisionagent" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DecisionAgent
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="DecisionAgent">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#pipelinedecision" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PipelineDecision
       
     </span>
   </a>
@@ -1533,32 +1317,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#forgeconfig" class="md-nav__link">
+  <a href="#decide" class="md-nav__link">
     <span class="md-ellipsis">
       
-        ForgeConfig
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#stageresult" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        StageResult
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#runstate" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        RunState
+        decide()
       
     </span>
   </a>
@@ -1590,220 +1352,25 @@
   
 
 
-<h1 id="config-api-reference">Config API Reference<a class="headerlink" href="#config-api-reference" title="Permanent link">&para;</a></h1>
-<p>::: robosmith.config</p>
-<p>All core data models live in <code>robosmith/config.py</code>. They use Pydantic v2 for validation and serialization.</p>
+<h1 id="agents-api-reference">Agents API Reference<a class="headerlink" href="#agents-api-reference" title="Permanent link">&para;</a></h1>
+<p>::: robosmith.agents</p>
+<p>LLM agents handle all language-model interactions in the pipeline. Every agent wraps <code>BaseAgent</code> for consistent retry, rate limiting, and JSON parsing.</p>
 <hr />
-<h2 id="enums">Enums<a class="headerlink" href="#enums" title="Permanent link">&para;</a></h2>
-<h3 id="robottype">RobotType<a class="headerlink" href="#robottype" title="Permanent link">&para;</a></h3>
-<p>Classifies the type of robot the task is about.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">robosmith.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">RobotType</span>
+<h2 id="baseagent">BaseAgent<a class="headerlink" href="#baseagent" title="Permanent link">&para;</a></h2>
+<p>The foundation for all LLM interactions. Wraps LiteLLM for provider-agnostic access.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">robosmith.agents.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseAgent</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="n">agent</span> <span class="o">=</span> <span class="n">BaseAgent</span><span class="p">(</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>    <span class="n">config</span><span class="o">=</span><span class="n">llm_config</span><span class="p">,</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    <span class="n">system_prompt</span><span class="o">=</span><span class="s2">&quot;You are an expert robotics researcher.&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>    <span class="n">use_fast_model</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="p">)</span>
 </code></pre></div>
+<p><strong>Constructor:</strong></p>
 <table>
 <thead>
 <tr>
-<th>Value</th>
-<th>Description</th>
-<th>Example tasks</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>ARM</code></td>
-<td>Fixed-base manipulator</td>
-<td>"Pick up the cube", "Reach the target"</td>
-</tr>
-<tr>
-<td><code>QUADRUPED</code></td>
-<td>Four-legged robot</td>
-<td>"Walk forward", "Run fast"</td>
-</tr>
-<tr>
-<td><code>BIPED</code></td>
-<td>Two-legged robot</td>
-<td>"Walk like a human", "Stand up"</td>
-</tr>
-<tr>
-<td><code>DEXTEROUS_HAND</code></td>
-<td>Multi-finger hand</td>
-<td>"Manipulate hand", "Rotate the object"</td>
-</tr>
-<tr>
-<td><code>MOBILE</code></td>
-<td>Wheeled/tracked base</td>
-<td>"Navigate to the goal"</td>
-</tr>
-<tr>
-<td><code>DRONE</code></td>
-<td>Aerial vehicle</td>
-<td>"Hover in place"</td>
-</tr>
-<tr>
-<td><code>SNAKE</code></td>
-<td>Snake-like robot</td>
-<td>"Slither forward"</td>
-</tr>
-<tr>
-<td><code>CUSTOM</code></td>
-<td>User-defined</td>
-<td>Anything else</td>
-</tr>
-</tbody>
-</table>
-<h3 id="environmenttype">EnvironmentType<a class="headerlink" href="#environmenttype" title="Permanent link">&para;</a></h3>
-<p>The physical setting for the task.</p>
-<table>
-<thead>
-<tr>
-<th>Value</th>
-<th>Description</th>
-<th>Typical envs</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>TABLETOP</code></td>
-<td>Flat table surface</td>
-<td>Fetch, Reacher, manipulation tasks</td>
-</tr>
-<tr>
-<td><code>FLOOR</code></td>
-<td>Ground plane</td>
-<td>Ant, Humanoid, locomotion</td>
-</tr>
-<tr>
-<td><code>OUTDOOR</code></td>
-<td>Open outdoor terrain</td>
-<td>Custom environments</td>
-</tr>
-<tr>
-<td><code>UNDERWATER</code></td>
-<td>Aquatic environment</td>
-<td>Swimmer</td>
-</tr>
-<tr>
-<td><code>AERIAL</code></td>
-<td>Airborne</td>
-<td>Drone environments</td>
-</tr>
-<tr>
-<td><code>CUSTOM</code></td>
-<td>User-defined</td>
-<td>Anything else</td>
-</tr>
-</tbody>
-</table>
-<h3 id="algorithmchoice">AlgorithmChoice<a class="headerlink" href="#algorithmchoice" title="Permanent link">&para;</a></h3>
-<p>Which RL algorithm to use. <code>AUTO</code> lets the selector decide.</p>
-<table>
-<thead>
-<tr>
-<th>Value</th>
-<th>When the selector picks it</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>AUTO</code></td>
-<td>Default — selector chooses based on task</td>
-</tr>
-<tr>
-<td><code>PPO</code></td>
-<td>Locomotion, discrete actions, classic control</td>
-</tr>
-<tr>
-<td><code>SAC</code></td>
-<td>Manipulation, continuous actions</td>
-</tr>
-<tr>
-<td><code>TD3</code></td>
-<td>Dexterous manipulation</td>
-</tr>
-<tr>
-<td><code>A2C</code></td>
-<td>Simple tasks (faster than PPO, less stable)</td>
-</tr>
-<tr>
-<td><code>DQN</code></td>
-<td>Discrete-only tasks</td>
-</tr>
-</tbody>
-</table>
-<h3 id="stagestatus">StageStatus<a class="headerlink" href="#stagestatus" title="Permanent link">&para;</a></h3>
-<p>Pipeline stage lifecycle.</p>
-<table>
-<thead>
-<tr>
-<th>Value</th>
-<th>Meaning</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>PENDING</code></td>
-<td>Not started yet</td>
-</tr>
-<tr>
-<td><code>RUNNING</code></td>
-<td>Currently executing</td>
-</tr>
-<tr>
-<td><code>COMPLETED</code></td>
-<td>Finished successfully</td>
-</tr>
-<tr>
-<td><code>FAILED</code></td>
-<td>Finished with error</td>
-</tr>
-<tr>
-<td><code>SKIPPED</code></td>
-<td>Skipped by user (<code>--skip</code>)</td>
-</tr>
-</tbody>
-</table>
-<h3 id="decision">Decision<a class="headerlink" href="#decision" title="Permanent link">&para;</a></h3>
-<p>What to do after evaluation.</p>
-<table>
-<thead>
-<tr>
-<th>Value</th>
-<th>Trigger</th>
-<th>Action</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>ACCEPT</code></td>
-<td>Success criteria met</td>
-<td>Ship artifacts</td>
-</tr>
-<tr>
-<td><code>REFINE_REWARD</code></td>
-<td>Partial success or low reward</td>
-<td>Go back to reward design</td>
-</tr>
-<tr>
-<td><code>SWITCH_ALGO</code></td>
-<td>Very low performance</td>
-<td>Try a different RL algorithm</td>
-</tr>
-</tbody>
-</table>
-<hr />
-<h2 id="data-models">Data Models<a class="headerlink" href="#data-models" title="Permanent link">&para;</a></h2>
-<h3 id="successcriterion">SuccessCriterion<a class="headerlink" href="#successcriterion" title="Permanent link">&para;</a></h3>
-<p>A single pass/fail condition for evaluation.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">robosmith.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">SuccessCriterion</span>
-<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>
-<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="n">criterion</span> <span class="o">=</span> <span class="n">SuccessCriterion</span><span class="p">(</span><span class="n">metric</span><span class="o">=</span><span class="s2">&quot;success_rate&quot;</span><span class="p">,</span> <span class="n">operator</span><span class="o">=</span><span class="s2">&quot;&gt;=&quot;</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mf">0.8</span><span class="p">)</span>
-<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="n">criterion</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="mf">0.9</span><span class="p">)</span>  <span class="c1"># True</span>
-<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="n">criterion</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="mf">0.5</span><span class="p">)</span>  <span class="c1"># False</span>
-<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="nb">str</span><span class="p">(</span><span class="n">criterion</span><span class="p">)</span>            <span class="c1"># &quot;success_rate &gt;= 0.8&quot;</span>
-</code></pre></div>
-<table>
-<thead>
-<tr>
-<th>Field</th>
+<th>Param</th>
 <th>Type</th>
 <th>Default</th>
 <th>Description</th>
@@ -1811,65 +1378,116 @@
 </thead>
 <tbody>
 <tr>
-<td><code>metric</code></td>
-<td><code>str</code></td>
+<td><code>config</code></td>
+<td><code>LLMConfig</code></td>
 <td>required</td>
-<td>Metric name. Supported: <code>success_rate</code>, <code>mean_reward</code>, <code>episode_reward</code>, <code>mean_episode_length</code></td>
+<td>LLM provider configuration</td>
 </tr>
 <tr>
-<td><code>operator</code></td>
+<td><code>system_prompt</code></td>
 <td><code>str</code></td>
-<td><code>"&gt;="</code></td>
-<td>Comparison: <code>&gt;=</code>, <code>&lt;=</code>, <code>==</code></td>
+<td><code>""</code></td>
+<td>System message prepended to every call</td>
 </tr>
 <tr>
-<td><code>threshold</code></td>
-<td><code>float</code></td>
-<td>required</td>
-<td>Value the metric must meet</td>
+<td><code>use_fast_model</code></td>
+<td><code>bool</code></td>
+<td><code>False</code></td>
+<td>Use <code>config.fast_model</code> instead of <code>config.model</code></td>
 </tr>
 </tbody>
 </table>
 <p><strong>Methods:</strong></p>
+<h3 id="chat">chat()<a class="headerlink" href="#chat" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="n">response</span> <span class="o">=</span> <span class="n">agent</span><span class="o">.</span><span class="n">chat</span><span class="p">(</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>    <span class="s2">&quot;What algorithm should I use for quadruped locomotion?&quot;</span><span class="p">,</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>    <span class="n">temperature</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="p">)</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="c1"># Returns: str</span>
+</code></pre></div>
 <table>
 <thead>
 <tr>
-<th>Method</th>
-<th>Returns</th>
+<th>Param</th>
+<th>Type</th>
+<th>Default</th>
 <th>Description</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>evaluate(value)</code></td>
-<td><code>bool</code></td>
-<td>Test whether a value passes this criterion</td>
+<td><code>user_message</code></td>
+<td><code>str</code></td>
+<td>required</td>
+<td>The prompt</td>
 </tr>
 <tr>
-<td><code>__str__()</code></td>
-<td><code>str</code></td>
-<td>Human-readable: <code>"success_rate &gt;= 0.8"</code></td>
+<td><code>temperature</code></td>
+<td><code>float \| None</code></td>
+<td><code>None</code></td>
+<td>Override default temperature</td>
 </tr>
 </tbody>
 </table>
-<h3 id="taskspec">TaskSpec<a class="headerlink" href="#taskspec" title="Permanent link">&para;</a></h3>
-<p>The structured representation of a user's task. Created by the intake stage from natural language.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">robosmith.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">TaskSpec</span><span class="p">,</span> <span class="n">RobotType</span><span class="p">,</span> <span class="n">EnvironmentType</span>
-<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>
-<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="n">spec</span> <span class="o">=</span> <span class="n">TaskSpec</span><span class="p">(</span>
-<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>    <span class="n">task_description</span><span class="o">=</span><span class="s2">&quot;Walk forward&quot;</span><span class="p">,</span>
-<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>    <span class="n">robot_type</span><span class="o">=</span><span class="n">RobotType</span><span class="o">.</span><span class="n">QUADRUPED</span><span class="p">,</span>
-<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>    <span class="n">environment_type</span><span class="o">=</span><span class="n">EnvironmentType</span><span class="o">.</span><span class="n">FLOOR</span><span class="p">,</span>
-<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>    <span class="n">algorithm</span><span class="o">=</span><span class="n">AlgorithmChoice</span><span class="o">.</span><span class="n">AUTO</span><span class="p">,</span>
-<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>    <span class="n">time_budget_minutes</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
-<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="p">)</span>
+<p><strong>Retry logic:</strong> On API failure (rate limit, timeout, 5xx), retries up to <code>config.max_retries</code> times with exponential backoff (3s, 6s, 12s). Logs each attempt at DEBUG level.</p>
+<h3 id="chat_json">chat_json()<a class="headerlink" href="#chat_json" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="n">result</span> <span class="o">=</span> <span class="n">agent</span><span class="o">.</span><span class="n">chat_json</span><span class="p">(</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>    <span class="s2">&quot;Respond with JSON: {algorithm: str, reason: str}&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>    <span class="n">temperature</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="p">)</span>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="c1"># Returns: dict</span>
+</code></pre></div>
+<p>Same parameters as <code>chat()</code>, but:</p>
+<ol>
+<li>Appends "Respond with valid JSON only." to the prompt</li>
+<li>Parses the response as JSON</li>
+<li>If parsing fails, retries the LLM call (up to 2 extra attempts)</li>
+<li>Strips markdown code fences (<code>\</code>``json ... ````) before parsing</li>
+</ol>
+<p><strong>Raises:</strong> <code>ValueError</code> if JSON parsing fails after all retries.</p>
+<hr />
+<h2 id="rewardagent">RewardAgent<a class="headerlink" href="#rewardagent" title="Permanent link">&para;</a></h2>
+<p>Generates and evolves reward functions using LLM-powered evolutionary search.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">robosmith.agents.reward_agent</span><span class="w"> </span><span class="kn">import</span> <span class="n">RewardAgent</span><span class="p">,</span> <span class="n">RewardCandidate</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="n">agent</span> <span class="o">=</span> <span class="n">RewardAgent</span><span class="p">(</span><span class="n">llm_config</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="rewardcandidate">RewardCandidate<a class="headerlink" href="#rewardcandidate" title="Permanent link">&para;</a></h3>
+<p>A single reward function candidate.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="nd">@dataclass</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="k">class</span><span class="w"> </span><span class="nc">RewardCandidate</span><span class="p">:</span>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>    <span class="n">code</span><span class="p">:</span> <span class="nb">str</span>                          <span class="c1"># Python source code</span>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>    <span class="n">function_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;compute_reward&quot;</span>
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>    <span class="n">candidate_id</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>    <span class="n">generation</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>    <span class="n">score</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>         <span class="c1"># Evaluation score (set after eval)</span>
+<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a>    <span class="n">eval_result</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>    <span class="c1"># Detailed eval metrics</span>
+<a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a>
+<a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">get_function</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">:</span>
+<a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Compile and return the reward function.&quot;&quot;&quot;</span>
+<a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a>        <span class="o">...</span>
+<a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a>
+<a id="__codelineno-4-14" name="__codelineno-4-14" href="#__codelineno-4-14"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">source_with_header</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<a id="__codelineno-4-15" name="__codelineno-4-15" href="#__codelineno-4-15"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Full source with docstring header.&quot;&quot;&quot;</span>
+<a id="__codelineno-4-16" name="__codelineno-4-16" href="#__codelineno-4-16"></a>        <span class="o">...</span>
+</code></pre></div>
+<p><strong><code>get_function()</code> returns:</strong> A callable <code>(obs, action, next_obs, info) → (float, dict)</code>. Compiled via <code>exec()</code> in a sandboxed namespace with <code>numpy</code> and <code>math</code> available.</p>
+<h3 id="generate">generate()<a class="headerlink" href="#generate" title="Permanent link">&para;</a></h3>
+<p>Generate fresh reward function candidates.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="n">candidates</span> <span class="o">=</span> <span class="n">agent</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>    <span class="n">task_description</span><span class="o">=</span><span class="s2">&quot;Walk forward&quot;</span><span class="p">,</span>
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>    <span class="n">obs_space_info</span><span class="o">=</span><span class="s2">&quot;Box(shape=(105,), ...) obs[13] = x_velocity ...&quot;</span><span class="p">,</span>
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>    <span class="n">action_space_info</span><span class="o">=</span><span class="s2">&quot;Box(shape=(8,), ...) range=[-1.0, 1.0]&quot;</span><span class="p">,</span>
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>    <span class="n">num_candidates</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>    <span class="n">literature_context</span><span class="o">=</span><span class="s2">&quot;Eureka uses evolutionary search...&quot;</span><span class="p">,</span>
+<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="p">)</span>
+<a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a><span class="c1"># Returns: list[RewardCandidate]</span>
 </code></pre></div>
 <table>
 <thead>
 <tr>
-<th>Field</th>
+<th>Param</th>
 <th>Type</th>
-<th>Default</th>
 <th>Description</th>
 </tr>
 </thead>
@@ -1877,282 +1495,162 @@
 <tr>
 <td><code>task_description</code></td>
 <td><code>str</code></td>
-<td><code>""</code></td>
-<td>Cleaned task description</td>
+<td>What the robot should do</td>
 </tr>
 <tr>
-<td><code>raw_input</code></td>
+<td><code>obs_space_info</code></td>
 <td><code>str</code></td>
-<td><code>""</code></td>
-<td>Original user input, unmodified</td>
+<td>Observation space description (from <code>extract_space_info</code>)</td>
 </tr>
 <tr>
-<td><code>robot_type</code></td>
-<td><code>RobotType</code></td>
-<td><code>ARM</code></td>
-<td>Type of robot</td>
+<td><code>action_space_info</code></td>
+<td><code>str</code></td>
+<td>Action space description</td>
 </tr>
 <tr>
-<td><code>robot_model</code></td>
-<td><code>str \| None</code></td>
-<td><code>None</code></td>
-<td>Specific model (e.g. <code>"franka"</code>, <code>"shadow_hand"</code>)</td>
-</tr>
-<tr>
-<td><code>environment_type</code></td>
-<td><code>EnvironmentType</code></td>
-<td><code>TABLETOP</code></td>
-<td>Physical setting</td>
-</tr>
-<tr>
-<td><code>environment_id</code></td>
-<td><code>str \| None</code></td>
-<td><code>None</code></td>
-<td>Force a specific env registry ID</td>
-</tr>
-<tr>
-<td><code>success_criteria</code></td>
-<td><code>list[SuccessCriterion]</code></td>
-<td><code>[success_rate &gt;= 0.8]</code></td>
-<td>When to accept the policy</td>
-</tr>
-<tr>
-<td><code>safety_constraints</code></td>
-<td><code>list[str]</code></td>
-<td><code>[]</code></td>
-<td>Safety constraints (informational)</td>
-</tr>
-<tr>
-<td><code>algorithm</code></td>
-<td><code>AlgorithmChoice</code></td>
-<td><code>AUTO</code></td>
-<td>RL algorithm choice</td>
-</tr>
-<tr>
-<td><code>time_budget_minutes</code></td>
+<td><code>num_candidates</code></td>
 <td><code>int</code></td>
-<td><code>10</code></td>
-<td>Wall-clock training time limit</td>
+<td>How many to generate</td>
 </tr>
 <tr>
-<td><code>num_envs</code></td>
-<td><code>int</code></td>
-<td><code>1024</code></td>
-<td>Parallel envs (GPU training)</td>
-</tr>
-<tr>
-<td><code>use_world_model</code></td>
-<td><code>bool</code></td>
-<td><code>False</code></td>
-<td>Reserved for future use</td>
-</tr>
-<tr>
-<td><code>push_to_hub</code></td>
-<td><code>str \| None</code></td>
-<td><code>None</code></td>
-<td>HuggingFace repo (e.g. <code>"user/model"</code>)</td>
+<td><code>literature_context</code></td>
+<td><code>str</code></td>
+<td>Relevant paper summaries</td>
 </tr>
 </tbody>
 </table>
-<h3 id="llmconfig">LLMConfig<a class="headerlink" href="#llmconfig" title="Permanent link">&para;</a></h3>
-<p>Configuration for LLM API access. Used by all agents.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">robosmith.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">LLMConfig</span>
-<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>
-<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="n">config</span> <span class="o">=</span> <span class="n">LLMConfig</span><span class="p">(</span>
-<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>    <span class="n">provider</span><span class="o">=</span><span class="s2">&quot;anthropic&quot;</span><span class="p">,</span>
-<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>    <span class="n">model</span><span class="o">=</span><span class="s2">&quot;claude-sonnet-4-20250514&quot;</span><span class="p">,</span>
-<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>    <span class="n">fast_model</span><span class="o">=</span><span class="s2">&quot;claude-haiku-4-5-20251001&quot;</span><span class="p">,</span>
-<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="p">)</span>
+<p><strong>Each call makes <code>num_candidates</code> separate LLM calls</strong> (not batched) for diversity. The system prompt instructs the LLM to write a <code>compute_reward(obs, action, next_obs, info)</code> function that returns <code>(float, dict)</code>.</p>
+<h3 id="evolve">evolve()<a class="headerlink" href="#evolve" title="Permanent link">&para;</a></h3>
+<p>Evolve improved candidates from a previous best.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="n">evolved</span> <span class="o">=</span> <span class="n">agent</span><span class="o">.</span><span class="n">evolve</span><span class="p">(</span>
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>    <span class="n">task_description</span><span class="o">=</span><span class="s2">&quot;Walk forward&quot;</span><span class="p">,</span>
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>    <span class="n">obs_space_info</span><span class="o">=</span><span class="s2">&quot;...&quot;</span><span class="p">,</span>
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>    <span class="n">action_space_info</span><span class="o">=</span><span class="s2">&quot;...&quot;</span><span class="p">,</span>
+<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>    <span class="n">previous_best</span><span class="o">=</span><span class="n">best_candidate</span><span class="p">,</span>
+<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>    <span class="n">training_feedback</span><span class="o">=</span><span class="s2">&quot;Gen 1 best: -98.48. The reward is negative...&quot;</span><span class="p">,</span>
+<a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a>    <span class="n">generation</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+<a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a>    <span class="n">num_candidates</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+<a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a><span class="p">)</span>
+<a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a><span class="c1"># Returns: list[RewardCandidate]</span>
 </code></pre></div>
 <table>
 <thead>
 <tr>
-<th>Field</th>
+<th>Param</th>
 <th>Type</th>
-<th>Default</th>
 <th>Description</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>provider</code></td>
+<td><code>previous_best</code></td>
+<td><code>RewardCandidate</code></td>
+<td>Best candidate from previous generation</td>
+</tr>
+<tr>
+<td><code>training_feedback</code></td>
 <td><code>str</code></td>
-<td><code>"anthropic"</code></td>
-<td>LLM provider (anthropic, openai, ollama, etc.)</td>
+<td>Evaluation results + training curve analysis</td>
 </tr>
 <tr>
-<td><code>model</code></td>
-<td><code>str</code></td>
-<td><code>"claude-sonnet-4-20250514"</code></td>
-<td>Main model for reward design and complex reasoning</td>
-</tr>
-<tr>
-<td><code>fast_model</code></td>
-<td><code>str</code></td>
-<td><code>"claude-haiku-4-5-20251001"</code></td>
-<td>Fast model for intake, obs lookup, decisions</td>
-</tr>
-<tr>
-<td><code>temperature</code></td>
-<td><code>float</code></td>
-<td><code>0.7</code></td>
-<td>Default sampling temperature</td>
-</tr>
-<tr>
-<td><code>max_retries</code></td>
+<td><code>generation</code></td>
 <td><code>int</code></td>
-<td><code>3</code></td>
-<td>Retry count for failed LLM calls</td>
+<td>Current generation number</td>
 </tr>
 </tbody>
 </table>
-<h3 id="forgeconfig">ForgeConfig<a class="headerlink" href="#forgeconfig" title="Permanent link">&para;</a></h3>
-<p>Global pipeline configuration. Can be loaded from a YAML file.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">robosmith.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">ForgeConfig</span>
-<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>
-<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="n">config</span> <span class="o">=</span> <span class="n">ForgeConfig</span><span class="p">(</span>
-<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>    <span class="n">llm</span><span class="o">=</span><span class="n">LLMConfig</span><span class="p">(</span><span class="n">provider</span><span class="o">=</span><span class="s2">&quot;anthropic&quot;</span><span class="p">),</span>
-<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>    <span class="n">max_iterations</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
-<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>    <span class="n">skip_stages</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;scout&quot;</span><span class="p">],</span>
-<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>    <span class="n">training_backend</span><span class="o">=</span><span class="s2">&quot;cleanrl&quot;</span><span class="p">,</span>
-<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="p">)</span>
+<p><strong>The LLM sees:</strong> the previous best's code, its score, the feedback, and instructions to improve specific aspects.</p>
+<hr />
+<h2 id="decisionagent">DecisionAgent<a class="headerlink" href="#decisionagent" title="Permanent link">&para;</a></h2>
+<p>Makes intelligent pipeline decisions using LLM reasoning.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">robosmith.agents.decision_agent</span><span class="w"> </span><span class="kn">import</span> <span class="n">DecisionAgent</span><span class="p">,</span> <span class="n">PipelineDecision</span>
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>
+<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="n">agent</span> <span class="o">=</span> <span class="n">DecisionAgent</span><span class="p">(</span><span class="n">llm_config</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="pipelinedecision">PipelineDecision<a class="headerlink" href="#pipelinedecision" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="nd">@dataclass</span>
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="k">class</span><span class="w"> </span><span class="nc">PipelineDecision</span><span class="p">:</span>
+<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>    <span class="n">action</span><span class="p">:</span> <span class="n">Decision</span>          <span class="c1"># ACCEPT, REFINE_REWARD, SWITCH_ALGO</span>
+<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>    <span class="n">reasoning</span><span class="p">:</span> <span class="nb">str</span>            <span class="c1"># &quot;The reward function is too focused on...&quot;</span>
+<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a>    <span class="n">suggestions</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>    <span class="c1"># [&quot;Increase forward velocity weight&quot;, ...]</span>
+<a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a>    <span class="n">confidence</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span>   <span class="c1"># 0.0-1.0</span>
+</code></pre></div>
+<h3 id="decide">decide()<a class="headerlink" href="#decide" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="n">decision</span> <span class="o">=</span> <span class="n">agent</span><span class="o">.</span><span class="n">decide</span><span class="p">(</span>
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>    <span class="n">eval_report</span><span class="o">=</span><span class="n">report</span><span class="p">,</span>
+<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>    <span class="n">training_result</span><span class="o">=</span><span class="n">training_result</span><span class="p">,</span>
+<a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a>    <span class="n">task_spec</span><span class="o">=</span><span class="n">task_spec</span><span class="p">,</span>
+<a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a>    <span class="n">reward_code</span><span class="o">=</span><span class="n">reward_fn_source</span><span class="p">,</span>
+<a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a>    <span class="n">iteration</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+<a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a>    <span class="n">max_iterations</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+<a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a><span class="p">)</span>
 </code></pre></div>
 <table>
 <thead>
 <tr>
-<th>Field</th>
+<th>Param</th>
 <th>Type</th>
-<th>Default</th>
 <th>Description</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>llm</code></td>
-<td><code>LLMConfig</code></td>
-<td>Anthropic defaults</td>
-<td>LLM provider configuration</td>
+<td><code>eval_report</code></td>
+<td><code>EvalReport \| None</code></td>
+<td>Evaluation results</td>
 </tr>
 <tr>
-<td><code>max_iterations</code></td>
-<td><code>int</code></td>
-<td><code>3</code></td>
-<td>Max pipeline iteration cycles</td>
+<td><code>training_result</code></td>
+<td><code>TrainingResult \| None</code></td>
+<td>Training metrics and curve</td>
 </tr>
 <tr>
-<td><code>skip_stages</code></td>
-<td><code>list[str]</code></td>
-<td><code>[]</code></td>
-<td>Stages to skip (e.g. <code>["scout"]</code>)</td>
+<td><code>task_spec</code></td>
+<td><code>TaskSpec \| None</code></td>
+<td>Task specification</td>
 </tr>
 <tr>
-<td><code>training_backend</code></td>
-<td><code>str \| None</code></td>
-<td><code>None</code></td>
-<td>Force backend (e.g. <code>"sb3"</code>, <code>"cleanrl"</code>)</td>
-</tr>
-<tr>
-<td><code>training_algo</code></td>
-<td><code>str \| None</code></td>
-<td><code>None</code></td>
-<td>Force algorithm (e.g. <code>"td3"</code>)</td>
-</tr>
-<tr>
-<td><code>artifacts_dir</code></td>
+<td><code>reward_code</code></td>
 <td><code>str</code></td>
-<td><code>"robosmith_runs"</code></td>
-<td>Where to write outputs</td>
-</tr>
-</tbody>
-</table>
-<h3 id="stageresult">StageResult<a class="headerlink" href="#stageresult" title="Permanent link">&para;</a></h3>
-<p>Metadata about a single pipeline stage's execution.</p>
-<table>
-<thead>
-<tr>
-<th>Field</th>
-<th>Type</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>status</code></td>
-<td><code>StageStatus</code></td>
-<td>PENDING, RUNNING, COMPLETED, FAILED, SKIPPED</td>
-</tr>
-<tr>
-<td><code>started_at</code></td>
-<td><code>str \| None</code></td>
-<td>ISO timestamp</td>
-</tr>
-<tr>
-<td><code>completed_at</code></td>
-<td><code>str \| None</code></td>
-<td>ISO timestamp</td>
-</tr>
-<tr>
-<td><code>error</code></td>
-<td><code>str \| None</code></td>
-<td>Error message if FAILED</td>
-</tr>
-<tr>
-<td><code>metadata</code></td>
-<td><code>dict</code></td>
-<td>Stage-specific output data</td>
-</tr>
-</tbody>
-</table>
-<h3 id="runstate">RunState<a class="headerlink" href="#runstate" title="Permanent link">&para;</a></h3>
-<p>Tracks the full pipeline run. Serialized to <code>run_state.json</code> after every stage.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">robosmith.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">RunState</span>
-<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>
-<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="n">state</span> <span class="o">=</span> <span class="n">RunState</span><span class="p">(</span><span class="n">run_id</span><span class="o">=</span><span class="s2">&quot;run_20260322_231140_57f0f9&quot;</span><span class="p">)</span>
-<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="n">state</span><span class="o">.</span><span class="n">stages</span><span class="p">[</span><span class="s2">&quot;intake&quot;</span><span class="p">]</span>  <span class="c1"># StageResult for intake</span>
-<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="n">state</span><span class="o">.</span><span class="n">iteration</span>          <span class="c1"># Current iteration number</span>
-<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="n">state</span><span class="o">.</span><span class="n">decision_history</span>   <span class="c1"># [{decision, reason, iteration, success_rate, mean_reward}, ...]</span>
-</code></pre></div>
-<table>
-<thead>
-<tr>
-<th>Field</th>
-<th>Type</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>run_id</code></td>
-<td><code>str</code></td>
-<td>Unique run identifier</td>
-</tr>
-<tr>
-<td><code>stages</code></td>
-<td><code>dict[str, StageResult]</code></td>
-<td>Per-stage status and metadata</td>
+<td>Current reward function source code</td>
 </tr>
 <tr>
 <td><code>iteration</code></td>
 <td><code>int</code></td>
-<td>Current iteration (1-indexed)</td>
+<td>Current iteration number</td>
 </tr>
 <tr>
 <td><code>max_iterations</code></td>
 <td><code>int</code></td>
-<td>Configured max</td>
-</tr>
-<tr>
-<td><code>decision_history</code></td>
-<td><code>list[dict]</code></td>
-<td>Evaluation decisions across iterations</td>
-</tr>
-<tr>
-<td><code>created_at</code></td>
-<td><code>str</code></td>
-<td>ISO timestamp of run start</td>
+<td>Max allowed iterations</td>
 </tr>
 </tbody>
 </table>
+<p><strong>The LLM sees:</strong> success rate, mean reward, episode length, training curve trajectory (start → final), detected patterns (FLAT, IMPROVING, DECREASING), and the reward function code.</p>
+<p><strong>Fallback:</strong> If the LLM call fails, falls back to rule-based logic:</p>
+<table>
+<thead>
+<tr>
+<th>Condition</th>
+<th>Decision</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>success_rate ≥ 0.8</td>
+<td>ACCEPT</td>
+</tr>
+<tr>
+<td>mean_reward ≤ 0 and ep_length &lt; 20</td>
+<td>SWITCH_ALGO</td>
+</tr>
+<tr>
+<td>Default</td>
+<td>REFINE_REWARD</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Integration:</strong> The controller only uses the LLM decision when <code>confidence ≥ 0.6</code>. Lower confidence falls back to the rule-based decision.</p>
 
 
 
