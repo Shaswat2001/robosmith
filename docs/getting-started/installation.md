@@ -103,8 +103,12 @@ Isaac Lab requires NVIDIA Isaac Sim. See the [official installation guide](https
 
 ### LIBERO
 
+LIBERO requires installation from source:
+
 ```bash
-pip install libero
+git clone https://github.com/Lifelong-Robot-Learning/LIBERO.git
+cd LIBERO
+pip install -e .
 ```
 
-See the [LIBERO documentation](https://libero-project.github.io/) for dataset downloads.
+See the [LIBERO GitHub repository](https://github.com/Lifelong-Robot-Learning/LIBERO) for dataset downloads and detailed setup instructions.
