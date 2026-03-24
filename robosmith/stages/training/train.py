@@ -12,7 +12,7 @@ from robosmith.trainers.base import TrainingConfig
 from robosmith.trainers.registry import TrainerRegistry
 from robosmith.agents.reward_agent import RewardCandidate
 
-from .select import _create_training_env, _select_algorithm, TrainingResult
+from .select import _create_training_env, _select_algorithm, _estimate_obs_dim, TrainingResult
 
 def run_training(
     task_spec: TaskSpec,
@@ -210,10 +210,22 @@ def run_training_v2(
         logger.warning(f"{algo_name.upper()} doesn't support discrete — falling back to PPO")
         algo_name = "ppo"
 
-    # Compute timesteps
+    # Compute timesteps — scale based on env complexity and time budget
     if total_timesteps is None:
-        total_timesteps = task_spec.time_budget_minutes * 10_000
-    total_timesteps = min(total_timesteps, 500_000)
+        base = task_spec.time_budget_minutes * 10_000
+        # Scale up for complex environments that need more samples
+        obs_dim = _estimate_obs_dim(env_entry)
+        if obs_dim >= 100:
+            # High-dimensional (Ant, Humanoid, HandReach) — need much more training
+            total_timesteps = max(base, 200_000)
+        elif obs_dim >= 20:
+            # Medium complexity (HalfCheetah, Hopper, Walker)
+            total_timesteps = max(base, 100_000)
+        else:
+            # Simple (Pendulum, CartPole)
+            total_timesteps = base
+    # Allow up to 2M steps — 500K was too low for locomotion
+    total_timesteps = min(total_timesteps, 2_000_000)
 
     # Build trainer config
     config = TrainingConfig(

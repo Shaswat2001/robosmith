@@ -74,3 +74,19 @@ def _create_training_env(env_entry: EnvEntry, reward_fn: Any) -> ForgeRewardWrap
     env = make_env(env_entry)
     wrapped = ForgeRewardWrapper(env, reward_fn)
     return wrapped
+
+def _estimate_obs_dim(env_entry: EnvEntry) -> int:
+    """Estimate obs dimensionality without creating the env."""
+    try:
+        env = make_env(env_entry)
+        obs_space = env.observation_space
+        if hasattr(obs_space, "spaces"):
+            dim = sum(int(np.prod(s.shape)) for s in obs_space.spaces.values() if hasattr(s, "shape"))
+        elif hasattr(obs_space, "shape") and obs_space.shape:
+            dim = int(np.prod(obs_space.shape))
+        else:
+            dim = 20
+        env.close()
+        return dim
+    except Exception:
+        return 20
