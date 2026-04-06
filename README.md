@@ -1,8 +1,20 @@
-# RoboSmith
+<p align="center">
+  <img src="docs/assets/logo.svg" alt="RoboSmith Logo" width="500"/>
+</p>
 
-**Natural language → trained robot policy.**
+<p align="center">
+  <strong>Natural language → trained robot policy.</strong>
+</p>
 
-An autonomous pipeline that takes a plain English task description and produces a trained RL policy — handling environment selection, reward design, training, evaluation, and delivery with zero human intervention.
+<p align="center">
+  <a href="https://www.python.org/downloads/"><img src="https://img.shields.io/badge/python-3.11+-blue.svg" alt="Python 3.11+"/></a>
+  <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/license-MIT-green.svg" alt="MIT License"/></a>
+  <a href="https://shaswat2001.github.io/robosmith/"><img src="https://img.shields.io/badge/docs-mkdocs-purple.svg" alt="Documentation"/></a>
+</p>
+
+---
+
+RoboSmith is an autonomous pipeline that takes a plain English task description and produces a trained RL policy — handling environment selection, reward design, training, evaluation, and delivery with zero human intervention.
 
 ```bash
 pip install -e ".[sim,train]"
@@ -12,7 +24,13 @@ robosmith run --task "Walk forward" --time-budget 5
 
 RoboSmith selects the right simulation, designs a reward function using LLM-powered evolutionary search, trains a policy, evaluates it, and iterates if needed — inspired by [Eureka](https://eureka-research.github.io/), [DrEureka](https://eureka-research.github.io/dr-eureka/), and [ARCHIE](https://arxiv.org/abs/2503.04280).
 
----
+## Why RoboSmith?
+
+Training a robot policy today requires deep RL expertise: picking the right simulator, shaping reward functions by hand, selecting algorithms, tuning hyperparameters, and iterating through failed experiments. Each of these steps is a specialization of its own. RoboSmith collapses the entire workflow into a single command.
+
+**The problem it solves:** A robotics researcher or engineer has a task in mind — "make a quadruped walk forward" or "pick up the cube" — but turning that intention into a working policy takes days of manual engineering. Environment setup, reward shaping, algorithm selection, evaluation criteria, iteration on failures — all of this is tedious, error-prone, and requires expertise that spans multiple domains.
+
+**What makes it different:** Existing tools like Eureka and DrEureka automate reward design, but none of them handle the full loop. RoboSmith integrates environment discovery, literature search, reward evolution, training, behavioral evaluation, and artifact delivery into a single autonomous pipeline that iterates on its own failures.
 
 ## How It Works
 
@@ -37,7 +55,7 @@ RoboSmith selects the right simulation, designs a reward function using LLM-powe
               Fail? ──▶ Refine reward / switch algo / retry
 ```
 
-Each stage runs autonomously. If evaluation fails, the pipeline decides whether to refine the reward, switch algorithms, or retry — up to 3 iterations with no human input.
+Each stage runs autonomously. If evaluation fails, the pipeline decides whether to refine the reward, switch algorithms, or retry — up to 3 iterations with no human input. See the [Pipeline Overview](https://shaswat2001.github.io/robosmith/pipeline/overview/) for a detailed walkthrough of each stage.
 
 ## Installation
 
@@ -174,7 +192,7 @@ class MyEnvAdapter(EnvAdapter):
     def list_envs(self) -> list[str]: ...
 ```
 
-Then register it in the appropriate registry. That's it.
+Then register it in the appropriate registry. That's it. See the full [extending guide](https://shaswat2001.github.io/robosmith/extending/trainers/).
 
 ## Configuration
 
@@ -225,6 +243,10 @@ RoboSmith builds on ideas from:
 - [Stable Baselines3](https://stable-baselines3.readthedocs.io/) — Reliable RL implementations
 
 The key difference: none of these do the full loop. RoboSmith integrates environment synthesis, reward design, training, evaluation, and delivery into a single autonomous pipeline.
+
+## Contributing
+
+See [CONTRIBUTING](https://shaswat2001.github.io/robosmith/contributing/) for development setup, testing, and code style guidelines.
 
 ## License
 
