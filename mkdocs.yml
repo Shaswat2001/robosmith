@@ -6,8 +6,8 @@ repo_name: Shaswat2001/robosmith
 
 theme:
   name: material
-  logo: assets/logo.svg
-  favicon: assets/logo.svg
+  logo: assets/icon.svg
+  favicon: assets/icon.svg
   palette:
     - scheme: default
       primary: deep purple
