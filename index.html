@@ -20,7 +20,7 @@
         
       
       
-      <link rel="icon" href="assets/images/favicon.png">
+      <link rel="icon" href="assets/logo.svg">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
     
     
@@ -92,8 +92,7 @@
   <nav class="md-header__inner md-grid" aria-label="Header">
     <a href="." title="RoboSmith" class="md-header__button md-logo" aria-label="RoboSmith" data-md-component="logo">
       
-  
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+  <img src="assets/logo.svg" alt="logo">
 
     </a>
     <label class="md-header__button md-icon" for="__drawer">
@@ -359,8 +358,7 @@
   <label class="md-nav__title" for="__drawer">
     <a href="." title="RoboSmith" class="md-nav__button md-logo" aria-label="RoboSmith" data-md-component="logo">
       
-  
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+  <img src="assets/logo.svg" alt="logo">
 
     </a>
     RoboSmith
@@ -447,10 +445,21 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#why-robosmith-exists" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why RoboSmith exists
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#pipeline-at-a-glance" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Pipeline at a Glance
+        Pipeline at a glance
       
     </span>
   </a>
@@ -472,7 +481,18 @@
   <a href="#quick-links" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Quick Links
+        Quick links
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#who-is-this-for" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Who is this for?
       
     </span>
   </a>
@@ -1228,6 +1248,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="api/agents/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Agents
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -1289,10 +1337,21 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#why-robosmith-exists" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why RoboSmith exists
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#pipeline-at-a-glance" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Pipeline at a Glance
+        Pipeline at a glance
       
     </span>
   </a>
@@ -1314,7 +1373,18 @@
   <a href="#quick-links" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Quick Links
+        Quick links
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#who-is-this-for" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Who is this for?
       
     </span>
   </a>
@@ -1341,12 +1411,22 @@
   
 
 
+<p align="center">
+  <img src="assets/logo.svg" alt="RoboSmith Logo" width="500"/>
+</p>
+
 <h1 id="robosmith">RoboSmith<a class="headerlink" href="#robosmith" title="Permanent link">&para;</a></h1>
 <p><strong>Natural language → trained robot policy.</strong></p>
-<p>RoboSmith is an autonomous pipeline that takes a plain English task description and produces a trained RL policy — handling environment selection, reward design, training, evaluation, and delivery with zero human intervention.</p>
+<p>RoboSmith is an autonomous pipeline that takes a plain English task description and produces a trained reinforcement learning policy — handling environment selection, reward design, training, evaluation, and delivery with zero human intervention.</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>robosmith<span class="w"> </span>run<span class="w"> </span>--task<span class="w"> </span><span class="s2">&quot;Walk forward&quot;</span><span class="w"> </span>--time-budget<span class="w"> </span><span class="m">5</span>
 </code></pre></div>
-<h2 id="pipeline-at-a-glance">Pipeline at a Glance<a class="headerlink" href="#pipeline-at-a-glance" title="Permanent link">&para;</a></h2>
+<hr />
+<h2 id="why-robosmith-exists">Why RoboSmith exists<a class="headerlink" href="#why-robosmith-exists" title="Permanent link">&para;</a></h2>
+<p>Training a robot policy today is a multistep, expert-driven process. You need to pick the right simulator, write a reward function (often the hardest part), choose an RL algorithm, tune hyperparameters, evaluate whether the policy actually does what you want, and iterate when it doesn't. Each of these steps requires specialized knowledge, and the whole process can take days or weeks of trial and error.</p>
+<p>RoboSmith automates the entire workflow. You describe what you want in plain English, and it handles everything else — from finding the right simulation environment to delivering a trained policy checkpoint with a video of the robot performing the task.</p>
+<p>The core insight is that large language models are remarkably good at writing reward functions when given proper context about the observation and action spaces. RoboSmith combines this capability with evolutionary search (inspired by <a href="https://eureka-research.github.io/">Eureka</a>) and wraps it in a fully autonomous pipeline that can iterate on its own failures.</p>
+<hr />
+<h2 id="pipeline-at-a-glance">Pipeline at a glance<a class="headerlink" href="#pipeline-at-a-glance" title="Permanent link">&para;</a></h2>
 <pre class="mermaid"><code>flowchart LR
     A[Task Description] --&gt; B[Intake]
     B --&gt; C[Scout]
@@ -1356,25 +1436,95 @@
     F --&gt; G[Evaluation]
     G --&gt;|Pass| H[Delivery]
     G --&gt;|Fail| E</code></pre>
+<table>
+<thead>
+<tr>
+<th>Stage</th>
+<th>What it does</th>
+<th>Uses LLM?</th>
+<th>Typical time</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Intake</strong></td>
+<td>Parses natural language into a structured task spec</td>
+<td>Yes (fast model)</td>
+<td>~1s</td>
+</tr>
+<tr>
+<td><strong>Scout</strong></td>
+<td>Searches Semantic Scholar for relevant research</td>
+<td>No</td>
+<td>10–60s</td>
+</tr>
+<tr>
+<td><strong>Env Synthesis</strong></td>
+<td>Matches the task to the best simulation environment</td>
+<td>No</td>
+<td>&lt;1s</td>
+</tr>
+<tr>
+<td><strong>Reward Design</strong></td>
+<td>Evolves reward functions using LLM + random rollouts</td>
+<td>Yes (main model)</td>
+<td>30–120s</td>
+</tr>
+<tr>
+<td><strong>Training</strong></td>
+<td>Trains an RL policy with the best reward function</td>
+<td>No</td>
+<td>1–10 min</td>
+</tr>
+<tr>
+<td><strong>Evaluation</strong></td>
+<td>Runs the policy and measures behavioral success</td>
+<td>Yes (fast model)</td>
+<td>10–30s</td>
+</tr>
+<tr>
+<td><strong>Delivery</strong></td>
+<td>Packages checkpoint, video, report, and reward code</td>
+<td>No</td>
+<td>5–15s</td>
+</tr>
+</tbody>
+</table>
+<hr />
 <h2 id="features">Features<a class="headerlink" href="#features" title="Permanent link">&para;</a></h2>
 <ul>
-<li><strong>7-stage autonomous pipeline</strong> — intake, literature search, env selection, reward design, training, evaluation, delivery</li>
-<li><strong>Evolutionary reward design</strong> — Eureka-style LLM-powered reward function evolution</li>
-<li><strong>5 training backends</strong> — SB3, CleanRL, rl_games, imitation learning, offline RL</li>
-<li><strong>5 environment adapters</strong> — Gymnasium, Isaac Lab, LIBERO, ManiSkill, custom MJCF/URDF</li>
-<li><strong>Smart algorithm selection</strong> — task-aware paradigm and algorithm choice</li>
-<li><strong>Behavioral success detection</strong> — measures task completion, not reward values</li>
-<li><strong>Autonomous observation introspection</strong> — 3-tier obs layout extraction, no hardcoding</li>
-<li><strong>LLM decision agent</strong> — intelligent iteration decisions with actionable suggestions</li>
+<li><strong>7-stage autonomous pipeline</strong> — from natural language to a trained policy checkpoint with no manual steps</li>
+<li><strong>Evolutionary reward design</strong> — Eureka-style LLM-powered reward function evolution with multi-generation search</li>
+<li><strong>5 training backends</strong> — SB3, CleanRL, rl_games, imitation learning, offline RL, each pluggable through a common interface</li>
+<li><strong>5 environment adapters</strong> — Gymnasium/MuJoCo, Isaac Lab, LIBERO, ManiSkill, and custom MJCF/URDF, all discoverable at runtime</li>
+<li><strong>30 pre-registered environments</strong> — locomotion, manipulation, classic control, dexterous hands, and more</li>
+<li><strong>Smart algorithm selection</strong> — task-aware paradigm and algorithm choice based on robot type, action space, and available data</li>
+<li><strong>Behavioral success detection</strong> — measures whether the robot actually did the task, not whether the reward value is high</li>
+<li><strong>Autonomous observation introspection</strong> — 3-tier obs layout extraction (runtime, sample-based, LLM) with no hardcoded layouts</li>
+<li><strong>LLM decision agent</strong> — intelligent iteration decisions with actionable suggestions when evaluation fails</li>
+<li><strong>Literature-informed reward design</strong> — Scout stage feeds relevant paper abstracts into the reward generation prompt</li>
+<li><strong>Full artifact delivery</strong> — checkpoint, evolved reward function, evaluation report, rollout video, and human-readable summary</li>
+<li><strong>Provider-agnostic LLM access</strong> — Anthropic, OpenAI, Ollama, or any provider supported by LiteLLM</li>
 </ul>
-<h2 id="quick-links">Quick Links<a class="headerlink" href="#quick-links" title="Permanent link">&para;</a></h2>
+<hr />
+<h2 id="quick-links">Quick links<a class="headerlink" href="#quick-links" title="Permanent link">&para;</a></h2>
 <ul>
-<li><a href="getting-started/installation/">Installation</a> — Get RoboSmith running in 2 minutes</li>
-<li><a href="getting-started/quickstart/">Quick Start</a> — Your first autonomous training run</li>
-<li><a href="pipeline/overview/">Pipeline Overview</a> — How each stage works</li>
-<li><a href="extending/trainers/">Custom Trainers</a> — Add your own RL backend</li>
-<li><a href="extending/environments/">Custom Environments</a> — Add your own simulation framework</li>
+<li><a href="getting-started/installation/">Installation</a> — get RoboSmith running in 2 minutes</li>
+<li><a href="getting-started/quickstart/">Quick Start</a> — your first autonomous training run</li>
+<li><a href="getting-started/configuration/">Configuration</a> — CLI flags, YAML config, and environment variables</li>
+<li><a href="pipeline/overview/">Pipeline Overview</a> — how each stage works in detail</li>
+<li><a href="extending/trainers/">Custom Trainers</a> — add your own RL backend</li>
+<li><a href="extending/environments/">Custom Environments</a> — add your own simulation framework</li>
+<li><a href="extending/agents/">Custom Agents</a> — extend or replace LLM agents</li>
+<li><a href="api/config/">API Reference</a> — full API documentation for all modules</li>
+<li><a href="contributing/">Contributing</a> — development setup, testing, and code style</li>
 </ul>
+<hr />
+<h2 id="who-is-this-for">Who is this for?<a class="headerlink" href="#who-is-this-for" title="Permanent link">&para;</a></h2>
+<p><strong>Robotics researchers</strong> who want to quickly prototype policies for new tasks without spending days on reward engineering.</p>
+<p><strong>RL practitioners</strong> who want a batteries-included pipeline that handles the tedious parts (env setup, obs introspection, evaluation criteria) so they can focus on the research.</p>
+<p><strong>Engineers</strong> who need to train robot policies but don't have deep RL expertise — RoboSmith makes the right algorithmic choices automatically.</p>
+<p><strong>Educators</strong> who want to demonstrate the full RL pipeline without requiring students to set up complex toolchains.</p>
 
 
 

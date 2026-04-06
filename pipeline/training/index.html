@@ -22,7 +22,7 @@
         
       
       
-      <link rel="icon" href="../../assets/images/favicon.png">
+      <link rel="icon" href="../../assets/logo.svg">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
     
     
@@ -78,7 +78,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#training-stage" class="md-skip">
+        <a href="#stage-5-training" class="md-skip">
           Skip to content
         </a>
       
@@ -94,8 +94,7 @@
   <nav class="md-header__inner md-grid" aria-label="Header">
     <a href="../.." title="RoboSmith" class="md-header__button md-logo" aria-label="RoboSmith" data-md-component="logo">
       
-  
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+  <img src="../../assets/logo.svg" alt="logo">
 
     </a>
     <label class="md-header__button md-icon" for="__drawer">
@@ -361,8 +360,7 @@
   <label class="md-nav__title" for="__drawer">
     <a href="../.." title="RoboSmith" class="md-nav__button md-logo" aria-label="RoboSmith" data-md-component="logo">
       
-  
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+  <img src="../../assets/logo.svg" alt="logo">
 
     </a>
     RoboSmith
@@ -767,6 +765,24 @@
         
       
       
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Training
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
       <a href="./" class="md-nav__link md-nav__link--active">
         
   
@@ -783,6 +799,213 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#why-this-stage-exists" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why this stage exists
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How it works
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How it works">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#algorithm-selection" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Algorithm selection
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#reward-injection" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reward injection
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dict-observation-handling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dict observation handling
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#stall-detection" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Stall detection
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#time-limits" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Time limits
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#training-backends" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Training backends
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Training backends">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#sb3-stable-baselines3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SB3 (Stable Baselines3)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cleanrl" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CleanRL
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rl_games" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        rl_games
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#il-trainer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        IL Trainer
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#offline-rl-trainer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Offline RL Trainer
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#trainingresult" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        TrainingResult
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#usage-guidelines" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Usage guidelines
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#source" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Source
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
       
     </li>
   
@@ -1163,6 +1386,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/agents/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Agents
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -1217,6 +1468,202 @@
     
   
   
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#why-this-stage-exists" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why this stage exists
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How it works
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How it works">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#algorithm-selection" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Algorithm selection
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#reward-injection" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reward injection
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dict-observation-handling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dict observation handling
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#stall-detection" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Stall detection
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#time-limits" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Time limits
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#training-backends" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Training backends
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Training backends">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#sb3-stable-baselines3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SB3 (Stable Baselines3)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cleanrl" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CleanRL
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rl_games" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        rl_games
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#il-trainer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        IL Trainer
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#offline-rl-trainer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Offline RL Trainer
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#trainingresult" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        TrainingResult
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#usage-guidelines" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Usage guidelines
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#source" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Source
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
 </nav>
                   </div>
                 </div>
@@ -1235,8 +1682,154 @@
   
 
 
-<h1 id="training-stage">training Stage<a class="headerlink" href="#training-stage" title="Permanent link">&para;</a></h1>
-<p>See source: <code>robosmith/stages/</code></p>
+<h1 id="stage-5-training">Stage 5: Training<a class="headerlink" href="#stage-5-training" title="Permanent link">&para;</a></h1>
+<p>The training stage takes the evolved reward function and a matched environment and trains a reinforcement learning policy. It uses RoboSmith's trainer abstraction to route to the right backend (SB3, CleanRL, rl_games) and the right algorithm (PPO, SAC, TD3) based on the task.</p>
+<h2 id="why-this-stage-exists">Why this stage exists<a class="headerlink" href="#why-this-stage-exists" title="Permanent link">&para;</a></h2>
+<p>Training is conceptually simple — run an RL algorithm on the environment with the reward function — but the implementation details matter enormously. Which algorithm to use? How many timesteps? What policy architecture? Should we use a dict-observation policy or flatten everything? When should we stop if training stalls?</p>
+<p>The training stage handles all of these decisions automatically, while still letting users override any choice through CLI flags or config.</p>
+<h2 id="how-it-works">How it works<a class="headerlink" href="#how-it-works" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">robosmith.stages.training</span><span class="w"> </span><span class="kn">import</span> <span class="n">run_training_v2</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="n">result</span> <span class="o">=</span> <span class="n">run_training_v2</span><span class="p">(</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>    <span class="n">task_spec</span><span class="o">=</span><span class="n">task_spec</span><span class="p">,</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    <span class="n">env_entry</span><span class="o">=</span><span class="n">entry</span><span class="p">,</span>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>    <span class="n">reward_candidate</span><span class="o">=</span><span class="n">best_candidate</span><span class="p">,</span>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>    <span class="n">artifacts_dir</span><span class="o">=</span><span class="n">Path</span><span class="p">(</span><span class="s2">&quot;output/&quot;</span><span class="p">),</span>
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>    <span class="n">total_timesteps</span><span class="o">=</span><span class="mi">50_000</span><span class="p">,</span>
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>    <span class="n">backend</span><span class="o">=</span><span class="s2">&quot;sb3&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="p">)</span>
+</code></pre></div>
+<h3 id="algorithm-selection">Algorithm selection<a class="headerlink" href="#algorithm-selection" title="Permanent link">&para;</a></h3>
+<p>If no algorithm is specified (the default), RoboSmith uses a rule-based selector that maps task properties to algorithms:</p>
+<table>
+<thead>
+<tr>
+<th>Condition</th>
+<th>Algorithm</th>
+<th>Reason</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Has 50+ demonstrations</td>
+<td>BC (Behavioral Cloning)</td>
+<td>Enough data for supervised learning</td>
+</tr>
+<tr>
+<td>Has 10K+ offline dataset</td>
+<td>IQL</td>
+<td>Sufficient for offline RL</td>
+</tr>
+<tr>
+<td>Discrete action space</td>
+<td>PPO</td>
+<td>Best general-purpose for discrete</td>
+</tr>
+<tr>
+<td>Classic control environment</td>
+<td>PPO</td>
+<td>Well-suited, fast convergence</td>
+</tr>
+<tr>
+<td>Locomotion tags</td>
+<td>PPO</td>
+<td>Standard choice for locomotion</td>
+</tr>
+<tr>
+<td>Dexterous manipulation tags</td>
+<td>TD3</td>
+<td>Better for high-dimensional continuous</td>
+</tr>
+<tr>
+<td>Manipulation tags</td>
+<td>SAC</td>
+<td>Good for continuous manipulation</td>
+</tr>
+<tr>
+<td>Default (continuous)</td>
+<td>SAC</td>
+<td>Strong general-purpose continuous</td>
+</tr>
+<tr>
+<td>Default (unknown)</td>
+<td>PPO</td>
+<td>Safest general-purpose choice</td>
+</tr>
+</tbody>
+</table>
+<p>The selector also chooses the <strong>training backend</strong>. If Isaac Lab environments are detected and GPU is available, it routes to <code>rl_games</code> for massively parallel training. Otherwise, it defaults to SB3.</p>
+<h3 id="reward-injection">Reward injection<a class="headerlink" href="#reward-injection" title="Permanent link">&para;</a></h3>
+<p>The evolved reward function is injected into the environment using <code>ForgeRewardWrapper</code>:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">robosmith.envs.reward_wrapper</span><span class="w"> </span><span class="kn">import</span> <span class="n">ForgeRewardWrapper</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="n">wrapped</span> <span class="o">=</span> <span class="n">ForgeRewardWrapper</span><span class="p">(</span><span class="n">env</span><span class="p">,</span> <span class="n">reward_fn</span><span class="p">,</span> <span class="n">reward_clip</span><span class="o">=</span><span class="mf">100.0</span><span class="p">)</span>
+</code></pre></div>
+<p>The wrapper replaces the environment's native reward with the custom reward function at every step. The original reward is preserved in <code>info["original_reward"]</code> for analysis. Rewards are clipped to <code>[-100, +100]</code> by default to prevent training instability.</p>
+<h3 id="dict-observation-handling">Dict observation handling<a class="headerlink" href="#dict-observation-handling" title="Permanent link">&para;</a></h3>
+<p>For goal-conditioned environments with <code>Dict</code> observation spaces (like Fetch tasks), the training stage automatically switches to SB3's <code>MultiInputPolicy</code> instead of the default <code>MlpPolicy</code>. This allows the policy network to process each observation component (achieved_goal, desired_goal, observation) through separate input heads before combining them.</p>
+<h3 id="stall-detection">Stall detection<a class="headerlink" href="#stall-detection" title="Permanent link">&para;</a></h3>
+<p>The SB3 backend includes training stall detection. During training, it logs mean episode reward at regular checkpoints. If the reward changes by less than 1% across 8 consecutive checkpoints, training is stopped early — the reward function isn't providing a useful learning signal, and continuing would waste time.</p>
+<p>When stall detection triggers, the <code>TrainingResult</code> records <code>converged=False</code> and includes the stall information in its metrics. The evaluation stage and decision agent use this information to decide whether to refine the reward or switch algorithms.</p>
+<h3 id="time-limits">Time limits<a class="headerlink" href="#time-limits" title="Permanent link">&para;</a></h3>
+<p>Training is bounded by both a timestep budget (<code>total_timesteps</code>) and a wall-clock time limit (<code>time_budget_minutes</code> from the task spec). Whichever is reached first stops training. This prevents runaway training sessions and makes the pipeline's total runtime predictable.</p>
+<h2 id="training-backends">Training backends<a class="headerlink" href="#training-backends" title="Permanent link">&para;</a></h2>
+<h3 id="sb3-stable-baselines3">SB3 (Stable Baselines3)<a class="headerlink" href="#sb3-stable-baselines3" title="Permanent link">&para;</a></h3>
+<p>The default backend for most tasks. Supports PPO, SAC, TD3, A2C, and DQN with battle-tested implementations.</p>
+<ul>
+<li>Automatic policy architecture selection (MlpPolicy vs MultiInputPolicy)</li>
+<li>Periodic checkpoint saving</li>
+<li>Training stall detection</li>
+<li>Time limit enforcement</li>
+</ul>
+<h3 id="cleanrl">CleanRL<a class="headerlink" href="#cleanrl" title="Permanent link">&para;</a></h3>
+<p>A pure PyTorch PPO implementation with no SB3 dependency. Useful when you want a minimal setup or need to customize the training loop.</p>
+<ul>
+<li>Self-contained PPO with GAE (Generalized Advantage Estimation)</li>
+<li>Supports both continuous and discrete action spaces</li>
+<li>Saves PyTorch checkpoints (<code>.pt</code> files instead of <code>.zip</code>)</li>
+</ul>
+<h3 id="rl_games">rl_games<a class="headerlink" href="#rl_games" title="Permanent link">&para;</a></h3>
+<p>NVIDIA's rl_games library for massively parallel training on GPU. Designed for Isaac Lab environments where thousands of environments run simultaneously on a single GPU.</p>
+<ul>
+<li>GPU-parallel training (1000+ environments)</li>
+<li>Optimized for Isaac Lab integration</li>
+<li>PPO only</li>
+</ul>
+<h3 id="il-trainer">IL Trainer<a class="headerlink" href="#il-trainer" title="Permanent link">&para;</a></h3>
+<p>Imitation learning from demonstrations. Used when the task spec includes demonstration data.</p>
+<ul>
+<li>Behavioral Cloning (BC) and DAgger</li>
+<li>Loads demos from <code>.npz</code>, <code>.pkl</code>, <code>.hdf5</code>, or directories</li>
+<li>Supervised MLP training</li>
+</ul>
+<h3 id="offline-rl-trainer">Offline RL Trainer<a class="headerlink" href="#offline-rl-trainer" title="Permanent link">&para;</a></h3>
+<p>Learns from static datasets without environment interaction.</p>
+<ul>
+<li>TD3+BC, CQL, IQL algorithms</li>
+<li>Loads datasets from <code>.npz</code> or <code>.hdf5</code></li>
+<li>Useful when environment interaction is expensive or unavailable</li>
+</ul>
+<h2 id="trainingresult">TrainingResult<a class="headerlink" href="#trainingresult" title="Permanent link">&para;</a></h2>
+<p>The training stage returns a <code>TrainingResult</code> with metrics:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="n">result</span> <span class="o">=</span> <span class="n">trainer</span><span class="o">.</span><span class="n">train</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="n">result</span><span class="o">.</span><span class="n">model_path</span>           <span class="c1"># Path to saved checkpoint</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="n">result</span><span class="o">.</span><span class="n">algorithm</span>            <span class="c1"># &quot;ppo&quot;, &quot;sac&quot;, etc.</span>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="n">result</span><span class="o">.</span><span class="n">total_timesteps</span>      <span class="c1"># Actual timesteps trained</span>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="n">result</span><span class="o">.</span><span class="n">training_time_seconds</span><span class="c1"># Wall-clock time</span>
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="n">result</span><span class="o">.</span><span class="n">final_mean_reward</span>    <span class="c1"># Final mean episode reward</span>
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="n">result</span><span class="o">.</span><span class="n">converged</span>            <span class="c1"># Whether training converged</span>
+<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="n">result</span><span class="o">.</span><span class="n">metrics_history</span>      <span class="c1"># Per-checkpoint metrics</span>
+</code></pre></div>
+<p>The <code>metrics_history</code> is a list of dicts with timestep, mean_reward, std_reward, mean_ep_length, and elapsed_seconds. This is used by the controller to generate training reflections for the next iteration.</p>
+<h2 id="usage-guidelines">Usage guidelines<a class="headerlink" href="#usage-guidelines" title="Permanent link">&para;</a></h2>
+<p><strong>Time budgets matter.</strong> Complex tasks (locomotion, dexterous manipulation) need 5–10 minutes of training. Simple tasks (classic control) converge in 1–3 minutes. The default is 10 minutes, which works for most tasks.</p>
+<p><strong>Algorithm overrides are rarely needed.</strong> The selector makes good choices for most tasks. Override only if you have domain knowledge that a specific algorithm works better.</p>
+<p><strong>Backend overrides are useful for testing.</strong> If you want to avoid SB3's dependency footprint, use <code>--backend cleanrl</code> for a lighter setup. If you have Isaac Lab environments and a GPU, use <code>--backend rl_games</code> for massive speedups.</p>
+<h2 id="source">Source<a class="headerlink" href="#source" title="Permanent link">&para;</a></h2>
+<p><code>robosmith/stages/training/train.py</code> — training orchestration and timestep calculation</p>
+<p><code>robosmith/stages/training/select.py</code> — algorithm selection logic</p>
+<p><code>robosmith/trainers/</code> — all backend implementations</p>
 
 
 

@@ -22,7 +22,7 @@
         
       
       
-      <link rel="icon" href="../../assets/images/favicon.png">
+      <link rel="icon" href="../../assets/logo.svg">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
     
     
@@ -78,7 +78,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#env-synthesis-stage" class="md-skip">
+        <a href="#stage-3-environment-synthesis" class="md-skip">
           Skip to content
         </a>
       
@@ -94,8 +94,7 @@
   <nav class="md-header__inner md-grid" aria-label="Header">
     <a href="../.." title="RoboSmith" class="md-header__button md-logo" aria-label="RoboSmith" data-md-component="logo">
       
-  
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+  <img src="../../assets/logo.svg" alt="logo">
 
     </a>
     <label class="md-header__button md-icon" for="__drawer">
@@ -361,8 +360,7 @@
   <label class="md-nav__title" for="__drawer">
     <a href="../.." title="RoboSmith" class="md-nav__button md-logo" aria-label="RoboSmith" data-md-component="logo">
       
-  
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+  <img src="../../assets/logo.svg" alt="logo">
 
     </a>
     RoboSmith
@@ -711,6 +709,24 @@
         
       
       
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Environment Synthesis
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
       <a href="./" class="md-nav__link md-nav__link--active">
         
   
@@ -727,6 +743,147 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#why-this-stage-exists" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why this stage exists
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How it works
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How it works">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#the-matching-algorithm" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The matching algorithm
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#envmatch" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        EnvMatch
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-environment-registry" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The environment registry
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="The environment registry">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#registry-entry-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Registry entry example
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tag-stemming" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tag stemming
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#adding-environments-to-the-registry" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Adding environments to the registry
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#forced-environment-selection" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Forced environment selection
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#source" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Source
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
       
     </li>
   
@@ -1163,6 +1320,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/agents/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Agents
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -1217,6 +1402,136 @@
     
   
   
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#why-this-stage-exists" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why this stage exists
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How it works
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How it works">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#the-matching-algorithm" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The matching algorithm
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#envmatch" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        EnvMatch
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-environment-registry" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The environment registry
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="The environment registry">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#registry-entry-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Registry entry example
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tag-stemming" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tag stemming
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#adding-environments-to-the-registry" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Adding environments to the registry
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#forced-environment-selection" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Forced environment selection
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#source" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Source
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
 </nav>
                   </div>
                 </div>
@@ -1235,8 +1550,131 @@
   
 
 
-<h1 id="env-synthesis-stage">env synthesis Stage<a class="headerlink" href="#env-synthesis-stage" title="Permanent link">&para;</a></h1>
-<p>See source: <code>robosmith/stages/</code></p>
+<h1 id="stage-3-environment-synthesis">Stage 3: Environment Synthesis<a class="headerlink" href="#stage-3-environment-synthesis" title="Permanent link">&para;</a></h1>
+<p>The environment synthesis stage matches a task to the best simulation environment from RoboSmith's registry of 30 pre-configured environments. It uses tag-based matching with stemming to find the environment whose capabilities best align with the task description.</p>
+<h2 id="why-this-stage-exists">Why this stage exists<a class="headerlink" href="#why-this-stage-exists" title="Permanent link">&para;</a></h2>
+<p>Choosing the right simulation environment is a critical decision that affects everything downstream. A "walk forward" task needs a quadruped environment with locomotion physics, not a tabletop manipulation setup. A "pick up the cube" task needs a robot arm with a gripper, not a legged robot.</p>
+<p>Historically, this choice is made manually by the researcher, who has to know which environments exist across different frameworks (Gymnasium, Isaac Lab, ManiSkill, LIBERO) and which one best fits their task. Environment synthesis automates this selection.</p>
+<h2 id="how-it-works">How it works<a class="headerlink" href="#how-it-works" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">robosmith.stages.env_synthesis</span><span class="w"> </span><span class="kn">import</span> <span class="n">match_task_to_env</span><span class="p">,</span> <span class="n">find_best_env</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="c1"># Full match with scores</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="n">matches</span> <span class="o">=</span> <span class="n">match_task_to_env</span><span class="p">(</span><span class="n">task_spec</span><span class="p">,</span> <span class="n">registry</span><span class="p">)</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="c1"># Returns: list[EnvMatch] sorted by score</span>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="c1"># Quick shortcut</span>
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="n">entry</span> <span class="o">=</span> <span class="n">find_best_env</span><span class="p">(</span><span class="n">task_spec</span><span class="p">)</span>
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="c1"># Returns: EnvEntry | None</span>
+</code></pre></div>
+<h3 id="the-matching-algorithm">The matching algorithm<a class="headerlink" href="#the-matching-algorithm" title="Permanent link">&para;</a></h3>
+<p>The matching process has four steps:</p>
+<p><strong>Step 1 — Tag extraction.</strong> The task description is split into words, and each word is stemmed using suffix stripping. For example, "walking" becomes "walk", "manipulation" becomes "manipulat", "running" becomes "run". This produces a set of query tags.</p>
+<p><strong>Step 2 — Tag matching.</strong> For each environment in the registry, the algorithm computes how many query tags match the environment's <code>task_tags</code>. Both query tags and environment tags are stemmed before comparison. The match score is <code>matched_tags / total_query_tags</code>.</p>
+<p><strong>Step 3 — Filtering.</strong> If the <code>TaskSpec</code> specifies a <code>robot_type</code> or <code>environment_type</code>, environments that don't match are filtered out. If a specific <code>environment_id</code> is set in the task spec, that environment is returned directly (this is used when the user forces a specific env via config).</p>
+<p><strong>Step 4 — Ranking.</strong> Remaining environments are sorted by match score. Ties are broken by preferring environments from more commonly available frameworks (Gymnasium &gt; ManiSkill &gt; Isaac Lab).</p>
+<h3 id="envmatch">EnvMatch<a class="headerlink" href="#envmatch" title="Permanent link">&para;</a></h3>
+<p>Each match result includes the environment entry, score, and a human-readable explanation:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="nd">@dataclass</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="k">class</span><span class="w"> </span><span class="nc">EnvMatch</span><span class="p">:</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>    <span class="n">entry</span><span class="p">:</span> <span class="n">EnvEntry</span>       <span class="c1"># The matched environment</span>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>    <span class="n">score</span><span class="p">:</span> <span class="nb">float</span>          <span class="c1"># 0.0–1.0, higher = better</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>    <span class="n">match_reason</span><span class="p">:</span> <span class="nb">str</span>     <span class="c1"># &quot;Matched 3/4 tags: locomotion, walk, forward&quot;</span>
+</code></pre></div>
+<h2 id="the-environment-registry">The environment registry<a class="headerlink" href="#the-environment-registry" title="Permanent link">&para;</a></h2>
+<p>RoboSmith ships with a YAML-based registry (<code>configs/env_registry.yaml</code>) containing 30 pre-configured environments across 5 frameworks:</p>
+<table>
+<thead>
+<tr>
+<th>Category</th>
+<th>Environments</th>
+<th>Framework</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>MuJoCo locomotion</td>
+<td>Ant, Humanoid, HalfCheetah, Hopper, Walker2d, Swimmer</td>
+<td>Gymnasium</td>
+</tr>
+<tr>
+<td>MuJoCo control</td>
+<td>Pendulum, CartPole, Acrobot, MountainCar, Reacher, Pusher</td>
+<td>Gymnasium</td>
+</tr>
+<tr>
+<td>Gymnasium Robotics</td>
+<td>FetchReach, FetchPush, FetchSlide, FetchPickAndPlace, HandReach, HandManipulateBlock</td>
+<td>Gymnasium</td>
+</tr>
+<tr>
+<td>Isaac Lab</td>
+<td>Franka Lift, Franka Reach, Isaac Ant, Isaac Humanoid</td>
+<td>Isaac Lab</td>
+</tr>
+<tr>
+<td>ManiSkill</td>
+<td>PickCube, StackCube, PegInsertion, PushCube</td>
+<td>ManiSkill</td>
+</tr>
+<tr>
+<td>LIBERO</td>
+<td>LIBERO-Spatial, LIBERO-Object, LIBERO-Goal</td>
+<td>LIBERO</td>
+</tr>
+</tbody>
+</table>
+<p>Each entry in the registry includes metadata that the matcher uses: <code>robot_type</code>, <code>env_type</code>, <code>task_tags</code>, <code>obs_type</code>, <code>action_type</code>, <code>framework</code>, and a human-readable <code>description</code>.</p>
+<h3 id="registry-entry-example">Registry entry example<a class="headerlink" href="#registry-entry-example" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mujoco-ant</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">MuJoCo Ant</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">  </span><span class="nt">framework</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">gymnasium</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="w">  </span><span class="nt">env_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Ant-v5</span>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="w">  </span><span class="nt">robot_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">quadruped</span>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="w">  </span><span class="nt">robot_model</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ant</span>
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="w">  </span><span class="nt">env_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">floor</span>
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="w">  </span><span class="nt">task_tags</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">locomotion</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">walk</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">forward</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">balance</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">run</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">quadruped</span><span class="p p-Indicator">]</span>
+<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="w">  </span><span class="nt">obs_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">state</span>
+<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span class="w">  </span><span class="nt">action_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">continuous</span>
+<a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a><span class="w">  </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Four-legged ant robot on flat ground</span>
+<a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a><span class="w">  </span><span class="nt">source</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">gymnasium[mujoco]</span>
+</code></pre></div>
+<h2 id="tag-stemming">Tag stemming<a class="headerlink" href="#tag-stemming" title="Permanent link">&para;</a></h2>
+<p>The stemming algorithm is intentionally simple — it strips common suffixes to normalize words:</p>
+<ul>
+<li><code>walking</code> → <code>walk</code></li>
+<li><code>running</code> → <code>run</code></li>
+<li><code>manipulation</code> → <code>manipulat</code></li>
+<li><code>locomotion</code> → <code>locomot</code></li>
+<li><code>picking</code> → <code>pick</code></li>
+<li><code>placement</code> → <code>place</code></li>
+</ul>
+<p>This fuzzy matching means "walking" matches "walk", "manipulate" matches "manipulation", and "run quickly" matches tags containing "run". It's not perfect, but it handles the most common cases without requiring an NLP library.</p>
+<h2 id="adding-environments-to-the-registry">Adding environments to the registry<a class="headerlink" href="#adding-environments-to-the-registry" title="Permanent link">&para;</a></h2>
+<p>To add a new environment, append an entry to <code>configs/env_registry.yaml</code>:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">my-robot-task</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">My Robot Task</span>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="w">  </span><span class="nt">framework</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">my_framework</span><span class="w">    </span><span class="c1"># Must match an installed adapter</span>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="w">  </span><span class="nt">env_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">MyRobot-v1</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="w">  </span><span class="nt">robot_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">arm</span>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="w">  </span><span class="nt">robot_model</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">my_robot</span>
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="w">  </span><span class="nt">env_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">tabletop</span>
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="w">  </span><span class="nt">task_tags</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">pick</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">place</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">manipulation</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">grasp</span><span class="p p-Indicator">]</span>
+<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span class="w">  </span><span class="nt">obs_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">state</span>
+<a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a><span class="w">  </span><span class="nt">action_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">continuous</span>
+<a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a><span class="w">  </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Pick and place with my custom robot</span>
+<a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a><span class="w">  </span><span class="nt">source</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">my_package</span>
+</code></pre></div>
+<p>The tag matcher will automatically find this environment when the task matches the tags. See <a href="../../extending/environments/">Custom Environments</a> for how to also add a new adapter if your framework isn't already supported.</p>
+<h2 id="forced-environment-selection">Forced environment selection<a class="headerlink" href="#forced-environment-selection" title="Permanent link">&para;</a></h2>
+<p>If you know exactly which environment you want, bypass the matcher entirely:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="c1"># In robosmith.yaml</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="nt">environment_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mujoco-ant</span>
+</code></pre></div>
+<p>Or set <code>task_spec.environment_id</code> programmatically. When <code>environment_id</code> is set, env synthesis skips matching and returns the specified environment directly.</p>
+<h2 id="source">Source<a class="headerlink" href="#source" title="Permanent link">&para;</a></h2>
+<p><code>robosmith/stages/env_synthesis/synthesis.py</code> — matching algorithm</p>
+<p><code>robosmith/envs/registry.py</code> — registry loading and <code>EnvEntry</code> model</p>
+<p><code>configs/env_registry.yaml</code> — the environment catalog</p>
 
 
 

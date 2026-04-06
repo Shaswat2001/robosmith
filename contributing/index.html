@@ -13,14 +13,14 @@
         <link rel="canonical" href="https://shaswat2001.github.io/robosmith/contributing/">
       
       
-        <link rel="prev" href="../api/stages/">
+        <link rel="prev" href="../api/agents/">
       
       
       
         
       
       
-      <link rel="icon" href="../assets/images/favicon.png">
+      <link rel="icon" href="../assets/logo.svg">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
     
     
@@ -92,8 +92,7 @@
   <nav class="md-header__inner md-grid" aria-label="Header">
     <a href=".." title="RoboSmith" class="md-header__button md-logo" aria-label="RoboSmith" data-md-component="logo">
       
-  
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+  <img src="../assets/logo.svg" alt="logo">
 
     </a>
     <label class="md-header__button md-icon" for="__drawer">
@@ -359,8 +358,7 @@
   <label class="md-nav__title" for="__drawer">
     <a href=".." title="RoboSmith" class="md-nav__button md-logo" aria-label="RoboSmith" data-md-component="logo">
       
-  
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+  <img src="../assets/logo.svg" alt="logo">
 
     </a>
     RoboSmith
@@ -1148,6 +1146,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/agents/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Agents
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -1225,29 +1251,7 @@
   <a href="#development-setup" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Development Setup
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#running-tests" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Running Tests
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#code-style" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Code Style
+        Development setup
       
     </span>
   </a>
@@ -1258,7 +1262,40 @@
   <a href="#project-structure" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Project Structure
+        Project structure
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#running-tests" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Running tests
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#code-style" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Code style
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#type-checking" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Type checking
       
     </span>
   </a>
@@ -1269,7 +1306,7 @@
   <a href="#adding-a-new-training-backend" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Adding a New Training Backend
+        Adding a new training backend
       
     </span>
   </a>
@@ -1280,7 +1317,7 @@
   <a href="#adding-a-new-environment-adapter" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Adding a New Environment Adapter
+        Adding a new environment adapter
       
     </span>
   </a>
@@ -1291,7 +1328,40 @@
   <a href="#adding-a-new-pipeline-stage" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Adding a New Pipeline Stage
+        Adding a new pipeline stage
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#commit-guidelines" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Commit guidelines
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#submitting-changes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Submitting changes
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Questions?
       
     </span>
   </a>
@@ -1336,29 +1406,7 @@
   <a href="#development-setup" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Development Setup
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#running-tests" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Running Tests
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#code-style" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Code Style
+        Development setup
       
     </span>
   </a>
@@ -1369,7 +1417,40 @@
   <a href="#project-structure" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Project Structure
+        Project structure
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#running-tests" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Running tests
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#code-style" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Code style
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#type-checking" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Type checking
       
     </span>
   </a>
@@ -1380,7 +1461,7 @@
   <a href="#adding-a-new-training-backend" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Adding a New Training Backend
+        Adding a new training backend
       
     </span>
   </a>
@@ -1391,7 +1472,7 @@
   <a href="#adding-a-new-environment-adapter" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Adding a New Environment Adapter
+        Adding a new environment adapter
       
     </span>
   </a>
@@ -1402,7 +1483,40 @@
   <a href="#adding-a-new-pipeline-stage" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Adding a New Pipeline Stage
+        Adding a new pipeline stage
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#commit-guidelines" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Commit guidelines
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#submitting-changes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Submitting changes
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Questions?
       
     </span>
   </a>
@@ -1430,48 +1544,183 @@
 
 
 <h1 id="contributing">Contributing<a class="headerlink" href="#contributing" title="Permanent link">&para;</a></h1>
-<h2 id="development-setup">Development Setup<a class="headerlink" href="#development-setup" title="Permanent link">&para;</a></h2>
+<p>Thank you for your interest in contributing to RoboSmith. This guide covers development setup, testing, code style, and how to add new components.</p>
+<h2 id="development-setup">Development setup<a class="headerlink" href="#development-setup" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/Shaswat2001/robosmith.git
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="nb">cd</span><span class="w"> </span>robosmith
-<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span><span class="s2">&quot;.[dev]&quot;</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span><span class="s2">&quot;.[dev,sim,train]&quot;</span>
 </code></pre></div>
-<h2 id="running-tests">Running Tests<a class="headerlink" href="#running-tests" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1"># Full test suite (140 tests)</span>
-<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>pytest<span class="w"> </span>tests/
-<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>
-<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="c1"># Specific test file</span>
-<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>pytest<span class="w"> </span>tests/test_evaluation.py
-<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>
-<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="c1"># With coverage</span>
-<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>pytest<span class="w"> </span>tests/<span class="w"> </span>--cov<span class="o">=</span>robosmith<span class="w"> </span>--cov-report<span class="o">=</span>html
+<p>The <code>[dev]</code> extra installs pytest, ruff, mypy, and pre-commit hooks.</p>
+<h2 id="project-structure">Project structure<a class="headerlink" href="#project-structure" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>robosmith/
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>├── agents/              # LLM agents (reward, decision, base)
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>│   ├── base.py          # BaseAgent — LiteLLM wrapper with retry + JSON parsing
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>│   ├── reward_agent.py  # RewardAgent — generates and evolves reward functions
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>│   └── decision_agent.py# DecisionAgent — pipeline iteration decisions
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>├── envs/                # Environment registry, adapters, wrappers
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>│   ├── adapters/        # Framework-specific adapters (gymnasium, isaac_lab, etc.)
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>│   ├── registry.py      # YAML-driven environment catalog
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>│   ├── adapter_registry.py # Singleton adapter discovery and routing
+<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>│   ├── wrapper.py       # make_env() — the single entry point for env creation
+<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>│   └── reward_wrapper.py# ForgeRewardWrapper — injects custom rewards
+<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>├── stages/              # Pipeline stages (each is a standalone module)
+<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>│   ├── intake/          # Stage 1: natural language → TaskSpec
+<a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>│   ├── scout/           # Stage 2: literature search via Semantic Scholar
+<a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a>│   ├── env_synthesis/   # Stage 3: task → environment matching
+<a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a>│   ├── reward_design/   # Stage 4: evolutionary reward function search
+<a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a>│   ├── training/        # Stage 5: RL training with backend abstraction
+<a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a>│   ├── evaluation/      # Stage 6: behavioral success detection
+<a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a>│   └── delivery/        # Stage 7: artifact packaging
+<a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a>├── trainers/            # Training backend abstractions
+<a id="__codelineno-1-21" name="__codelineno-1-21" href="#__codelineno-1-21"></a>│   ├── base.py          # Trainer ABC, TrainingConfig, TrainingResult, Policy
+<a id="__codelineno-1-22" name="__codelineno-1-22" href="#__codelineno-1-22"></a>│   ├── registry.py      # TrainerRegistry singleton
+<a id="__codelineno-1-23" name="__codelineno-1-23" href="#__codelineno-1-23"></a>│   ├── selector.py      # PolicySelector — task-aware algorithm selection
+<a id="__codelineno-1-24" name="__codelineno-1-24" href="#__codelineno-1-24"></a>│   ├── sb3_trainer.py   # Stable Baselines3 backend
+<a id="__codelineno-1-25" name="__codelineno-1-25" href="#__codelineno-1-25"></a>│   ├── cleanrl_trainer.py# CleanRL (pure PyTorch PPO)
+<a id="__codelineno-1-26" name="__codelineno-1-26" href="#__codelineno-1-26"></a>│   ├── rl_games_trainer.py# NVIDIA rl_games backend
+<a id="__codelineno-1-27" name="__codelineno-1-27" href="#__codelineno-1-27"></a>│   ├── il_trainer.py    # Imitation learning (BC, DAgger)
+<a id="__codelineno-1-28" name="__codelineno-1-28" href="#__codelineno-1-28"></a>│   └── offline_rl_trainer.py # Offline RL (TD3+BC, CQL, IQL)
+<a id="__codelineno-1-29" name="__codelineno-1-29" href="#__codelineno-1-29"></a>├── config.py            # Pydantic models (TaskSpec, ForgeConfig, RunState, enums)
+<a id="__codelineno-1-30" name="__codelineno-1-30" href="#__codelineno-1-30"></a>├── controller.py        # ForgeController — pipeline orchestrator
+<a id="__codelineno-1-31" name="__codelineno-1-31" href="#__codelineno-1-31"></a>└── cli.py               # Typer CLI
 </code></pre></div>
-<h2 id="code-style">Code Style<a class="headerlink" href="#code-style" title="Permanent link">&para;</a></h2>
+<h2 id="running-tests">Running tests<a class="headerlink" href="#running-tests" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="c1"># Full test suite</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>pytest<span class="w"> </span>tests/
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="c1"># Specific test file</span>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>pytest<span class="w"> </span>tests/test_evaluation.py
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="c1"># With coverage</span>
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>pytest<span class="w"> </span>tests/<span class="w"> </span>--cov<span class="o">=</span>robosmith<span class="w"> </span>--cov-report<span class="o">=</span>html
+<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>
+<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span class="c1"># Only fast tests (skip integration tests that need LLM or MuJoCo)</span>
+<a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a>pytest<span class="w"> </span>tests/<span class="w"> </span>-m<span class="w"> </span><span class="s2">&quot;not integration&quot;</span>
+<a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a>
+<a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a><span class="c1"># Verbose output</span>
+<a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a>pytest<span class="w"> </span>tests/<span class="w"> </span>-v
+</code></pre></div>
+<p>The test suite uses mocks for LLM calls and environment creation, so most tests run without API keys or simulation dependencies.</p>
+<h2 id="code-style">Code style<a class="headerlink" href="#code-style" title="Permanent link">&para;</a></h2>
 <p>We use <code>ruff</code> for linting and formatting:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>ruff<span class="w"> </span>check<span class="w"> </span>robosmith/
-<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>ruff<span class="w"> </span>format<span class="w"> </span>robosmith/
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="c1"># Check for issues</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>ruff<span class="w"> </span>check<span class="w"> </span>robosmith/
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="c1"># Auto-fix issues</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>ruff<span class="w"> </span>check<span class="w"> </span>robosmith/<span class="w"> </span>--fix
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="c1"># Format code</span>
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>ruff<span class="w"> </span>format<span class="w"> </span>robosmith/
 </code></pre></div>
-<h2 id="project-structure">Project Structure<a class="headerlink" href="#project-structure" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>robosmith/
-<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>├── agents/          # LLM agents (reward, decision, base)
-<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>├── envs/            # Environment registry, adapters, wrappers
-<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>│   └── adapters/    # Framework-specific adapters
-<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>├── stages/          # Pipeline stages (intake → delivery)
-<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>├── trainers/        # Training backend abstractions
-<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>├── config.py        # Pydantic models (TaskSpec, ForgeConfig, RunState)
-<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>├── controller.py    # Pipeline orchestrator
-<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>└── cli.py           # Typer CLI
+<p>Key style rules:</p>
+<ul>
+<li>Line length: 100 characters</li>
+<li>Python 3.11+ target</li>
+<li>Import sorting with isort (via ruff)</li>
+<li>Type annotations on all public functions</li>
+<li>Docstrings on all public classes and functions</li>
+</ul>
+<h2 id="type-checking">Type checking<a class="headerlink" href="#type-checking" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>mypy<span class="w"> </span>robosmith/
 </code></pre></div>
-<h2 id="adding-a-new-training-backend">Adding a New Training Backend<a class="headerlink" href="#adding-a-new-training-backend" title="Permanent link">&para;</a></h2>
-<p>See <a href="../extending/trainers/">Custom Trainers</a>.</p>
-<h2 id="adding-a-new-environment-adapter">Adding a New Environment Adapter<a class="headerlink" href="#adding-a-new-environment-adapter" title="Permanent link">&para;</a></h2>
-<p>See <a href="../extending/environments/">Custom Environments</a>.</p>
-<h2 id="adding-a-new-pipeline-stage">Adding a New Pipeline Stage<a class="headerlink" href="#adding-a-new-pipeline-stage" title="Permanent link">&para;</a></h2>
+<p>The project uses strict mypy settings. All public APIs should have complete type annotations.</p>
+<h2 id="adding-a-new-training-backend">Adding a new training backend<a class="headerlink" href="#adding-a-new-training-backend" title="Permanent link">&para;</a></h2>
 <ol>
-<li>Create <code>robosmith/stages/my_stage.py</code> with a <code>run_my_stage()</code> function</li>
+<li>Create <code>robosmith/trainers/my_trainer.py</code>:</li>
+</ol>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">robosmith.trainers.base</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>    <span class="n">Trainer</span><span class="p">,</span> <span class="n">TrainingConfig</span><span class="p">,</span> <span class="n">TrainingResult</span><span class="p">,</span> <span class="n">LearningParadigm</span><span class="p">,</span> <span class="n">Policy</span>
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="p">)</span>
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="k">class</span><span class="w"> </span><span class="nc">MyTrainer</span><span class="p">(</span><span class="n">Trainer</span><span class="p">):</span>
+<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;my_trainer&quot;</span>
+<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a>    <span class="n">paradigm</span> <span class="o">=</span> <span class="n">LearningParadigm</span><span class="o">.</span><span class="n">REINFORCEMENT_LEARNING</span>
+<a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a>    <span class="n">algorithms</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;my_algo&quot;</span><span class="p">]</span>
+<a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a>    <span class="n">requires</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;my_package&quot;</span><span class="p">]</span>
+<a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a>    <span class="n">description</span> <span class="o">=</span> <span class="s2">&quot;My custom trainer&quot;</span>
+<a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a>
+<a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">train</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">:</span> <span class="n">TrainingConfig</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TrainingResult</span><span class="p">:</span>
+<a id="__codelineno-5-13" name="__codelineno-5-13" href="#__codelineno-5-13"></a>        <span class="c1"># Your training logic here</span>
+<a id="__codelineno-5-14" name="__codelineno-5-14" href="#__codelineno-5-14"></a>        <span class="o">...</span>
+<a id="__codelineno-5-15" name="__codelineno-5-15" href="#__codelineno-5-15"></a>
+<a id="__codelineno-5-16" name="__codelineno-5-16" href="#__codelineno-5-16"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">load_policy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Policy</span><span class="p">:</span>
+<a id="__codelineno-5-17" name="__codelineno-5-17" href="#__codelineno-5-17"></a>        <span class="c1"># Load a saved checkpoint</span>
+<a id="__codelineno-5-18" name="__codelineno-5-18" href="#__codelineno-5-18"></a>        <span class="o">...</span>
+</code></pre></div>
+<ol>
+<li>Register it in <code>robosmith/trainers/registry.py</code>:</li>
+</ol>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="bp">self</span><span class="o">.</span><span class="n">_known_backends</span> <span class="o">=</span> <span class="p">{</span>
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>    <span class="o">...</span>
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>    <span class="s2">&quot;my_trainer&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;robosmith.trainers.my_trainer&quot;</span><span class="p">,</span> <span class="s2">&quot;MyTrainer&quot;</span><span class="p">),</span>
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="p">}</span>
+</code></pre></div>
+<ol>
+<li>Add tests in <code>tests/test_my_trainer.py</code></li>
+</ol>
+<p>See <a href="../extending/trainers/">Custom Trainers</a> for the full guide.</p>
+<h2 id="adding-a-new-environment-adapter">Adding a new environment adapter<a class="headerlink" href="#adding-a-new-environment-adapter" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Create <code>robosmith/envs/adapters/my_adapter.py</code>:</li>
+</ol>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">robosmith.envs.adapters</span><span class="w"> </span><span class="kn">import</span> <span class="n">EnvAdapter</span><span class="p">,</span> <span class="n">EnvConfig</span>
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>
+<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="k">class</span><span class="w"> </span><span class="nc">MyEnvAdapter</span><span class="p">(</span><span class="n">EnvAdapter</span><span class="p">):</span>
+<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a>    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;my_framework&quot;</span>
+<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>    <span class="n">frameworks</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;my_framework&quot;</span><span class="p">]</span>
+<a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a>    <span class="n">requires</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;my_package&quot;</span><span class="p">]</span>
+<a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a>    <span class="n">description</span> <span class="o">=</span> <span class="s2">&quot;My custom simulation framework&quot;</span>
+<a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a>
+<a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">make</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">env_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">config</span><span class="p">:</span> <span class="n">EnvConfig</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+<a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a>        <span class="o">...</span>
+<a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a>
+<a id="__codelineno-7-12" name="__codelineno-7-12" href="#__codelineno-7-12"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">list_envs</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<a id="__codelineno-7-13" name="__codelineno-7-13" href="#__codelineno-7-13"></a>        <span class="o">...</span>
+</code></pre></div>
+<ol>
+<li>
+<p>Register it in <code>robosmith/envs/adapter_registry.py</code></p>
+</li>
+<li>
+<p>Add environment entries to <code>configs/env_registry.yaml</code></p>
+</li>
+<li>
+<p>Add tests in <code>tests/test_my_adapter.py</code></p>
+</li>
+</ol>
+<p>See <a href="../extending/environments/">Custom Environments</a> for the full guide.</p>
+<h2 id="adding-a-new-pipeline-stage">Adding a new pipeline stage<a class="headerlink" href="#adding-a-new-pipeline-stage" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Create <code>robosmith/stages/my_stage.py</code> (or a package <code>robosmith/stages/my_stage/</code>) with a <code>run_my_stage()</code> function</li>
 <li>Add the stage name to <code>STAGES</code> in <code>controller.py</code></li>
 <li>Add a <code>_stage_my_stage()</code> method to <code>ForgeController</code></li>
 <li>Add tests in <code>tests/test_my_stage.py</code></li>
 </ol>
+<p>Stages should follow these conventions:</p>
+<ul>
+<li>Have a single public entry point (<code>run_my_stage()</code>)</li>
+<li>Accept a <code>TaskSpec</code> and return a dataclass with results</li>
+<li>Write their results to <code>RunState</code> metadata</li>
+<li>Handle their own errors gracefully (log and continue, don't crash the pipeline)</li>
+<li>Be independently testable with mocked dependencies</li>
+</ul>
+<h2 id="commit-guidelines">Commit guidelines<a class="headerlink" href="#commit-guidelines" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Write clear commit messages that explain the "why", not just the "what"</li>
+<li>Keep commits focused — one logical change per commit</li>
+<li>Run <code>ruff check</code> and <code>pytest</code> before committing</li>
+</ul>
+<h2 id="submitting-changes">Submitting changes<a class="headerlink" href="#submitting-changes" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Fork the repository</li>
+<li>Create a feature branch (<code>git checkout -b feature/my-feature</code>)</li>
+<li>Make your changes with tests</li>
+<li>Run <code>ruff check robosmith/</code> and <code>pytest tests/</code></li>
+<li>Commit and push</li>
+<li>Open a pull request with a clear description of what and why</li>
+</ol>
+<h2 id="questions">Questions?<a class="headerlink" href="#questions" title="Permanent link">&para;</a></h2>
+<p>Open an issue on <a href="https://github.com/Shaswat2001/robosmith/issues">GitHub</a> for bug reports, feature requests, or questions.</p>
 
 
 

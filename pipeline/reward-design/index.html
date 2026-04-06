@@ -22,7 +22,7 @@
         
       
       
-      <link rel="icon" href="../../assets/images/favicon.png">
+      <link rel="icon" href="../../assets/logo.svg">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
     
     
@@ -78,7 +78,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#reward-design-stage" class="md-skip">
+        <a href="#stage-4-reward-design" class="md-skip">
           Skip to content
         </a>
       
@@ -94,8 +94,7 @@
   <nav class="md-header__inner md-grid" aria-label="Header">
     <a href="../.." title="RoboSmith" class="md-header__button md-logo" aria-label="RoboSmith" data-md-component="logo">
       
-  
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+  <img src="../../assets/logo.svg" alt="logo">
 
     </a>
     <label class="md-header__button md-icon" for="__drawer">
@@ -361,8 +360,7 @@
   <label class="md-nav__title" for="__drawer">
     <a href="../.." title="RoboSmith" class="md-nav__button md-logo" aria-label="RoboSmith" data-md-component="logo">
       
-  
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+  <img src="../../assets/logo.svg" alt="logo">
 
     </a>
     RoboSmith
@@ -739,6 +737,24 @@
         
       
       
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reward Design
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
       <a href="./" class="md-nav__link md-nav__link--active">
         
   
@@ -755,6 +771,152 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#why-this-stage-exists" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why this stage exists
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How it works
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How it works">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#the-evolution-loop" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The evolution loop
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#observation-space-introspection" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Observation space introspection
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dictgoalenv-handling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dict/GoalEnv handling
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#candidate-evaluation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Candidate evaluation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#adaptive-budget" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Adaptive budget
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#reward-function-format" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reward function format
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#error-recovery" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Error recovery
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#training-reflection-cross-iteration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Training reflection (cross-iteration)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#source" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Source
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
       
     </li>
   
@@ -1163,6 +1325,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/agents/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Agents
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -1217,6 +1407,141 @@
     
   
   
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#why-this-stage-exists" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why this stage exists
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How it works
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How it works">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#the-evolution-loop" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The evolution loop
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#observation-space-introspection" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Observation space introspection
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dictgoalenv-handling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dict/GoalEnv handling
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#candidate-evaluation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Candidate evaluation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#adaptive-budget" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Adaptive budget
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#reward-function-format" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reward function format
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#error-recovery" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Error recovery
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#training-reflection-cross-iteration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Training reflection (cross-iteration)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#source" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Source
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
 </nav>
                   </div>
                 </div>
@@ -1235,8 +1560,147 @@
   
 
 
-<h1 id="reward-design-stage">reward design Stage<a class="headerlink" href="#reward-design-stage" title="Permanent link">&para;</a></h1>
-<p>See source: <code>robosmith/stages/</code></p>
+<h1 id="stage-4-reward-design">Stage 4: Reward Design<a class="headerlink" href="#stage-4-reward-design" title="Permanent link">&para;</a></h1>
+<p>Reward design is the core of RoboSmith and the stage where the LLM does its most important work. It uses evolutionary search to generate, evaluate, and refine reward functions — producing a <code>compute_reward()</code> function that the training stage uses to train the policy.</p>
+<p>This stage is directly inspired by <a href="https://eureka-research.github.io/">Eureka</a>, which showed that LLMs can write reward functions that match or exceed human-designed ones when given proper observation space context and iterative feedback.</p>
+<h2 id="why-this-stage-exists">Why this stage exists<a class="headerlink" href="#why-this-stage-exists" title="Permanent link">&para;</a></h2>
+<p>Reward function design is widely considered the hardest part of reinforcement learning. A poorly designed reward function leads to reward hacking (the agent finds an unintended way to maximize reward without doing the task), sparse reward problems (the agent never discovers any reward signal), or reward misalignment (the agent optimizes for something adjacent to what you actually want).</p>
+<p>RoboSmith automates reward design by leveraging two key insights:</p>
+<ol>
+<li>
+<p><strong>LLMs understand physics and robotics.</strong> Given a description of what <code>obs[0]</code> through <code>obs[104]</code> mean in an Ant environment, an LLM can write a reward function that encourages forward movement while penalizing excessive joint torques — without ever seeing the environment.</p>
+</li>
+<li>
+<p><strong>Evolutionary search finds good rewards.</strong> Generating multiple candidates and selecting the best one, then evolving variants of the winner, consistently outperforms single-shot reward generation.</p>
+</li>
+</ol>
+<h2 id="how-it-works">How it works<a class="headerlink" href="#how-it-works" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">robosmith.stages.reward_design</span><span class="w"> </span><span class="kn">import</span> <span class="n">run_reward_design</span><span class="p">,</span> <span class="n">RewardSearchConfig</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="n">result</span> <span class="o">=</span> <span class="n">run_reward_design</span><span class="p">(</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>    <span class="n">task_spec</span><span class="o">=</span><span class="n">task_spec</span><span class="p">,</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    <span class="n">env_entry</span><span class="o">=</span><span class="n">entry</span><span class="p">,</span>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>    <span class="n">llm_config</span><span class="o">=</span><span class="n">llm_config</span><span class="p">,</span>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>    <span class="n">search_config</span><span class="o">=</span><span class="n">RewardSearchConfig</span><span class="p">(</span><span class="n">num_iterations</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">num_candidates</span><span class="o">=</span><span class="mi">4</span><span class="p">),</span>
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>    <span class="n">literature_context</span><span class="o">=</span><span class="n">context</span><span class="p">,</span>
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>    <span class="n">training_reflection</span><span class="o">=</span><span class="s2">&quot;Previous reward was flat at 10.83...&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="p">)</span>
+</code></pre></div>
+<h3 id="the-evolution-loop">The evolution loop<a class="headerlink" href="#the-evolution-loop" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>Generation 1:
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>  → Generate 4 candidates (LLM with obs/action space + literature context)
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>  → Evaluate each with 5 random-action episodes
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>  → Select best by mean reward
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>Generation 2:
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>  → Evolve 4 variants from gen 1 best (LLM with feedback)
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>  → Evaluate, update global best if improved
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>
+<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>Generation 3:
+<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>  → Evolve from current best
+<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>  → Final best becomes the reward function for training
+</code></pre></div>
+<p>Each generation produces <code>num_candidates</code> reward functions. In generation 1, candidates are generated from scratch. In subsequent generations, candidates are evolved from the best of the previous generation — the LLM sees the previous best's code, its evaluation score, and specific feedback about what to improve.</p>
+<h3 id="observation-space-introspection">Observation space introspection<a class="headerlink" href="#observation-space-introspection" title="Permanent link">&para;</a></h3>
+<p>Before generating any reward candidates, the stage extracts detailed information about the environment's observation and action spaces. This is critical — the LLM needs to know what <code>obs[13]</code> means to write a useful reward function.</p>
+<p>The extraction uses a 3-tier strategy:</p>
+<p><strong>Tier 1 — Runtime introspection.</strong> Pulls documentation from the environment class itself: docstrings, MuJoCo body/joint names, dict space field names. This provides the most accurate information when available.</p>
+<p><strong>Tier 2 — Sample-based analysis.</strong> Resets the environment, takes one step, and reports actual observation values and ranges per dimension. This catches cases where the formal space documentation is incomplete or missing.</p>
+<p><strong>Tier 3 — LLM lookup.</strong> As a fallback, asks the fast model to describe the observation layout from its training knowledge. This works for well-known environments (Ant-v5, Humanoid-v5) but may be inaccurate for custom or obscure ones.</p>
+<p>The resulting observation info looks like this for Ant-v5:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>Box(shape=(105,), dtype=float64) range=[-inf, inf]
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>MuJoCo bodies: torso, aux_1, front_left_leg, ...
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>MuJoCo joints: free_x, free_y, free_z, hip_1, ankle_1, ...
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>obs[0:2] = torso (x, y) position
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>obs[2] = torso z position (height)
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>obs[3:7] = torso orientation (quaternion)
+<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>obs[7:13] = torso velocity (linear + angular)
+<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>obs[13] = x_velocity (FORWARD VELOCITY - key for locomotion)
+<a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a>...
+</code></pre></div>
+<h3 id="dictgoalenv-handling">Dict/GoalEnv handling<a class="headerlink" href="#dictgoalenv-handling" title="Permanent link">&para;</a></h3>
+<p>For goal-conditioned environments (like Fetch tasks), the observation space is a <code>Dict</code> with <code>achieved_goal</code>, <code>desired_goal</code>, and <code>observation</code> fields. The reward function receives a flattened numpy array, so the LLM needs to know the exact layout:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>Dict(achieved_goal: Box((3,)), desired_goal: Box((3,)), observation: Box((25,)))
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>IMPORTANT: This is a Dict observation space (GoalEnv).
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>The obs passed to compute_reward is a FLAT numpy array:
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>  obs[0:3] = &#39;achieved_goal&#39; (3 dims)
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>  obs[3:6] = &#39;desired_goal&#39; (3 dims)
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>  obs[6:31] = &#39;observation&#39; (25 dims)
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>
+<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>This is a GOAL-CONDITIONED environment:
+<a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a>  KEY: Reward should minimize distance between achieved_goal and desired_goal.
+</code></pre></div>
+<h3 id="candidate-evaluation">Candidate evaluation<a class="headerlink" href="#candidate-evaluation" title="Permanent link">&para;</a></h3>
+<p>Each candidate reward function is evaluated by running a short series of random-action episodes. This sounds counterintuitive — why evaluate a reward function with random actions? — but it works because:</p>
+<ol>
+<li><strong>It tests for crashes.</strong> Reward functions that reference out-of-bounds observation indices or divide by zero are caught immediately.</li>
+<li><strong>It tests for degeneracy.</strong> A reward function that always returns 0 or returns NaN is immediately identified.</li>
+<li><strong>It provides relative ranking.</strong> Even with random actions, better reward functions produce higher variance and more structured reward signals, which correlates with downstream training performance.</li>
+</ol>
+<p>The evaluation runs <code>num_eval_episodes</code> (default: 5) episodes per candidate and computes mean reward, standard deviation, and mean episode length.</p>
+<h3 id="adaptive-budget">Adaptive budget<a class="headerlink" href="#adaptive-budget" title="Permanent link">&para;</a></h3>
+<p>The search budget adapts to environment complexity:</p>
+<ul>
+<li><strong>Simple environments</strong> (obs_dim ≤ 10, like CartPole): 2 generations × 3 candidates</li>
+<li><strong>Medium environments</strong> (10 &lt; obs_dim &lt; 50): standard budget</li>
+<li><strong>Complex environments</strong> (obs_dim ≥ 50, like Humanoid): full 3 generations × 4 candidates</li>
+</ul>
+<p>This prevents wasting LLM calls on simple tasks while ensuring complex tasks get enough search iterations.</p>
+<h2 id="reward-function-format">Reward function format<a class="headerlink" href="#reward-function-format" title="Permanent link">&para;</a></h2>
+<p>Every generated reward function follows this signature:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">compute_reward</span><span class="p">(</span><span class="n">obs</span><span class="p">,</span> <span class="n">action</span><span class="p">,</span> <span class="n">next_obs</span><span class="p">,</span> <span class="n">info</span><span class="p">):</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="sd">    Reward function for: Walk forward</span>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="sd">    Generated by RoboSmith (generation 2, candidate 3)</span>
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="sd">    Args:</span>
+<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="sd">        obs: Previous observation (flat numpy array)</span>
+<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="sd">        action: Action taken</span>
+<a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a><span class="sd">        next_obs: New observation after step</span>
+<a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a><span class="sd">        info: Step info dict from environment</span>
+<a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a>
+<a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a><span class="sd">    Returns:</span>
+<a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a><span class="sd">        (reward_value, components_dict)</span>
+<a id="__codelineno-4-14" name="__codelineno-4-14" href="#__codelineno-4-14"></a><span class="sd">    &quot;&quot;&quot;</span>
+<a id="__codelineno-4-15" name="__codelineno-4-15" href="#__codelineno-4-15"></a>    <span class="n">forward_velocity</span> <span class="o">=</span> <span class="n">next_obs</span><span class="p">[</span><span class="mi">13</span><span class="p">]</span>
+<a id="__codelineno-4-16" name="__codelineno-4-16" href="#__codelineno-4-16"></a>    <span class="n">height</span> <span class="o">=</span> <span class="n">next_obs</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+<a id="__codelineno-4-17" name="__codelineno-4-17" href="#__codelineno-4-17"></a>
+<a id="__codelineno-4-18" name="__codelineno-4-18" href="#__codelineno-4-18"></a>    <span class="c1"># Reward forward movement</span>
+<a id="__codelineno-4-19" name="__codelineno-4-19" href="#__codelineno-4-19"></a>    <span class="n">velocity_reward</span> <span class="o">=</span> <span class="n">forward_velocity</span> <span class="o">*</span> <span class="mf">2.0</span>
+<a id="__codelineno-4-20" name="__codelineno-4-20" href="#__codelineno-4-20"></a>
+<a id="__codelineno-4-21" name="__codelineno-4-21" href="#__codelineno-4-21"></a>    <span class="c1"># Penalize falling</span>
+<a id="__codelineno-4-22" name="__codelineno-4-22" href="#__codelineno-4-22"></a>    <span class="n">alive_bonus</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="k">if</span> <span class="n">height</span> <span class="o">&gt;</span> <span class="mf">0.3</span> <span class="k">else</span> <span class="o">-</span><span class="mf">10.0</span>
+<a id="__codelineno-4-23" name="__codelineno-4-23" href="#__codelineno-4-23"></a>
+<a id="__codelineno-4-24" name="__codelineno-4-24" href="#__codelineno-4-24"></a>    <span class="c1"># Penalize excessive action</span>
+<a id="__codelineno-4-25" name="__codelineno-4-25" href="#__codelineno-4-25"></a>    <span class="n">action_penalty</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.1</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">action</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+<a id="__codelineno-4-26" name="__codelineno-4-26" href="#__codelineno-4-26"></a>
+<a id="__codelineno-4-27" name="__codelineno-4-27" href="#__codelineno-4-27"></a>    <span class="n">total</span> <span class="o">=</span> <span class="n">velocity_reward</span> <span class="o">+</span> <span class="n">alive_bonus</span> <span class="o">+</span> <span class="n">action_penalty</span>
+<a id="__codelineno-4-28" name="__codelineno-4-28" href="#__codelineno-4-28"></a>
+<a id="__codelineno-4-29" name="__codelineno-4-29" href="#__codelineno-4-29"></a>    <span class="k">return</span> <span class="n">total</span><span class="p">,</span> <span class="p">{</span>
+<a id="__codelineno-4-30" name="__codelineno-4-30" href="#__codelineno-4-30"></a>        <span class="s2">&quot;velocity&quot;</span><span class="p">:</span> <span class="n">velocity_reward</span><span class="p">,</span>
+<a id="__codelineno-4-31" name="__codelineno-4-31" href="#__codelineno-4-31"></a>        <span class="s2">&quot;alive&quot;</span><span class="p">:</span> <span class="n">alive_bonus</span><span class="p">,</span>
+<a id="__codelineno-4-32" name="__codelineno-4-32" href="#__codelineno-4-32"></a>        <span class="s2">&quot;action_penalty&quot;</span><span class="p">:</span> <span class="n">action_penalty</span><span class="p">,</span>
+<a id="__codelineno-4-33" name="__codelineno-4-33" href="#__codelineno-4-33"></a>    <span class="p">}</span>
+</code></pre></div>
+<p>The components dict is important — it's used by the evolution feedback to tell the LLM which components are working and which aren't.</p>
+<h2 id="error-recovery">Error recovery<a class="headerlink" href="#error-recovery" title="Permanent link">&para;</a></h2>
+<p>If all candidates in a generation produce errors (syntax errors, runtime exceptions), the next generation regenerates from scratch with error messages fed back to the LLM. The error feedback includes the exact error type and line number, so the LLM can avoid the same mistake.</p>
+<p>If a candidate's <code>compute_reward()</code> raises an exception during evaluation, it receives a score of negative infinity and is excluded from selection. The exception message is logged for debugging.</p>
+<h2 id="training-reflection-cross-iteration">Training reflection (cross-iteration)<a class="headerlink" href="#training-reflection-cross-iteration" title="Permanent link">&para;</a></h2>
+<p>When the pipeline iterates (because evaluation failed), the controller generates a training reflection — a plain-English analysis of the previous training curve. This reflection is passed to <code>run_reward_design()</code> as the <code>training_reflection</code> parameter and is injected into the LLM prompt.</p>
+<p>Example reflections:</p>
+<ul>
+<li>"Training reward was flat at 10.83 for the entire run. The reward function doesn't provide a useful gradient for learning."</li>
+<li>"Reward increased from -200 to 50 over training, showing learning, but plateaued early. Consider increasing the forward velocity coefficient."</li>
+<li>"Training diverged after 20K steps — reward dropped from 100 to -500. The reward function may be too aggressive on penalty terms."</li>
+</ul>
+<h2 id="source">Source<a class="headerlink" href="#source" title="Permanent link">&para;</a></h2>
+<p><code>robosmith/stages/reward_design/reward_design.py</code> — evolution loop, space extraction, candidate evaluation</p>
+<p><code>robosmith/stages/reward_design/utils.py</code> — <code>EvalResult</code> and <code>RewardDesignResult</code> dataclasses</p>
+<p><code>robosmith/agents/reward_agent.py</code> — <code>RewardAgent</code> with <code>generate()</code> and <code>evolve()</code> methods</p>
 
 
 
