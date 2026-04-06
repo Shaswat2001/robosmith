@@ -1,9 +1,5 @@
 <p align="center">
-  <img src="docs/assets/logo.svg" alt="RoboSmith Logo" width="500"/>
-</p>
-
-<p align="center">
-  <strong>Natural language → trained robot policy.</strong>
+  <img src="docs/assets/logo.svg" alt="RoboSmith Logo" width="1000"/>
 </p>
 
 <p align="center">
