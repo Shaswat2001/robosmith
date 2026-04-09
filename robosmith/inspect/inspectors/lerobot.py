@@ -10,7 +10,10 @@ from __future__ import annotations
 
 import json
 import logging
+import numpy as np
 from typing import Any
+import pyarrow.parquet as pq
+from huggingface_hub import hf_hub_download, list_repo_tree
 
 from robosmith.inspect.models import (
     CameraSpec,
@@ -40,7 +43,6 @@ class LeRobotInspector(BaseDatasetInspector):
             return False
 
         try:
-            from huggingface_hub import hf_hub_download
 
             hf_hub_download(
                 identifier,
@@ -65,11 +67,11 @@ class LeRobotInspector(BaseDatasetInspector):
         # ── Determine format version ──
         codebase_version = meta.get("codebase_version", "unknown")
         if codebase_version.startswith("v3"):
-            dataset_format = DatasetFormat.LEROBOT_V2  # v3 is an evolution of v2
+            dataset_format = DatasetFormat.LEROBOT  # v3 is an evolution of v2
         elif codebase_version.startswith("v2"):
-            dataset_format = DatasetFormat.LEROBOT_V2
+            dataset_format = DatasetFormat.LEROBOT
         else:
-            dataset_format = DatasetFormat.LEROBOT_V1
+            dataset_format = DatasetFormat.LEROBOT
 
         # ── Parse features from meta/info.json ──
         features = meta.get("features", {})
@@ -111,9 +113,7 @@ class LeRobotInspector(BaseDatasetInspector):
     def inspect_schema(self, identifier: str, **kwargs: Any) -> dict[str, ColumnStats]:
         """Get detailed column stats by reading a parquet shard."""
         try:
-            import pyarrow.parquet as pq
-            from huggingface_hub import hf_hub_download, list_repo_tree
-
+            
             # Find the first parquet data file
             files = [f.rfilename for f in list_repo_tree(identifier, repo_type="dataset")]
             parquet_files = [
@@ -135,7 +135,6 @@ class LeRobotInspector(BaseDatasetInspector):
                 col_stats = ColumnStats(dtype=str(field.type))
 
                 try:
-                    import numpy as np
 
                     values = col.to_numpy(zero_copy_only=False)
                     if np.issubdtype(values.dtype, np.number):
@@ -184,12 +183,9 @@ class LeRobotInspector(BaseDatasetInspector):
         return issues
 
     # ── Private helpers ────────────────────────────────────────
-
     def _fetch_meta(self, repo_id: str) -> dict[str, Any]:
         """Fetch meta/info.json from the Hub."""
         try:
-            from huggingface_hub import hf_hub_download
-
             path = hf_hub_download(repo_id, "meta/info.json", repo_type="dataset")
             with open(path) as f:
                 return json.load(f)
@@ -221,7 +217,15 @@ class LeRobotInspector(BaseDatasetInspector):
             if len(shape) >= 2:
                 # shape is [height, width, channels] based on "names" field
                 names = spec.get("names", [])
-                if names and names[0] == "height":
+                # names can be a list like ["height", "width", "channel"]
+                # or a dict like {"height": ..., "width": ...}
+                first_name = None
+                if isinstance(names, list) and names:
+                    first_name = names[0] if isinstance(names[0], str) else None
+                elif isinstance(names, dict):
+                    first_name = list(names.keys())[0] if names else None
+
+                if first_name == "height":
                     cameras[cam_name] = CameraSpec(
                         height=shape[0],
                         width=shape[1],
@@ -239,6 +243,38 @@ class LeRobotInspector(BaseDatasetInspector):
 
         return cameras
 
+    def _flatten_names(self, names: Any) -> list[str]:
+        """Flatten a names field that can be a list, dict, or None.
+
+        LeRobot v3 uses dicts like {"motors": ["left_waist", "right_gripper", ...]}.
+        Earlier versions use flat lists like ["joint_0", "joint_1", ...].
+        """
+        if names is None:
+            return []
+        if isinstance(names, list):
+            # Could be list of strings or list of dicts
+            flat: list[str] = []
+            for item in names:
+                if isinstance(item, str):
+                    flat.append(item)
+                elif isinstance(item, dict):
+                    for v in item.values():
+                        if isinstance(v, list):
+                            flat.extend(str(x) for x in v)
+                        else:
+                            flat.append(str(v))
+            return flat
+        if isinstance(names, dict):
+            # {"motors": ["left_waist", ...]} -> flatten all values
+            flat = []
+            for v in names.values():
+                if isinstance(v, list):
+                    flat.extend(str(x) for x in v)
+                else:
+                    flat.append(str(v))
+            return flat
+        return []
+
     def _parse_action(self, features: dict[str, Any]) -> tuple[int | None, list[str]]:
         """Extract action dimension and keys from features.
 
@@ -249,8 +285,8 @@ class LeRobotInspector(BaseDatasetInspector):
             spec = features["action"]
             shape = spec.get("shape", [])
             if shape:
-                names = spec.get("names", [])
-                return shape[0], names if names else []
+                names = self._flatten_names(spec.get("names"))
+                return shape[0], names
 
         # Nested action.* keys (like DROID format)
         action_keys = sorted([k for k in features if k.startswith("action.") and k != "action"])
@@ -274,8 +310,8 @@ class LeRobotInspector(BaseDatasetInspector):
             spec = features["observation.state"]
             shape = spec.get("shape", [])
             if shape:
-                names = spec.get("names", [])
-                return shape[0], names if names else []
+                names = self._flatten_names(spec.get("names"))
+                return shape[0], names
 
         # Nested observation.state.* keys
         state_keys = sorted([
@@ -297,7 +333,6 @@ class LeRobotInspector(BaseDatasetInspector):
 
     def _fetch_tasks(self, repo_id: str) -> list[str]:
         """Fetch task descriptions from meta/tasks.jsonl or meta/tasks.parquet."""
-        from huggingface_hub import hf_hub_download
 
         # Try JSONL first (v2 format)
         try:
@@ -317,8 +352,6 @@ class LeRobotInspector(BaseDatasetInspector):
 
         # Try Parquet (v3 format)
         try:
-            import pyarrow.parquet as pq
-
             path = hf_hub_download(repo_id, "meta/tasks.parquet", repo_type="dataset")
             table = pq.read_table(path)
             if "task" in table.column_names:

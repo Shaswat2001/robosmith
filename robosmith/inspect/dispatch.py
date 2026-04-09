@@ -27,37 +27,44 @@ logger = logging.getLogger(__name__)
 # Each module registers itself with the appropriate registry on import
 _INSPECTOR_MODULES = [
     "robosmith.inspect.inspectors.lerobot",
+    "robosmith.inspect.inspectors.lerobot_policy",
+    "robosmith.inspect.inspectors.gymnasium_env",    # registers as "gymnasium" (envs)
     # Future:
     # "robosmith.inspect.inspectors.hdf5",
-    # "robosmith.inspect.inspectors.gymnasium_env",
-    # "robosmith.inspect.inspectors.lerobot_policy",
     # "robosmith.inspect.inspectors.urdf_robot",
 ]
 
 _loaded = False
+
+_load_errors: list[str] = []
 
 def _ensure_loaded() -> None:
     """Lazy-load all inspector modules."""
     global _loaded
     if _loaded:
         return
-
+ 
     import importlib
-
+ 
     for module_name in _INSPECTOR_MODULES:
         try:
             importlib.import_module(module_name)
-        except ImportError as e:
-            logger.debug(f"Could not load inspector module {module_name}: {e}")
-
+        except Exception as e:
+            # Catch ALL exceptions, not just ImportError.
+            # This prevents silent failures when a transitive dependency
+            # is missing or there's a naming conflict.
+            msg = f"{module_name}: {type(e).__name__}: {e}"
+            logger.debug(f"Could not load inspector module {msg}")
+            _load_errors.append(msg)
+ 
     _loaded = True
-
+ 
 def _find_inspector(
     registry: InspectorRegistry, identifier: str, **kwargs: Any
 ) -> BaseInspector | None:
     """Find the first inspector in the registry that can handle this identifier."""
     _ensure_loaded()
-
+ 
     for name, cls in registry.all().items():
         inspector = cls()
         try:
@@ -65,7 +72,7 @@ def _find_inspector(
                 return inspector
         except Exception as e:
             logger.debug(f"Inspector {name} failed can_handle check: {e}")
-
+ 
     return None
 
 def inspect_dataset(identifier: str, **kwargs: Any) -> BaseModel:
@@ -77,15 +84,18 @@ def inspect_dataset(identifier: str, **kwargs: Any) -> BaseModel:
             f"Available inspectors: {dataset_registry.list()}"
         )
     return inspector.inspect(identifier, **kwargs)
-
+ 
 def inspect_env(identifier: str, **kwargs: Any) -> BaseModel:
     """Inspect a simulation environment. Auto-detects framework."""
     inspector = _find_inspector(env_registry, identifier, **kwargs)
     if inspector is None:
-        raise ValueError(
+        msg = (
             f"No inspector found for environment '{identifier}'. "
             f"Available inspectors: {env_registry.list()}"
         )
+        if _load_errors:
+            msg += f"\nLoad errors: {_load_errors}"
+        raise ValueError(msg)
     return inspector.inspect(identifier, **kwargs)
 
 def inspect_policy(identifier: str, **kwargs: Any) -> BaseModel:

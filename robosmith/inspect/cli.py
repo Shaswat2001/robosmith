@@ -45,17 +45,17 @@ def inspect_dataset_cmd(
     from robosmith.inspect.formatter import format_dataset
     from robosmith.inspect.models import DatasetInspectResult
     from robosmith.inspect.registry import dataset_registry, BaseDatasetInspector
-
+ 
     try:
         result = inspect_dataset(identifier)
     except ValueError as e:
         console.print(f"[red]Error:[/red] {e}")
         raise typer.Exit(1)
-
+ 
     if not isinstance(result, DatasetInspectResult):
         console.print(f"[red]Unexpected result type: {type(result)}[/red]")
         raise typer.Exit(1)
-
+ 
     # Extended inspection flags
     if schema or quality or sample:
         from robosmith.inspect.dispatch import _find_inspector
@@ -67,7 +67,7 @@ def inspect_dataset_cmd(
                 result.quality_issues = inspector.inspect_quality(identifier)
             if sample:
                 result.sample_frames = inspector.inspect_sample(identifier, n=sample)
-
+ 
     if json_output:
         console.print(result.model_dump_json(indent=2, exclude_none=True))
     else:
@@ -81,20 +81,30 @@ def inspect_env_cmd(
     sample_step: Annotated[bool, typer.Option("--sample", help="Run one step and dump obs/reward/info")] = False,
 ) -> None:
     """Inspect a simulation environment: obs/action spaces, success fn, render modes."""
-    from robosmith.inspect.dispatch import inspect_env
+    from robosmith.inspect.dispatch import inspect_env, _find_inspector
     from robosmith.inspect.formatter import format_env
     from robosmith.inspect.models import EnvInspectResult
-
+    from robosmith.inspect.registry import env_registry, BaseEnvInspector
+ 
     try:
         result = inspect_env(identifier)
     except ValueError as e:
         console.print(f"[red]Error:[/red] {e}")
         raise typer.Exit(1)
-
+ 
     if not isinstance(result, EnvInspectResult):
         console.print(f"[red]Unexpected result type: {type(result)}[/red]")
         raise typer.Exit(1)
-
+ 
+    # Extended inspection flags
+    if obs_docs or sample_step:
+        inspector = _find_inspector(env_registry, identifier)
+        if inspector and isinstance(inspector, BaseEnvInspector):
+            if obs_docs:
+                result.obs_docs = inspector.inspect_obs_docs(identifier)
+            if sample_step:
+                result.sample_obs = inspector.inspect_sample_step(identifier)
+ 
     if json_output:
         console.print(result.model_dump_json(indent=2, exclude_none=True))
     else:
@@ -111,17 +121,17 @@ def inspect_policy_cmd(
     from robosmith.inspect.dispatch import inspect_policy
     from robosmith.inspect.formatter import format_policy
     from robosmith.inspect.models import PolicyInspectResult
-
+ 
     try:
         result = inspect_policy(identifier)
     except ValueError as e:
         console.print(f"[red]Error:[/red] {e}")
         raise typer.Exit(1)
-
+ 
     if not isinstance(result, PolicyInspectResult):
         console.print(f"[red]Unexpected result type: {type(result)}[/red]")
         raise typer.Exit(1)
-
+ 
     if json_output:
         console.print(result.model_dump_json(indent=2, exclude_none=True))
     else:

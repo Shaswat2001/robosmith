@@ -165,6 +165,12 @@ class TestRegistry:
         import robosmith.inspect.inspectors.lerobot  # noqa: F401
         assert "lerobot" in dataset_registry.list()
 
+    def test_lerobot_policy_is_registered(self):
+        """Ensure importing the policy inspector module registers it."""
+        import robosmith.inspect.inspectors.lerobot_policy  # noqa: F401
+        from robosmith.inspect.registry import policy_registry
+        assert "lerobot_policy" in policy_registry.list()
+
 
 # ── Compat Logic Tests ────────────────────────────────────────
 
@@ -257,6 +263,146 @@ class TestCompat:
         errors, warnings, info = [], [], []
         _check_policy_dataset(policy, dataset, errors, warnings, info)
         assert any(w.issue_type == "normalization_required" for w in warnings)
+
+
+# ── Policy Inspector Parsing Tests ────────────────────────────
+
+
+class TestPolicyInspectorParsing:
+    """Test the LeRobot policy inspector parsing logic without Hub access."""
+
+    def _make_inspector(self):
+        from robosmith.inspect.inspectors.lerobot_policy import LeRobotPolicyInspector
+        return LeRobotPolicyInspector()
+
+    def test_parse_smolvla_config(self):
+        """Test parsing a SmolVLA-style config.json."""
+        inspector = self._make_inspector()
+        config = {
+            "type": "smolvla",
+            "input_features": {
+                "observation.state": {"type": "STATE", "shape": [6]},
+                "observation.image": {"type": "VISUAL", "shape": [3, 256, 256]},
+                "observation.image2": {"type": "VISUAL", "shape": [3, 256, 256]},
+            },
+            "output_features": {
+                "action": {"type": "ACTION", "shape": [6]}
+            },
+            "chunk_size": 50,
+            "normalization_mapping": {"VISUAL": "IDENTITY", "STATE": "MEAN_STD", "ACTION": "MEAN_STD"},
+            "vlm_model_name": "HuggingFaceTB/SmolVLM2-500M-Video-Instruct",
+            "tokenizer_max_length": 48,
+            "resize_imgs_with_padding": [512, 512],
+        }
+
+        cameras = inspector._parse_cameras(config["input_features"])
+        assert sorted(cameras) == ["observation.image", "observation.image2"]
+
+        action_dim = inspector._get_action_dim(config["output_features"])
+        assert action_dim == 6
+
+        state_keys = inspector._parse_state_keys(config["input_features"])
+        assert state_keys == ["observation.state"]
+
+    def test_parse_pi0_config(self):
+        """Test parsing a Pi0-style config.json."""
+        inspector = self._make_inspector()
+        config = {
+            "type": "pi0",
+            "input_features": {
+                "observation.image.top": {"type": "VISUAL", "shape": [3, 224, 224]},
+                "observation.state": {"type": "STATE", "shape": [7]},
+            },
+            "output_features": {
+                "action": {"type": "ACTION", "shape": [7]}
+            },
+            "chunk_size": 50,
+            "normalization_mapping": {"VISUAL": "IDENTITY", "STATE": "MEAN_STD", "ACTION": "MEAN_STD"},
+        }
+
+        cameras = inspector._parse_cameras(config["input_features"])
+        assert cameras == ["observation.image.top"]
+
+        action_dim = inspector._get_action_dim(config["output_features"])
+        assert action_dim == 7
+
+    def test_format_normalization(self):
+        inspector = self._make_inspector()
+        norm = inspector._format_normalization({"VISUAL": "IDENTITY", "STATE": "MEAN_STD", "ACTION": "MEAN_STD"})
+        assert "visual=identity" in norm
+        assert "state=mean_std" in norm
+
+    def test_empty_config(self):
+        inspector = self._make_inspector()
+        assert inspector._parse_cameras({}) == []
+        assert inspector._get_action_dim({}) is None
+        assert inspector._parse_state_keys({}) == []
+
+
+# ── Gymnasium Inspector Tests ─────────────────────────────────
+
+
+class TestGymnasiumInspector:
+    """Test the Gymnasium env inspector with real envs (requires gymnasium+mujoco)."""
+
+    @pytest.fixture
+    def inspector(self):
+        from robosmith.inspect.inspectors.gymnasium_env import GymnasiumInspector
+        return GymnasiumInspector()
+
+    def test_can_handle_valid_env(self, inspector):
+        assert inspector.can_handle("Ant-v5") is True
+
+    def test_can_handle_invalid_env(self, inspector):
+        assert inspector.can_handle("NonExistentEnv-v99") is False
+
+    def test_can_handle_hub_id(self, inspector):
+        """Hub IDs (org/name) should not be handled by gymnasium inspector."""
+        assert inspector.can_handle("lerobot/something") is False
+
+    def test_inspect_ant(self, inspector):
+        result = inspector.inspect("Ant-v5")
+        assert result.env_id == "Ant-v5"
+        assert result.framework == "gymnasium"
+        assert result.action_space is not None
+        assert result.action_space.shape == [8]
+        assert result.action_space.dtype == "float32"
+        assert result.max_episode_steps == 1000
+        assert "obs" in result.obs_space
+        assert result.obs_space["obs"].shape == [105]
+        assert "human" in result.render_modes
+        assert "rgb_array" in result.render_modes
+
+    def test_inspect_halfcheetah(self, inspector):
+        result = inspector.inspect("HalfCheetah-v5")
+        assert result.action_space.shape == [6]
+        assert result.obs_space["obs"].shape == [17]
+
+    def test_inspect_action_semantics(self, inspector):
+        """MuJoCo envs should have actuator names."""
+        result = inspector.inspect("Ant-v5")
+        assert len(result.action_semantics) == 8  # Ant has 8 actuators
+
+    def test_inspect_sample_step(self, inspector):
+        sample = inspector.inspect_sample_step("Ant-v5")
+        assert sample is not None
+        assert "obs" in sample
+        assert "reward" in sample
+        assert "info" in sample
+        assert isinstance(sample["reward"], float)
+
+    def test_inspect_json_serializable(self, inspector):
+        """Ensure the result can be serialized to JSON."""
+        result = inspector.inspect("Ant-v5")
+        json_str = result.model_dump_json(exclude_none=True)
+        data = json.loads(json_str)
+        assert data["env_id"] == "Ant-v5"
+        assert data["action_space"]["shape"] == [8]
+
+    def test_registry_registered(self):
+        from robosmith.inspect.inspectors.gymnasium_env import GymnasiumInspector  # noqa
+        from robosmith.inspect.registry import env_registry
+        assert "gymnasium" in env_registry.list()
 
 
 if __name__ == "__main__":
