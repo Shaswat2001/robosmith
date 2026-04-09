@@ -12,58 +12,46 @@ means every node in the graph can read/write it.
 
 from __future__ import annotations
 
-from typing import Annotated
+from typing import Annotated, Any
 from typing_extensions import TypedDict
 
 def _append_log(a: list[str], b: list[str]) -> list[str]:
     """Reducer for steps_log: always append."""
     return a + b
 
-class RunState(TypedDict):
-    """State for the `robosmith run` pipeline.
+class PipelineState(TypedDict):
+    """State flowing through the robosmith run graph.
 
-    Flows through: intake → scout → env_selection → inspect_env
-    → reward_design → training → evaluation → decide_retry → delivery
+    Maps directly to ForgeController's instance variables and RunState.
     """
 
-    # Inputs
-    task_description: str
-    time_budget: int
-    config: dict  # robosmith.yaml contents
+    # ── Inputs ──
+    task_spec: dict          # TaskSpec.model_dump()
+    config: dict             # ForgeConfig.model_dump()
 
-    # Intake
-    task_spec: dict  # parsed task specification
+    # ── Run management ──
+    run_id: str
+    artifacts_dir: str
+    forge_state: dict        # ForgeRunState.model_dump() — the full run record
 
-    # Scout
-    papers: list[dict]  # relevant papers found
+    # ── Stage results (accumulated across iterations) ──
+    knowledge_card: Any      # KnowledgeCard from scout
+    env_match: dict          # EnvMatch result
+    env_spec_json: str       # NEW: structured env inspection
+    obs_docs: str            # NEW: obs documentation for reward design
+    reward_candidate: Any    # RewardCandidate object
+    reward_code: str
+    training_result: Any     # TrainingResult object
+    eval_report: Any         # EvalReport object
+    training_reflection: str # Training curve analysis for reward refinement
 
-    # Env selection
-    env_id: str
-    env_framework: str
-    env_spec: str  # JSON from inspect_env
-
-    # Reward design
-    obs_docs: str  # observation documentation (from inspect)
-    reward_fn: str  # generated reward function code
-    reward_fn_path: str
-
-    # Training
-    algorithm: str
-    backend: str  # sb3, cleanrl, rl_games
-    policy_path: str
-    training_log: str
-
-    # Evaluation
-    eval_report: dict
-    eval_success_rate: float
-    eval_passed: bool
-
-    # Iteration control
+    # ── Iteration control ──
     iteration: int
     max_iterations: int
+    last_decision: str       # Decision enum value
 
-    # Common
-    status: str  # "running", "success", "failed"
+    # ── Output ──
+    status: str              # "running", "success", "failed"
     status_message: str
     steps_log: Annotated[list[str], _append_log]
 

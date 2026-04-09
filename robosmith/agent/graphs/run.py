@@ -47,48 +47,11 @@ from robosmith.envs.registry import EnvRegistry
 from robosmith.inspect.dispatch import inspect_env
 from robosmith.stages.evaluation import run_evaluation
 from robosmith.inspect.dispatch import _find_inspector
-from robosmith.agent.models.decision_agent import DecisionAgent
 from robosmith.inspect.registry import env_registry, BaseEnvInspector
 from robosmith.stages.env_synthesis import EnvMatch, match_task_to_env, _extract_tags
 
-def _append_log(a: list[str], b: list[str]) -> list[str]:
-    return a + b
-
-class PipelineState(TypedDict):
-    """State flowing through the robosmith run graph.
-
-    Maps directly to ForgeController's instance variables and RunState.
-    """
-
-    # ── Inputs ──
-    task_spec: dict          # TaskSpec.model_dump()
-    config: dict             # ForgeConfig.model_dump()
-
-    # ── Run management ──
-    run_id: str
-    artifacts_dir: str
-    forge_state: dict        # ForgeRunState.model_dump() — the full run record
-
-    # ── Stage results (accumulated across iterations) ──
-    knowledge_card: Any      # KnowledgeCard from scout
-    env_match: dict          # EnvMatch result
-    env_spec_json: str       # NEW: structured env inspection
-    obs_docs: str            # NEW: obs documentation for reward design
-    reward_candidate: Any    # RewardCandidate object
-    reward_code: str
-    training_result: Any     # TrainingResult object
-    eval_report: Any         # EvalReport object
-    training_reflection: str # Training curve analysis for reward refinement
-
-    # ── Iteration control ──
-    iteration: int
-    max_iterations: int
-    last_decision: str       # Decision enum value
-
-    # ── Output ──
-    status: str              # "running", "success", "failed"
-    status_message: str
-    steps_log: Annotated[list[str], _append_log]
+from robosmith.agent.state import PipelineState
+from robosmith.agent.models.decision import DecisionAgent
 
 def intake_node(state: PipelineState) -> dict:
     """Parse natural language task into TaskSpec via LLM."""
