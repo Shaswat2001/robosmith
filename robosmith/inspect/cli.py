@@ -19,6 +19,13 @@ from typing import Annotated, Optional
 import typer
 from rich.console import Console
 
+from robosmith.utils import banner
+from robosmith.inspect.compat import check_compatibility
+from robosmith.inspect.formatter import format_dataset, format_env, format_policy, format_robot, format_compat
+from robosmith.inspect.models import DatasetInspectResult, EnvInspectResult, PolicyInspectResult, RobotInspectResult
+from robosmith.inspect.dispatch import inspect_dataset, inspect_env, _find_inspector, inspect_policy, inspect_robot
+from robosmith.inspect.registry import dataset_registry, env_registry, BaseDatasetInspector, BaseEnvInspector
+
 console = Console()
 
 inspect_app = typer.Typer(
@@ -41,11 +48,8 @@ def inspect_dataset_cmd(
     sample: Annotated[Optional[int], typer.Option("--sample", help="Dump N sample frames")] = None,
 ) -> None:
     """Inspect a robotics dataset: cameras, action/state dims, episodes, tasks."""
-    from robosmith.inspect.dispatch import inspect_dataset
-    from robosmith.inspect.formatter import format_dataset
-    from robosmith.inspect.models import DatasetInspectResult
-    from robosmith.inspect.registry import dataset_registry, BaseDatasetInspector
- 
+
+    banner()
     try:
         result = inspect_dataset(identifier)
     except ValueError as e:
@@ -58,7 +62,6 @@ def inspect_dataset_cmd(
  
     # Extended inspection flags
     if schema or quality or sample:
-        from robosmith.inspect.dispatch import _find_inspector
         inspector = _find_inspector(dataset_registry, identifier)
         if inspector and isinstance(inspector, BaseDatasetInspector):
             if schema:
@@ -81,11 +84,8 @@ def inspect_env_cmd(
     sample_step: Annotated[bool, typer.Option("--sample", help="Run one step and dump obs/reward/info")] = False,
 ) -> None:
     """Inspect a simulation environment: obs/action spaces, success fn, render modes."""
-    from robosmith.inspect.dispatch import inspect_env, _find_inspector
-    from robosmith.inspect.formatter import format_env
-    from robosmith.inspect.models import EnvInspectResult
-    from robosmith.inspect.registry import env_registry, BaseEnvInspector
- 
+
+    banner()
     try:
         result = inspect_env(identifier)
     except ValueError as e:
@@ -118,10 +118,8 @@ def inspect_policy_cmd(
     requirements: Annotated[bool, typer.Option("--requirements", help="Show package requirements")] = False,
 ) -> None:
     """Inspect a policy: architecture, action head, expected inputs/outputs."""
-    from robosmith.inspect.dispatch import inspect_policy
-    from robosmith.inspect.formatter import format_policy
-    from robosmith.inspect.models import PolicyInspectResult
- 
+
+    banner()
     try:
         result = inspect_policy(identifier)
     except ValueError as e:
@@ -143,10 +141,8 @@ def inspect_robot_cmd(
     json_output: JsonFlag = False,
 ) -> None:
     """Inspect a robot description: joints, DOF, end effector, gripper."""
-    from robosmith.inspect.dispatch import inspect_robot
-    from robosmith.inspect.formatter import format_robot
-    from robosmith.inspect.models import RobotInspectResult
 
+    banner()
     try:
         result = inspect_robot(identifier)
     except ValueError as e:
@@ -171,9 +167,8 @@ def inspect_compat_cmd(
     fix: Annotated[bool, typer.Option("--fix", help="Auto-generate wrapper to resolve mismatches")] = False,
 ) -> None:
     """Check compatibility between policy, dataset, and/or environment."""
-    from robosmith.inspect.compat import check_compatibility
-    from robosmith.inspect.formatter import format_compat
 
+    banner()
     try:
         result = check_compatibility(artifact_a, artifact_b, artifact_c)
     except ValueError as e:

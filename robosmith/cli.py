@@ -21,17 +21,15 @@ from __future__ import annotations
 import yaml
 import typer
 import logging
-import pyfiglet
 import time as _time
 from pathlib import Path
 from loguru import logger
 from typing import Optional
-from rich.console import Console
-from rich.panel import Panel
 from rich.table import Table
-from rich.text import Text
+from rich.console import Console
 
 from robosmith import __version__
+from robosmith.utils import banner
 from robosmith.config import StageStatus
 from robosmith.envs.registry import EnvRegistry
 from robosmith.config import RewardSearchConfig, LLMConfig
@@ -39,6 +37,7 @@ from robosmith.controller import ForgeController, STAGES
 from robosmith.config import Algorithm, ForgeConfig, RobotType, TaskSpec
 from robosmith.inspect import inspect_app
 from robosmith.diagnostics import diag_app
+from robosmith.generators import gen_app
 
 app = typer.Typer(
     name="robosmith",
@@ -46,18 +45,11 @@ app = typer.Typer(
     no_args_is_help=True,
     rich_markup_mode="rich",
 )
-console = Console()
 app.add_typer(diag_app)
 app.add_typer(inspect_app)
+app.add_typer(gen_app)
 
-# Banner
-def _banner() -> None:
-    ascii_art = pyfiglet.figlet_format("ROBOSMITH", font="ansi_shadow")
-    text = Text()
-    text.append(ascii_art, style="bold cyan")
-    text.append(f"  RoboSmith v{__version__}\n", style="dim")
-    text.append("  Natural language → trained robot policy", style="italic bright_black")
-    console.print(Panel(text, border_style="cyan", padding=(0, 2)))
+console = Console()
 
 @app.command()
 def envs(
@@ -68,7 +60,7 @@ def envs(
 ) -> None:
     """List and search available simulation environments."""
 
-    _banner()
+    banner()
     registry = EnvRegistry()
 
     tag_list = [t.strip() for t in tags.split(",")] if tags else None
@@ -126,7 +118,7 @@ def run(
     Provide a natural language task description, and RoboSmith handles everything:
     environment setup, reward design, training, evaluation, and packaging.
     """
-    _banner()
+    banner()
 
     # Suppress all noisy loggers — we handle output ourselves
     logger.remove()
@@ -380,14 +372,14 @@ def version() -> None:
 @app.command()
 def config() -> None:
     """Show default configuration."""
-    _banner()
+    banner()
     cfg = ForgeConfig()
     console.print_json(cfg.model_dump_json(indent=2))
 
 @app.command()
 def deps() -> None:
     """Show installed dependencies and how to install missing ones."""
-    _banner()
+    banner()
     console.print()
 
     # ── Environment adapters ──
@@ -463,7 +455,7 @@ def deps() -> None:
 @app.command()
 def trainers() -> None:
     """Show available training backends and algorithms."""
-    _banner()
+    banner()
     console.print()
 
     from robosmith.trainers.registry import TrainerRegistry

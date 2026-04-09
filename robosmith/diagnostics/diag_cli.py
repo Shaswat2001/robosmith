@@ -14,6 +14,9 @@ from rich.panel import Panel
 from rich.table import Table
 from rich.text import Text
 
+from robosmith.utils import banner
+from robosmith.diagnostics.trajectory_analyzer import analyze_trajectory, compare_trajectories
+
 console = Console()
 
 diag_app = typer.Typer(
@@ -33,8 +36,8 @@ def diag_trajectory_cmd(
     json_output: JsonFlag = False,
 ) -> None:
     """Analyze trajectory rollouts: success rate, action stats, failure modes."""
-    from robosmith.diagnostics.trajectory_analyzer import analyze_trajectory
 
+    banner()
     try:
         result = analyze_trajectory(path)
     except ValueError as e:
@@ -54,8 +57,8 @@ def diag_compare_cmd(
     json_output: JsonFlag = False,
 ) -> None:
     """Compare two trajectory sets side by side."""
-    from robosmith.diagnostics.trajectory_analyzer import compare_trajectories
-
+    
+    banner()
     try:
         result = compare_trajectories(path_a, path_b)
     except ValueError as e:
@@ -68,9 +71,7 @@ def diag_compare_cmd(
         _format_compare_result(result)
 
 
-# ── Formatters ────────────────────────────────────────────────
-
-
+# Formatters
 def _format_trajectory_result(result: Any) -> None:
     """Pretty-print trajectory diagnostic results."""
     # Overview table
@@ -127,7 +128,6 @@ def _format_trajectory_result(result: Any) -> None:
             console.print(f"  [red]Cluster {cluster.cluster_id}[/red]: {cluster.description} ({cluster.count} episodes)")
             if cluster.example_episodes:
                 console.print(f"    Examples: episodes {cluster.example_episodes}")
-
 
 def _format_compare_result(result: Any) -> None:
     """Pretty-print trajectory comparison results."""
