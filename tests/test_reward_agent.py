@@ -5,7 +5,7 @@ from unittest.mock import MagicMock, patch
 import numpy as np
 import pytest
 
-from robosmith.agents.reward_agent import RewardAgent, RewardCandidate
+from robosmith.agent.models.reward_agent import RewardAgent, RewardCandidate
 from robosmith.config import LLMConfig
 
 

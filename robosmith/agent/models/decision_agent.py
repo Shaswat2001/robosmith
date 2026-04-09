@@ -13,7 +13,7 @@ from typing import Any
 
 from loguru import logger
 
-from robosmith.agents.base import BaseAgent
+from robosmith.agent.models.base import BaseAgent
 from robosmith.config import Decision, LLMConfig
 
 DECISION_SYSTEM_PROMPT = """\

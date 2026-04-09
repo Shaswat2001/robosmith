@@ -38,6 +38,7 @@ from robosmith.config import Algorithm, ForgeConfig, RobotType, TaskSpec
 from robosmith.inspect import inspect_app
 from robosmith.diagnostics import diag_app
 from robosmith.generators import gen_app
+from robosmith.agent import auto_app
 
 app = typer.Typer(
     name="robosmith",
@@ -48,6 +49,7 @@ app = typer.Typer(
 app.add_typer(diag_app)
 app.add_typer(inspect_app)
 app.add_typer(gen_app)
+app.add_typer(auto_app)
 
 console = Console()
 
@@ -229,127 +231,8 @@ def run(
         console.print("\n[yellow]Dry run — stopping before execution.[/yellow]")
         return
 
-    # Run pipeline with live stage-by-stage progress
-    controller = ForgeController(task_spec, config)
-    console.print()
-
-    STAGE_LABELS = {
-        "intake": "Parsing task description",
-        "scout": "Searching literature",
-        "env_synthesis": "Finding simulation environment",
-        "reward_design": "Designing reward functions",
-        "training": "Training RL policy",
-        "evaluation": "Evaluating policy",
-        "delivery": "Packaging artifacts",
-    }
-
-    STAGE_COLORS = {
-        "intake": "cyan",
-        "scout": "blue",
-        "env_synthesis": "magenta",
-        "reward_design": "yellow",
-        "training": "green",
-        "evaluation": "blue",
-        "delivery": "cyan",
-    }
-
-    # Run the pipeline stage by stage with live output
-    _critical_failure = False
-    # Stages that run inside the iteration loop (delivery runs once at the end)
-    ITERATION_STAGES = [s for s in STAGES if s != "delivery"]
-
-    while not controller.state.is_complete() and not _critical_failure:
-        controller.state.iteration += 1
-        if controller.state.iteration > 1:
-            console.print(f"\n  [dim]Iteration {controller.state.iteration}/{controller.state.max_iterations}[/dim]")
-
-        for stage_name in ITERATION_STAGES:
-            if controller._should_skip_stage(stage_name):
-                continue
-
-            label = STAGE_LABELS.get(stage_name, stage_name)
-            color = STAGE_COLORS.get(stage_name, "white")
-
-            # Show "running" status
-            console.print(f"  [cyan]⟳[/cyan] [{color}]{label}[/{color}]...", end="")
-
-            start = _time.time()
-            controller._run_stage(stage_name)
-            elapsed = _time.time() - start
-
-            record = controller.state.stages.get(stage_name)
-            if record is None:
-                console.print(" [dim]?[/dim]")
-                continue
-
-            # Overwrite the line with result
-            if record.status == StageStatus.COMPLETED:
-                # Show extra info for key stages
-                extra = ""
-                if stage_name == "intake" and controller.task_spec:
-                    extra = f" → [dim]{controller.task_spec.summary()}[/dim]"
-                elif stage_name == "scout" and record.metadata.get("num_papers"):
-                    n = record.metadata["num_papers"]
-                    extra = f" → [bold]{n}[/bold] relevant papers found"
-                elif stage_name == "env_synthesis" and record.metadata.get("env_gym_id"):
-                    extra = f" → [bold]{record.metadata['env_gym_id']}[/bold]"
-                elif stage_name == "reward_design" and record.metadata.get("best_score") is not None:
-                    extra = f" → best score: [bold]{record.metadata['best_score']:.2f}[/bold]"
-                elif stage_name == "training" and record.metadata.get("algorithm"):
-                    extra = f" → {record.metadata['algorithm']}, reward={record.metadata.get('final_mean_reward', 0):.2f}"
-                elif stage_name == "evaluation" and record.metadata.get("success_rate") is not None:
-                    sr = record.metadata["success_rate"]
-                    decision = record.metadata.get("decision", "")
-                    extra = f" → success={sr:.0%}, decision=[bold]{decision}[/bold]"
-
-                console.print(f"\r  [green]✓[/green] [{color}]{label}[/{color}] [dim]({elapsed:.1f}s)[/dim]{extra}")
-
-            elif record.status == StageStatus.FAILED:
-                console.print(f"\r  [red]✗[/red] [{color}]{label}[/{color}] [dim]({elapsed:.1f}s)[/dim]")
-                if record.error:
-                    err = record.error.split("\n")[0][:80]
-                    console.print(f"    [dim red]{err}[/dim red]")
-
-                if stage_name in ("env_synthesis", "reward_design", "training"):
-                    _critical_failure = True
-                    break
-
-            elif record.status == StageStatus.SKIPPED:
-                console.print(f"\r  [dim]–[/dim] [dim]{label} (skipped)[/dim]")
-
-            # Check if evaluation decided to iterate
-            if controller._needs_iteration():
-                break
-
-    # Always run delivery at the end (regardless of iteration/failure state)
-    if "delivery" not in controller.config.skip_stages:
-        label = STAGE_LABELS["delivery"]
-        color = STAGE_COLORS["delivery"]
-        console.print(f"  [cyan]⟳[/cyan] [{color}]{label}[/{color}]...", end="")
-        start = _time.time()
-        controller._run_stage("delivery")
-        elapsed = _time.time() - start
-        record = controller.state.stages.get("delivery")
-        if record and record.status == StageStatus.COMPLETED:
-            n_files = len(record.metadata.get("files_written", []))
-            console.print(f"\r  [green]✓[/green] [{color}]{label}[/{color}] [dim]({elapsed:.1f}s)[/dim] → {n_files} files")
-        elif record and record.status == StageStatus.FAILED:
-            console.print(f"\r  [red]✗[/red] [{color}]{label}[/{color}]")
-        else:
-            console.print(f"\r  [green]✓[/green] [{color}]{label}[/{color}]")
-
-    # Save state
-    controller._save_state()
-
-    # Show remaining stages that weren't reached
-    for stage_name in STAGES:
-        if stage_name not in controller.state.stages:
-            label = STAGE_LABELS.get(stage_name, stage_name)
-            console.print(f"  [dim]○ {label}[/dim]")
-
-    # Summary
-    console.print()
-    result = controller.state
+    from robosmith.agent.graphs.run import run_pipeline
+    result = run_pipeline(task_spec, config, verbose=True)
 
     eval_stage = result.stages.get("evaluation")
     if eval_stage and eval_stage.status == StageStatus.COMPLETED:

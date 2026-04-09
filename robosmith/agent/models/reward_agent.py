@@ -18,7 +18,7 @@ from dataclasses import dataclass, field
 
 from loguru import logger
 
-from robosmith.agents.base import BaseAgent
+from robosmith.agent.models.base import BaseAgent
 from robosmith.config import LLMConfig
 
 REWARD_SYSTEM_PROMPT = """\

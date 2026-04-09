@@ -11,7 +11,7 @@ from .report import write_report_card, push_to_hub, write_reward_file
 
 from robosmith.config import RunState
 from robosmith.stages.evaluation import EvalReport
-from robosmith.agents.reward_agent import RewardCandidate
+from robosmith.agent.models.reward_agent import RewardCandidate
 
 @dataclass
 class DeliveryResult:

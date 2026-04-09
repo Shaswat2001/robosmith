@@ -28,7 +28,7 @@ from robosmith.config import (
 from robosmith.config import RobotType
 from robosmith.envs.registry import EnvRegistry
 from robosmith.stages.env_synthesis import EnvMatch
-from robosmith.agents.decision_agent import DecisionAgent
+from robosmith.agent.models.decision_agent import DecisionAgent
 
 from robosmith.stages.scout import run_scout
 from robosmith.stages.intake import parse_task

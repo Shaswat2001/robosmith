@@ -4,7 +4,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from robosmith.agents.base import BaseAgent
+from robosmith.agent.models.base import BaseAgent
 from robosmith.config import LLMConfig
 
 

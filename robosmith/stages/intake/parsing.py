@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from loguru import logger
 
-from robosmith.agents.base import BaseAgent
+from robosmith.agent.models.base import BaseAgent
 from robosmith.config import (
     Algorithm,
     EnvironmentType,

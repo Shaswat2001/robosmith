@@ -89,8 +89,15 @@ dev = [
     "mypy>=1.10",
     "pre-commit>=3.7",
 ]
+
+agent = [
+    "langgraph", 
+    "langchain-core",
+    "langchain-community"
+]
+
 all = [
-    "robosmith[sim,train,robotics,video,hub,dev]",
+    "robosmith[sim,train,robotics,video,hub,dev, agent]",
 ]
 
 [project.scripts]

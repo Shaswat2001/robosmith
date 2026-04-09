@@ -10,7 +10,7 @@ from robosmith.config import TaskSpec
 from robosmith.envs.registry import EnvEntry
 from robosmith.trainers.base import TrainingConfig
 from robosmith.trainers.registry import TrainerRegistry
-from robosmith.agents.reward_agent import RewardCandidate
+from robosmith.agent.models.reward_agent import RewardCandidate
 
 from .select import _create_training_env, _select_algorithm, _estimate_obs_dim, TrainingResult
 

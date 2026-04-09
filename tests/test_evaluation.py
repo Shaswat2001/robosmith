@@ -2,7 +2,7 @@
 
 import pytest
 
-from robosmith.agents.reward_agent import RewardCandidate
+from robosmith.agent.models.reward_agent import RewardCandidate
 from robosmith.config import Decision, EnvironmentType, RobotType, SuccessCriterion, TaskSpec
 from robosmith.envs.registry import EnvRegistry
 from robosmith.stages.evaluation import EvalReport, EpisodeResult, _build_report, run_evaluation

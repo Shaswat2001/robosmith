@@ -14,10 +14,10 @@ from __future__ import annotations
 import numpy as np
 from loguru import logger
 
-from robosmith.agents.reward_agent import RewardAgent, RewardCandidate
+from robosmith.agent.models.reward_agent import RewardAgent, RewardCandidate
 from robosmith.config import LLMConfig, RewardSearchConfig, TaskSpec
 from robosmith.envs.registry import EnvEntry
-from robosmith.agents.base import BaseAgent
+from robosmith.agent.models.base import BaseAgent
 from robosmith.envs.wrapper import make_env
 
 from .utils import EvalResult, RewardDesignResult

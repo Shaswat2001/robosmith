@@ -4,22 +4,6 @@ Base LLM agent — the foundation for all LLM-powered stages.
 Every stage that talks to an LLM (reward design, task intake, code review)
 inherits from this. It handles the boring stuff: retries, logging, error
 handling, token tracking.
-
-Usage::
-
-    from robosmith.agents.base import BaseAgent
-    from robosmith.config import LLMConfig
-
-    agent = BaseAgent(LLMConfig())
-    response = agent.chat("What RL algorithm should I use for locomotion?")
-    print(response)  # "PPO is generally the best starting point for..."
-
-    # With a system prompt
-    agent = BaseAgent(LLMConfig(), system_prompt="You are a robotics expert.")
-    response = agent.chat("Design a reward for picking up a cube.")
-
-    # Structured output (returns parsed dict/list)
-    result = agent.chat_json("Return a JSON list of 3 reward component names.")
 """
 
 from __future__ import annotations
@@ -32,7 +16,6 @@ from typing import Any
 from loguru import logger
 
 from robosmith.config import LLMConfig
-
 
 class BaseAgent:
     """
