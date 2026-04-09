@@ -11,41 +11,13 @@ No API key needed — Semantic Scholar's public API allows 100 req/sec.
 from __future__ import annotations
 
 import time
-from typing import Any
-from dataclasses import dataclass, field
-
 import httpx
+from typing import Any
 from loguru import logger
 
 from robosmith.config import TaskSpec
-
-from .caching import _load_scout_cache, _cache_key, _save_scout_cache
-
-# Semantic Scholar API (free, no key needed)
-S2_BASE = "https://api.semanticscholar.org/graph/v1"
-S2_FIELDS = "title,year,citationCount,abstract,url,externalIds,authors"
-
-@dataclass
-class KnowledgeCard:
-    """Summary of literature search results for a task."""
-
-    query: str
-    papers: list[dict] = field(default_factory=list)
-    total_found: int = 0
-    search_time_seconds: float = 0.0
-
-    def top_papers(self, n: int = 5) -> list[dict]:
-        """Return the top N papers by citation count."""
-        return sorted(self.papers, key=lambda p: p.get("citations", 0), reverse=True)[:n]
-
-    def summary(self) -> str:
-        if not self.papers:
-            return f"No papers found for: {self.query}"
-        top = self.top_papers(3)
-        lines = [f"Found {len(self.papers)} papers (top {len(top)}):"]
-        for p in top:
-            lines.append(f"  - {p['title'][:70]} ({p.get('year', '?')}, {p.get('citations', 0)} cites)")
-        return "\n".join(lines)
+from .utils import KnowledgeCard, S2_BASE, S2_FIELDS
+from .caching import _load_scout_cache, _save_scout_cache
 
 def search_papers(
     query: str,

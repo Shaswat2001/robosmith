@@ -1,19 +1,5 @@
 """
 Forge CLI — the main entry point for RoboSmith.
-
-Usage::
-
-    # Full pipeline
-    forge run --task "A Franka arm that picks up a red cube"
-
-    # Dry run (parse + plan only)
-    forge run --task "Quadruped navigating rubble" --dry-run
-
-    # Show version
-    forge version
-
-    # Show config
-    forge config
 """
 
 from __future__ import annotations
@@ -21,7 +7,6 @@ from __future__ import annotations
 import yaml
 import typer
 import logging
-import time as _time
 from pathlib import Path
 from loguru import logger
 from typing import Optional
@@ -33,12 +18,8 @@ from robosmith.utils import banner
 from robosmith.config import StageStatus
 from robosmith.envs.registry import EnvRegistry
 from robosmith.config import RewardSearchConfig, LLMConfig
-from robosmith.controller import ForgeController, STAGES
 from robosmith.config import Algorithm, ForgeConfig, RobotType, TaskSpec
-from robosmith.inspect import inspect_app
-from robosmith.diagnostics import diag_app
-from robosmith.generators import gen_app
-from robosmith.agent import auto_app
+from .cli import diag_app, gen_app, auto_app, inspect_app
 
 app = typer.Typer(
     name="robosmith",

@@ -7,12 +7,10 @@ to produce runnable boilerplate.
 
 from __future__ import annotations
 
-from pathlib import Path
-from typing import Annotated, Optional
-
 import typer
-from rich.console import Console
 from rich.syntax import Syntax
+from rich.console import Console
+from typing import Annotated, Optional
 
 from robosmith.utils import banner
 from robosmith.generators.gen_wrapper import generate_wrapper

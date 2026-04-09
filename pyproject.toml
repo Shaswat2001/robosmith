@@ -101,7 +101,7 @@ all = [
 ]
 
 [project.scripts]
-robosmith = "robosmith.cli:app"
+robosmith = "robosmith.cmd.robosmith_cli:app"
 
 [project.urls]
 Homepage = "https://github.com/Shaswat2001/robosmith"

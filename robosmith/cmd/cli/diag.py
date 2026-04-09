@@ -6,13 +6,12 @@ Trajectory diagnostics, training diagnostics, and comparison tools.
 
 from __future__ import annotations
 
-from typing import Annotated, Any
-
 import typer
-from rich.console import Console
+from rich.text import Text
 from rich.panel import Panel
 from rich.table import Table
-from rich.text import Text
+from rich.console import Console
+from typing import Annotated, Any
 
 from robosmith.utils import banner
 from robosmith.diagnostics.trajectory_analyzer import analyze_trajectory, compare_trajectories
@@ -49,7 +48,6 @@ def diag_trajectory_cmd(
     else:
         _format_trajectory_result(result)
 
-
 @diag_app.command("compare")
 def diag_compare_cmd(
     path_a: Annotated[str, typer.Argument(help="First rollout path")],
@@ -69,7 +67,6 @@ def diag_compare_cmd(
         console.print(result.model_dump_json(indent=2, exclude_none=True))
     else:
         _format_compare_result(result)
-
 
 # Formatters
 def _format_trajectory_result(result: Any) -> None:

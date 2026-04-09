@@ -1,0 +1,3 @@
+"""
+ROBOSMITH Command-line interface.
+"""

@@ -4,11 +4,8 @@ from __future__ import annotations
 import time
 import json
 import hashlib
-from pathlib import Path
 from loguru import logger
-
-_CACHE_DIR = Path.home() / ".cache" / "robosmith" / "scout"
-_CACHE_TTL_HOURS = 24
+from .utils import CACHE_DIR, CACHE_TTL_HOURS, KnowledgeCard
 
 def _cache_key(queries: list[str]) -> str:
     """Generate a stable cache key from queries."""
@@ -18,13 +15,13 @@ def _cache_key(queries: list[str]) -> str:
 def _load_scout_cache(queries: list[str]) -> KnowledgeCard | None:
     """Load cached scout results if they exist and aren't expired."""
     key = _cache_key(queries)
-    cache_file = _CACHE_DIR / f"{key}.json"
+    cache_file = CACHE_DIR / f"{key}.json"
 
     if not cache_file.exists():
         return None
 
     age_hours = (time.time() - cache_file.stat().st_mtime) / 3600
-    if age_hours > _CACHE_TTL_HOURS:
+    if age_hours > CACHE_TTL_HOURS:
         logger.debug(f"Scout cache expired ({age_hours:.1f}h old)")
         return None
 
@@ -43,9 +40,9 @@ def _load_scout_cache(queries: list[str]) -> KnowledgeCard | None:
 def _save_scout_cache(queries: list[str], card: KnowledgeCard) -> None:
     """Save scout results to cache."""
     try:
-        _CACHE_DIR.mkdir(parents=True, exist_ok=True)
+        CACHE_DIR.mkdir(parents=True, exist_ok=True)
         key = _cache_key(queries)
-        cache_file = _CACHE_DIR / f"{key}.json"
+        cache_file = CACHE_DIR / f"{key}.json"
         data = {
             "query": card.query,
             "papers": card.papers,
