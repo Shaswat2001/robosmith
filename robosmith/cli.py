@@ -37,6 +37,7 @@ from robosmith.envs.registry import EnvRegistry
 from robosmith.config import RewardSearchConfig, LLMConfig
 from robosmith.controller import ForgeController, STAGES
 from robosmith.config import Algorithm, ForgeConfig, RobotType, TaskSpec
+from robosmith.inspect import inspect_app
 
 app = typer.Typer(
     name="robosmith",
@@ -45,6 +46,7 @@ app = typer.Typer(
     rich_markup_mode="rich",
 )
 console = Console()
+app.add_typer(inspect_app)
 
 # Banner
 def _banner() -> None:
