@@ -78,7 +78,7 @@ def diag_trajectory(path: str) -> str:
     Args:
         path: Path to HDF5 file, directory, or LeRobot dataset
     """
-    from robosmith.inspect.trajectory_analyzer import analyze_trajectory
+    from robosmith.diagnostics.trajectory_analyzer import analyze_trajectory
     result = analyze_trajectory(path)
     return result.model_dump_json(indent=2, exclude_none=True)
 
@@ -94,7 +94,7 @@ def diag_compare(path_a: str, path_b: str) -> str:
         path_a: First rollout path
         path_b: Second rollout path
     """
-    from robosmith.inspect.trajectory_analyzer import compare_trajectories
+    from robosmith.diagnostics.trajectory_analyzer import compare_trajectories
     result = compare_trajectories(path_a, path_b)
     return result.model_dump_json(indent=2, exclude_none=True)
 
@@ -110,7 +110,7 @@ def gen_wrapper(policy_id: str, target_id: str) -> str:
         policy_id: Policy model ID (e.g. "lerobot/smolvla_base")
         target_id: Dataset repo_id or env ID to adapt to
     """
-    from robosmith.inspect.gen_wrapper import generate_wrapper
+    from robosmith.generators.gen_wrapper import generate_wrapper
     code = generate_wrapper(policy_id, target_id, use_llm=False)
     return code
 

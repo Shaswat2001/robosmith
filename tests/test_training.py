@@ -14,7 +14,7 @@ torch = pytest.importorskip("torch", reason="PyTorch required for training tests
 
 import numpy as np
 
-from robosmith.agent.models.reward_agent import RewardCandidate
+from robosmith.agent.models.reward import RewardCandidate
 from robosmith.config import Algorithm, EnvironmentType, RobotType, TaskSpec
 from robosmith.envs.registry import EnvRegistry
 from robosmith.stages.training import (

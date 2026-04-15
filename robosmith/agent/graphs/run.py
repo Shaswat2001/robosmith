@@ -23,21 +23,15 @@ import time
 import uuid
 import json
 from pathlib import Path
-from typing import Any, Annotated
-
 from loguru import logger
 from langgraph.graph import StateGraph, END
-from typing_extensions import TypedDict
 
 from robosmith.config import (
     Algorithm,
     Decision,
     ForgeConfig,
-    LLMConfig,
     RobotType,
     RunState as ForgeRunState,
-    StageRecord,
-    StageStatus,
     TaskSpec,
 )
 
@@ -289,7 +283,7 @@ def reward_design_node(state: PipelineState) -> dict:
 
 def training_node(state: PipelineState) -> dict:
     """Train an RL policy using the generated reward function."""
-    from robosmith.stages.training import run_training_v2
+    from robosmith.stages.training import run_training
     from robosmith.envs.registry import EnvRegistry
 
     spec = TaskSpec(**state["task_spec"])
@@ -327,14 +321,34 @@ def training_node(state: PipelineState) -> dict:
         logger.info(f"Switching algorithm: {current.value} → {next_algo.value}")
         spec.algorithm = next_algo
 
+    # Extract exact obs_dim from the inspect_env result (avoids spawning env again)
+    obs_dim: int | None = None
+    env_spec_json = state.get("env_spec_json", "")
+    if env_spec_json and env_spec_json != "{}":
+        try:
+            import json as _json
+            import math as _math
+            env_spec = _json.loads(env_spec_json)
+            obs_space = env_spec.get("obs_space", {})
+            if obs_space:
+                total = 0
+                for spec_item in obs_space.values():
+                    shape = spec_item.get("shape", [])
+                    total += _math.prod(shape) if shape else 0
+                if total > 0:
+                    obs_dim = total
+        except Exception:
+            pass  # fall back to _estimate_obs_dim inside run_training
+
     artifacts_dir = Path(state["artifacts_dir"])
 
     try:
-        result = run_training_v2(
+        result = run_training(
             task_spec=spec,
             env_entry=env_entry,
             reward_candidate=reward_candidate,
             artifacts_dir=artifacts_dir,
+            obs_dim=obs_dim,
         )
 
         if result.error:
@@ -348,7 +362,7 @@ def training_node(state: PipelineState) -> dict:
         # Build training reflection for potential next iteration
         reflection = ""
         if result.metrics_history:
-            from robosmith.controller import _build_training_reflection
+            from robosmith.stages.training import _build_training_reflection
             reflection = _build_training_reflection(result)
 
         return {

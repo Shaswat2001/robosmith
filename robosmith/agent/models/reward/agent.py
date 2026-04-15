@@ -4,12 +4,6 @@ Reward agent — generates reward function Python code via LLM.
 This is the Eureka-style core of RoboSmith. Given a task
 description and environment info, the LLM writes executable Python
 reward functions that can be plugged into an RL training loop.
-
-The reward function signature is standardized::
-
-    def compute_reward(obs, action, next_obs, info) -> tuple[float, dict]:
-        # ... reward logic ...
-        return total_reward, {"component1": val1, "component2": val2}
 """
 
 from __future__ import annotations
@@ -188,12 +182,12 @@ class RewardAgent(BaseAgent):
     ) -> str:
         prompt = f"""Write a reward function for this robot learning task.
 
-TASK: {task_description}
+                    TASK: {task_description}
 
-OBSERVATION SPACE: {obs_space_info}
+                    OBSERVATION SPACE: {obs_space_info}
 
-ACTION SPACE: {action_space_info}
-"""
+                    ACTION SPACE: {action_space_info}
+                    """
         if literature_context:
             prompt += f"\nRELEVANT PRIOR WORK (use these insights to inform your reward design):\n{literature_context}\n"
 
@@ -201,9 +195,9 @@ ACTION SPACE: {action_space_info}
             prompt += f"\nENVIRONMENT CODE (for context):\n{env_code_context}\n"
 
         prompt += """
-Write a single Python function compute_reward(obs, action, next_obs, info) that returns (float, dict).
-Decompose the reward into named components. Use only numpy.
-Return ONLY the function code, no explanation."""
+                    Write a single Python function compute_reward(obs, action, next_obs, info) that returns (float, dict).
+                    Decompose the reward into named components. Use only numpy.
+                    Return ONLY the function code, no explanation."""
 
         return prompt
 
@@ -217,23 +211,22 @@ Return ONLY the function code, no explanation."""
     ) -> str:
         return f"""Improve this reward function based on training feedback.
 
-TASK: {task_description}
+                TASK: {task_description}
 
-OBSERVATION SPACE: {obs_space_info}
-ACTION SPACE: {action_space_info}
+                OBSERVATION SPACE: {obs_space_info}
+                ACTION SPACE: {action_space_info}
 
-PREVIOUS REWARD FUNCTION:
-{previous_best.code}
+                PREVIOUS REWARD FUNCTION:
+                {previous_best.code}
 
-TRAINING FEEDBACK:
-{training_feedback}
+                TRAINING FEEDBACK:
+                {training_feedback}
 
-Write an improved compute_reward function. Fix the issues described in the feedback.
-Keep the same signature: compute_reward(obs, action, next_obs, info) -> tuple[float, dict].
-Return ONLY the function code, no explanation."""
+                Write an improved compute_reward function. Fix the issues described in the feedback.
+                Keep the same signature: compute_reward(obs, action, next_obs, info) -> tuple[float, dict].
+                Return ONLY the function code, no explanation."""
 
-    # ── Code cleaning ──
-
+    # ── Code cleaning ──1
     @staticmethod
     def _clean_code(raw: str) -> str:
         """Strip markdown fences and whitespace from LLM output."""
