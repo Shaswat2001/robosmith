@@ -357,6 +357,9 @@ def run_reward_design(
     num_eval_episodes: int = 5,
     literature_context: str = "",
     training_reflection: str = "",
+    obs_dim: int | None = None,
+    obs_space_info: str = "",
+    action_space_info: str = "",
 ) -> RewardDesignResult:
     """
     Run the full evolutionary reward design stage.
@@ -367,11 +370,20 @@ def run_reward_design(
       3. Pick the best, format training feedback
       4. Feed best + feedback to LLM → generate improved candidates
       5. Repeat for N iterations
+
+    Args:
+        obs_dim: Pre-computed observation dimensionality (from inspect_env).
+            If None, falls back to spawning the env via _get_obs_dim.
+        obs_space_info: Pre-formatted obs space description for the reward LLM
+            (from inspect_env). If empty, falls back to extract_space_info.
+        action_space_info: Pre-formatted action space description for the reward LLM
+            (from inspect_env). If empty, falls back to extract_space_info.
     """
     config = search_config or RewardSearchConfig()
 
     # Adaptive budget: simple envs need fewer iterations
-    obs_dim = _get_obs_dim(env_entry)
+    if obs_dim is None:
+        obs_dim = _get_obs_dim(env_entry)
     if obs_dim <= 10:
         # Simple env (Pendulum, CartPole) — 2 gens, 3 candidates
         num_iterations = min(config.num_iterations, 2)
@@ -384,11 +396,15 @@ def run_reward_design(
     else:
         num_iterations = config.num_iterations
 
-    # Step 1: Extract space info from the environment
-    logger.info(f"Extracting space info from {env_entry.env_id}")
-    env = make_env(env_entry)
-    obs_info, act_info = extract_space_info(env, env_entry, llm_config)
-    env.close()
+    # Step 1: Extract space info — use pre-computed values from inspect_env if available
+    if obs_space_info and action_space_info:
+        obs_info, act_info = obs_space_info, action_space_info
+        logger.info(f"Using pre-inspected space info for {env_entry.env_id}")
+    else:
+        logger.info(f"Extracting space info from {env_entry.env_id}")
+        env = make_env(env_entry)
+        obs_info, act_info = extract_space_info(env, env_entry, llm_config)
+        env.close()
 
     logger.info(f"Obs space: {obs_info}")
     logger.info(f"Act space: {act_info}")
@@ -591,7 +607,7 @@ def _flatten_obs(obs) -> np.ndarray:  # noqa: ANN001
     return np.asarray(obs).flatten()
 
 def _get_obs_dim(env_entry) -> int:
-    """Get observation dimensionality without creating the env."""
+    """Get observation dimensionality by instantiating the env briefly."""
     try:
         env = make_env(env_entry)
         obs_space = env.observation_space

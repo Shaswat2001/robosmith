@@ -7,7 +7,7 @@ from loguru import logger
 
 from robosmith.config import RunState, TaskSpec
 from robosmith.stages.evaluation import EvalReport
-from robosmith.agent.models.reward_agent import RewardCandidate
+from robosmith.agent.models.reward import RewardCandidate
 
 def write_reward_file(
     path: Path,

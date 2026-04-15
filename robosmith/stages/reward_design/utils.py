@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from robosmith.agent.models.reward_agent import RewardCandidate
+from robosmith.agent.models.reward import RewardCandidate
 
 @dataclass
 class EvalResult:

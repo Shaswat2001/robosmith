@@ -241,6 +241,51 @@ def reward_design_node(state: PipelineState) -> dict:
     # Build training reflection from previous iteration
     training_reflection = state.get("training_reflection", "")
 
+    # Extract pre-computed space info from inspect_env to avoid re-spawning the env
+    obs_dim: int | None = None
+    obs_space_info = ""
+    action_space_info = ""
+    env_spec_json = state.get("env_spec_json", "")
+    obs_docs = state.get("obs_docs", "")
+    if env_spec_json and env_spec_json != "{}":
+        try:
+            import json as _json
+            import math as _math
+            env_spec = _json.loads(env_spec_json)
+            obs_space = env_spec.get("obs_space", {})
+            action_space = env_spec.get("action_space")
+            action_semantics = env_spec.get("action_semantics", [])
+
+            if obs_space:
+                # Compute obs_dim
+                obs_dim = sum(_math.prod(v.get("shape", [])) for v in obs_space.values())
+                obs_dim = obs_dim or None
+
+                # Build obs_space_info string
+                parts = []
+                for key, spec_item in obs_space.items():
+                    shape = spec_item.get("shape", [])
+                    dtype = spec_item.get("dtype", "")
+                    low = spec_item.get("low")
+                    high = spec_item.get("high")
+                    bounds = f", bounds={low}..{high}" if low is not None else ""
+                    parts.append(f"{key}: shape={shape}, dtype={dtype}{bounds}")
+                obs_space_info = "\n".join(parts)
+                if obs_docs:
+                    obs_space_info += f"\n\nDimension descriptions:\n{obs_docs}"
+
+            if action_space:
+                shape = action_space.get("shape", [])
+                dtype = action_space.get("dtype", "")
+                low = action_space.get("low")
+                high = action_space.get("high")
+                bounds = f", bounds={low}..{high}" if low is not None else ""
+                action_space_info = f"shape={shape}, dtype={dtype}{bounds}"
+                if action_semantics:
+                    action_space_info += f"\nActuators: {', '.join(action_semantics)}"
+        except Exception:
+            pass  # fall back to extract_space_info inside run_reward_design
+
     try:
         result = run_reward_design(
             task_spec=spec,
@@ -250,6 +295,9 @@ def reward_design_node(state: PipelineState) -> dict:
             num_candidates=config.reward_search.candidates_per_iteration,
             literature_context=lit_context,
             training_reflection=training_reflection,
+            obs_dim=obs_dim,
+            obs_space_info=obs_space_info,
+            action_space_info=action_space_info,
         )
 
         # Keep best reward across iterations

@@ -22,7 +22,7 @@ from dataclasses import dataclass, field
 from robosmith.envs.wrapper import make_env
 from robosmith.envs.registry import EnvEntry
 from robosmith.config import Decision, TaskSpec
-from robosmith.agent.models.reward_agent import RewardCandidate
+from robosmith.agent.models.reward import RewardCandidate
 from robosmith.envs.reward_wrapper import ForgeRewardWrapper
 
 from .utils import _load_model, _build_report, EvalReport, EpisodeResult

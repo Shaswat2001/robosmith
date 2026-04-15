@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from robosmith.agent.models.reward_agent import RewardCandidate
+from robosmith.agent.models.reward import RewardCandidate
 from robosmith.config import Decision, RunState, StageRecord, StageStatus, SuccessCriterion, TaskSpec
 from robosmith.stages.delivery import run_delivery
 from robosmith.stages.evaluation import EpisodeResult, EvalReport
