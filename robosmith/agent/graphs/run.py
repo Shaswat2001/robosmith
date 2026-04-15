@@ -23,6 +23,7 @@ import time
 import uuid
 import json
 from pathlib import Path
+from typing import Callable
 from loguru import logger
 from langgraph.graph import StateGraph, END
 
@@ -658,16 +659,15 @@ def build_run_graph() -> StateGraph:
 def run_pipeline(
     task_spec: TaskSpec,
     config: ForgeConfig | None = None,
-    verbose: bool = True,
+    on_step: "Callable[[str, str], None] | None" = None,
 ) -> PipelineState:
     """Run the full robosmith pipeline.
-
-    Drop-in replacement for ForgeController.run().
 
     Args:
         task_spec: Parsed or raw TaskSpec
         config: ForgeConfig (uses defaults if None)
-        verbose: Print steps as they execute
+        on_step: Optional callback invoked after each node with
+            (node_name, log_line). Use this for progress output.
 
     Returns:
         Final PipelineState with all results.
@@ -714,19 +714,24 @@ def run_pipeline(
         "steps_log": [f"Starting: '{task_spec.task_description[:60]}' (budget: {task_spec.time_budget_minutes}m)"],
     }
 
-    # Build and run
+    # Build and run — stream once (no double-invoke)
     graph = build_run_graph()
     app = graph.compile()
 
-    if verbose:
-        for step in app.stream(initial):
-            node_name = list(step.keys())[0]
-            node_output = step[node_name]
-            if "steps_log" in node_output:
-                for log_line in node_output["steps_log"]:
-                    logger.info(f"[{node_name}] {log_line}")
-
-    final = app.invoke(initial)
+    # Accumulate final state from stream updates.
+    # steps_log uses a reducer (append), all other fields are last-write-wins.
+    final: PipelineState = dict(initial)  # type: ignore[assignment]
+    for chunk in app.stream(initial):
+        node_name = next(iter(chunk))
+        node_output = chunk[node_name]
+        for key, val in node_output.items():
+            if key == "steps_log":
+                final["steps_log"] = final.get("steps_log", []) + val  # type: ignore[operator]
+            else:
+                final[key] = val  # type: ignore[literal-required]
+        if on_step and "steps_log" in node_output:
+            for log_line in node_output["steps_log"]:
+                on_step(node_name, log_line)
 
     # Save state
     state_path = artifacts_dir / "run_state.json"

@@ -10,12 +10,10 @@ import logging
 from pathlib import Path
 from loguru import logger
 from typing import Optional
-from rich.table import Table
 from rich.console import Console
 
 from robosmith import __version__
 from robosmith.utils import banner
-from robosmith.config import StageStatus
 from robosmith.envs.registry import EnvRegistry
 from robosmith.config import RewardSearchConfig, LLMConfig
 from robosmith.config import Algorithm, ForgeConfig, RobotType, TaskSpec
@@ -103,13 +101,14 @@ def run(
     """
     banner()
 
-    # Suppress all noisy loggers — we handle output ourselves
+    # Suppress all noisy loggers — we handle terminal output via on_step
     logger.remove()
-    if verbose:
-        log_path = Path("robosmith_runs") / "latest.log"
-        log_path.parent.mkdir(parents=True, exist_ok=True)
-        logger.add(str(log_path), level="DEBUG", format="{time:HH:mm:ss} | {level:<7} | {message}", mode="w")
-        console.print(f"  [dim]Verbose logs → {log_path}[/dim]\n")
+    # Always write logs to file; --verbose drops the level to DEBUG
+    log_path = Path("robosmith_runs") / "latest.log"
+    log_path.parent.mkdir(parents=True, exist_ok=True)
+    log_level = "DEBUG" if verbose else "INFO"
+    logger.add(str(log_path), level=log_level, format="{time:HH:mm:ss} | {level:<7} | {message}", mode="w")
+    console.print(f"  [dim]Logs → {log_path}[/dim]\n")
 
     for noisy in ("LiteLLM", "litellm", "httpx", "httpcore"):
         logging.getLogger(noisy).setLevel(logging.CRITICAL)
@@ -205,27 +204,59 @@ def run(
     if backend or file_config.get("training_backend"):
         config._training_backend = backend or file_config.get("training_backend")
 
-    # Show plan
-    _show_task_spec(task_spec)
+    # Show minimal header — LLM hasn't parsed the task yet so don't show derived fields
+    console.print(f"  Task:   [bold]{task}[/bold]")
+    parts = []
+    if algorithm:
+        parts.append(f"algo={algorithm}")
+    if robot:
+        parts.append(f"robot={robot}")
+    parts.append(f"budget={time_budget}m")
+    parts.append(f"candidates={candidates}")
+    if backend:
+        parts.append(f"backend={backend}")
+    console.print(f"  Config: [dim]{' · '.join(parts)}[/dim]")
+    console.print()
 
     if dry_run:
-        console.print("\n[yellow]Dry run — stopping before execution.[/yellow]")
+        console.print("[yellow]Dry run — stopping before execution.[/yellow]")
         return
 
+    # Node → Rich color for stage progress lines
+    _NODE_COLOR = {
+        "intake": "white",
+        "scout": "blue",
+        "env_synthesis": "cyan",
+        "inspect_env": "cyan",
+        "reward_design": "magenta",
+        "training": "yellow",
+        "evaluation": "green",
+        "delivery": "bold green",
+    }
+
+    def _on_step(node_name: str, line: str) -> None:
+        color = _NODE_COLOR.get(node_name, "white")
+        console.print(f"  [{color}]{line}[/{color}]")
+
     from robosmith.agent.graphs.run import run_pipeline
-    result = run_pipeline(task_spec, config, verbose=True)
+    result = run_pipeline(task_spec, config, on_step=_on_step)
 
-    eval_stage = result.stages.get("evaluation")
-    if eval_stage and eval_stage.status == StageStatus.COMPLETED:
-        sr = eval_stage.metadata.get("success_rate")
-        mr = eval_stage.metadata.get("mean_reward")
-        decision = eval_stage.metadata.get("decision", "")
-        if sr is not None:
-            console.print(f"  Success: [bold]{sr:.0%}[/bold]  |  Reward: [bold]{mr:.2f}[/bold]  |  Decision: [bold]{decision}[/bold]")
+    # ── Summary ──
+    console.print()
+    eval_report = result.get("eval_report")
+    if eval_report and hasattr(eval_report, "success_rate"):
+        decision = getattr(eval_report, "decision", "")
+        decision_str = decision.value if hasattr(decision, "value") else str(decision)
+        console.print(
+            f"  Success: [bold]{eval_report.success_rate:.0%}[/bold]"
+            f"  |  Reward: [bold]{eval_report.mean_reward:.2f}[/bold]"
+            f"  |  Decision: [bold]{decision_str}[/bold]"
+        )
 
-    console.print(f"  Run: [dim]{result.run_id}[/dim]")
-    if result.artifacts_dir:
-        console.print(f"  Artifacts: [dim]{result.artifacts_dir}[/dim]")
+    console.print(f"  Run: [dim]{result.get('run_id', '')}[/dim]")
+    artifacts_dir = result.get("artifacts_dir", "")
+    if artifacts_dir:
+        console.print(f"  Artifacts: [dim]{artifacts_dir}[/dim]")
     console.print()
 
 @app.command()
@@ -336,30 +367,6 @@ def trainers() -> None:
             console.print(f"    [dim]Requires: {', '.join(info['requires'])}[/dim]")
 
     console.print()
-
-# Display helpers
-def _show_task_spec(spec: TaskSpec) -> None:
-    """Pretty-print the parsed task specification."""
-    table = Table(title="Task specification", border_style="dim", show_header=False, pad_edge=False)
-    table.add_column("Field", style="bold", width=20)
-    table.add_column("Value")
-
-    table.add_row("Task", spec.task_description)
-    table.add_row("Robot type", spec.robot_type.value)
-    table.add_row("Robot model", spec.robot_model or "(auto)")
-    table.add_row("Environment", spec.environment_type.value)
-    table.add_row("Algorithm", spec.algorithm.value)
-    table.add_row("Time budget", f"{spec.time_budget_minutes} min")
-    table.add_row("Parallel envs", str(spec.num_envs))
-    table.add_row(
-        "Success criteria",
-        ", ".join(str(c) for c in spec.success_criteria),
-    )
-    if spec.push_to_hub:
-        table.add_row("Push to hub", spec.push_to_hub)
-
-    console.print()
-    console.print(table)
 
 
 if __name__ == "__main__":
