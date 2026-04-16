@@ -207,3 +207,4 @@ marimo/_lsp/
 __marimo__/
 /robosmith_runs/
 .DS_Store
+.env*
