@@ -89,6 +89,8 @@ def run(
     candidates: int = typer.Option(4, "--candidates", "-c", help="Number of reward function candidates per iteration"),
     skip: Optional[list[str]] = typer.Option(None, "--skip", "-s", help="Stages to skip: scout, intake, delivery"),
     backend: Optional[str] = typer.Option(None, "--backend", "-b", help="Training backend: sb3, cleanrl (default: auto)"),
+    llm: Optional[str] = typer.Option(None, "--llm", "-L", help="LLM provider or model: anthropic, openai, gemini, groq, or 'openai/gpt-4o'"),
+    scout: Optional[str] = typer.Option(None, "--scout", help="Literature search backend: semantic_scholar, arxiv, both"),
     config_file: Optional[Path] = typer.Option(None, "--config", help="Path to robosmith.yaml config file"),
     dry_run: bool = typer.Option(False, "--dry-run", help="Parse and plan only, don't train"),
     verbose: bool = typer.Option(False, "--verbose", "-v", help="Show detailed logs"),
@@ -112,6 +114,12 @@ def run(
 
     for noisy in ("LiteLLM", "litellm", "httpx", "httpcore"):
         logging.getLogger(noisy).setLevel(logging.CRITICAL)
+
+    # Load .env.local / .env, then resolve the LLM model to use
+    from robosmith.env_loader import load_env_local, resolve_llm
+    loaded_vars = load_env_local()
+    if loaded_vars:
+        console.print(f"  [dim]Loaded {len(loaded_vars)} vars from .env.local[/dim]")
 
     try:
         robot_type = RobotType(robot) if robot else RobotType.ARM
@@ -143,7 +151,6 @@ def run(
     file_config: dict = {}
     _config_path = config_file
     if _config_path is None:
-        # Auto-detect robosmith.yaml in current directory
         for name in ("robosmith.yaml", "robosmith.yml"):
             if Path(name).exists():
                 _config_path = Path(name)
@@ -154,12 +161,14 @@ def run(
             file_config = yaml.safe_load(f) or {}
         console.print(f"  [dim]Config loaded from {_config_path}[/dim]\n")
 
-    # LLM config from file
+    # Resolve LLM: --llm flag > robosmith.yaml > auto-detect from API keys
     llm_cfg = file_config.get("llm", {})
+    config_model = llm_cfg.get("model") if llm_cfg.get("model") else None
+    resolved_model, resolved_fast_model = resolve_llm(llm_arg=llm, config_model=config_model)
     llm_config = LLMConfig(
-        provider=llm_cfg.get("provider", "anthropic"),
-        model=llm_cfg.get("model", "claude-sonnet-4-20250514"),
-        fast_model=llm_cfg.get("fast_model", "claude-haiku-4-5-20251001"),
+        provider=resolved_model.split("/")[0] if "/" in resolved_model else "anthropic",
+        model=resolved_model,
+        fast_model=resolved_fast_model,
         temperature=llm_cfg.get("temperature", 0.7),
         max_retries=llm_cfg.get("max_retries", 3),
     )
@@ -185,6 +194,13 @@ def run(
             console.print(f"  [yellow]Warning: '{s}' cannot be skipped (core stage). Ignoring.[/yellow]")
             skip_stages.remove(s)
 
+    # Scout source: --scout flag > robosmith.yaml > default
+    VALID_SCOUT = {"semantic_scholar", "arxiv", "both"}
+    scout_source = scout or file_config.get("scout_source", "semantic_scholar")
+    if scout_source not in VALID_SCOUT:
+        console.print(f"  [red]Invalid --scout '{scout_source}'. Valid: {', '.join(VALID_SCOUT)}[/red]")
+        raise typer.Exit(1)
+
     # Paths from file
     runs_dir = Path(file_config.get("runs_dir", "./robosmith_runs"))
     env_registry_path = file_config.get("env_registry_path")
@@ -195,6 +211,7 @@ def run(
         verbose=verbose,
         dry_run=dry_run,
         skip_stages=skip_stages,
+        scout_source=scout_source,
         runs_dir=runs_dir,
         env_registry_path=Path(env_registry_path) if env_registry_path else None,
         max_iterations=file_config.get("max_iterations", 3),
@@ -206,13 +223,14 @@ def run(
 
     # Show minimal header — LLM hasn't parsed the task yet so don't show derived fields
     console.print(f"  Task:   [bold]{task}[/bold]")
-    parts = []
+    parts = [f"llm={resolved_model}"]
     if algorithm:
         parts.append(f"algo={algorithm}")
     if robot:
         parts.append(f"robot={robot}")
     parts.append(f"budget={time_budget}m")
     parts.append(f"candidates={candidates}")
+    parts.append(f"scout={scout_source}")
     if backend:
         parts.append(f"backend={backend}")
     console.print(f"  Config: [dim]{' · '.join(parts)}[/dim]")

@@ -135,6 +135,7 @@ def build_search_queries(task_spec: TaskSpec) -> list[str]:
 def run_scout(
     task_spec: TaskSpec,
     max_papers_per_query: int = 5,
+    source: str = "semantic_scholar",
 ) -> KnowledgeCard:
     """
     Run the full scout stage — search multiple queries and merge results.
@@ -142,40 +143,51 @@ def run_scout(
     Args:
         task_spec: The task to search for.
         max_papers_per_query: Max papers per search query.
+        source: Which backend to use — "semantic_scholar", "arxiv", or "both".
 
     Returns:
         Merged KnowledgeCard with deduplicated, ranked papers.
     """
+    from .arxiv import search_arxiv
+
     queries = build_search_queries(task_spec)
-    logger.info(f"Scout: searching {len(queries)} queries")
-    
+    logger.info(f"Scout: searching {len(queries)} queries via {source}")
+
     # Check cache — skip API if we searched these queries recently
-    cached = _load_scout_cache(queries)
+    cache_key = queries + [source]
+    cached = _load_scout_cache(cache_key)
     if cached is not None:
         logger.info(f"Scout: using cached results ({len(cached.papers)} papers)")
         return cached
-    
+
     all_papers: dict[str, dict] = {}  # deduplicate by title
     total_found = 0
 
+    use_s2 = source in ("semantic_scholar", "both")
+    use_arxiv = source in ("arxiv", "both")
+
     for query in queries:
-        card = search_papers(query, max_results=max_papers_per_query, year_range="2022-")
-        total_found += card.total_found
+        if use_s2:
+            card = search_papers(query, max_results=max_papers_per_query, year_range="2022-")
+            total_found += card.total_found
+            for paper in card.papers:
+                _merge_paper(all_papers, paper)
+            time.sleep(2.0)  # be polite to S2
 
-        for paper in card.papers:
-            title_key = paper["title"].lower().strip()
-            if title_key not in all_papers:
-                all_papers[title_key] = paper
-            else:
-                # Merge: keep the one with more citations
-                if paper["citations"] > all_papers[title_key]["citations"]:
-                    all_papers[title_key] = paper
+        if use_arxiv:
+            card = search_arxiv(query, max_results=max_papers_per_query, year_from=2022)
+            total_found += card.total_found
+            for paper in card.papers:
+                _merge_paper(all_papers, paper)
+            # ArXiv is more lenient — 1s gap is fine
+            time.sleep(1.0)
 
-        # Be polite to the API — 2 seconds between queries
-        time.sleep(2.0)
-
-    # Sort by citations
-    merged = sorted(all_papers.values(), key=lambda p: p.get("citations", 0), reverse=True)
+    # Sort: S2 papers with citations first, then ArXiv by recency
+    merged = sorted(
+        all_papers.values(),
+        key=lambda p: (p.get("citations", 0), p.get("year", 0)),
+        reverse=True,
+    )
 
     logger.info(f"Scout complete: {len(merged)} unique papers from {len(queries)} queries")
 
@@ -185,10 +197,20 @@ def run_scout(
         total_found=total_found,
     )
 
-    # Save to cache
-    _save_scout_cache(queries, result)
-
+    _save_scout_cache(cache_key, result)
     return result
+
+
+def _merge_paper(all_papers: dict[str, dict], paper: dict) -> None:
+    """Deduplicate by title, keeping the entry with more citations."""
+    title_key = paper["title"].lower().strip()
+    if title_key not in all_papers:
+        all_papers[title_key] = paper
+    else:
+        existing = all_papers[title_key]
+        # Prefer the entry with a citation count; on tie prefer the S2 one
+        if paper.get("citations", 0) > existing.get("citations", 0):
+            all_papers[title_key] = paper
 
 def build_literature_context(card: KnowledgeCard, max_papers: int = 5) -> str:
     """

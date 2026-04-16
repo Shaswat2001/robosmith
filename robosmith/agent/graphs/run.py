@@ -85,20 +85,21 @@ def intake_node(state: PipelineState) -> dict:
         logger.warning(f"LLM intake failed, using original spec: {e}")
         return {"steps_log": [f"⚠ Intake: LLM parsing failed ({e}), using original"]}
 
-
 def scout_node(state: PipelineState) -> dict:
     """Search for relevant prior work."""
 
     spec = TaskSpec(**state["task_spec"])
+    config = ForgeConfig(**state["config"])
+    source = config.scout_source  # "semantic_scholar", "arxiv", or "both"
 
     try:
-        card = run_scout(spec)
+        card = run_scout(spec, source=source)
         top = card.top_papers(3)
         top_titles = [p["title"][:60] for p in top]
 
         return {
             "knowledge_card": card,
-            "steps_log": [f"✓ Scout: {len(card.papers)} papers found — {top_titles}"],
+            "steps_log": [f"✓ Scout ({source}): {len(card.papers)} papers found — {top_titles}"],
         }
     except Exception as e:
         logger.warning(f"Scout failed: {e}")
@@ -106,7 +107,6 @@ def scout_node(state: PipelineState) -> dict:
             "knowledge_card": None,
             "steps_log": [f"⚠ Scout: failed ({e})"],
         }
-
 
 def env_synthesis_node(state: PipelineState) -> dict:
     """Find or generate an environment matching the TaskSpec."""
@@ -160,7 +160,6 @@ def env_synthesis_node(state: PipelineState) -> dict:
         "steps_log": [f"✓ Env synthesis: matched {env_name} (score={match.score})"],
     }
 
-
 def inspect_env_node(state: PipelineState) -> dict:
     """NEW: Inspect the matched environment for structured obs/action specs.
 
@@ -202,7 +201,6 @@ def inspect_env_node(state: PipelineState) -> dict:
             "obs_docs": "",
             "steps_log": [f"⚠ Inspect env: failed ({e}), reward design will use fallback introspection"],
         }
-
 
 def reward_design_node(state: PipelineState) -> dict:
     """Generate and evaluate reward function candidates."""
@@ -328,7 +326,6 @@ def reward_design_node(state: PipelineState) -> dict:
             "status_message": f"Reward design failed: {e}",
             "steps_log": [f"✗ Reward design failed: {e}"],
         }
-
 
 def training_node(state: PipelineState) -> dict:
     """Train an RL policy using the generated reward function."""
@@ -516,10 +513,14 @@ def delivery_node(state: PipelineState) -> dict:
     """Package all artifacts for the run."""
     from robosmith.stages.delivery import run_delivery
 
-    # Reconstruct ForgeRunState for delivery
+    # Reconstruct ForgeRunState for delivery, then patch task_spec with the
+    # fully-enriched version (environment_id is set by env_synthesis_node after
+    # forge_state was originally created, so the stored forge_state is stale).
     forge_state_data = state.get("forge_state", {})
     try:
         forge_state = ForgeRunState(**forge_state_data) if forge_state_data else None
+        if forge_state and state.get("task_spec"):
+            forge_state.task_spec = TaskSpec(**state["task_spec"])
     except Exception:
         forge_state = None
 
