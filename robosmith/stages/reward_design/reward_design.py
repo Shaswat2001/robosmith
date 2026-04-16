@@ -11,8 +11,10 @@ The evolutionary loop:
 
 from __future__ import annotations
 
+import os
 import numpy as np
 from loguru import logger
+from concurrent.futures import ProcessPoolExecutor, as_completed
 
 from robosmith.agent.models.reward import RewardAgent, RewardCandidate
 from robosmith.config import LLMConfig, RewardSearchConfig, TaskSpec
@@ -348,6 +350,58 @@ def evaluate_candidate(
         error_message="; ".join(errors[:3]) if errors else "",
     )
 
+def _evaluate_candidates_parallel(
+    candidates: list[RewardCandidate],
+    env_entry: EnvEntry,
+    num_episodes: int,
+) -> list[EvalResult]:
+    """Evaluate reward candidates in parallel using a process pool.
+
+    Each candidate is evaluated in its own subprocess so environment
+    creation and rollouts run concurrently. Falls back to sequential
+    evaluation if the process pool cannot be started (e.g. inside a
+    nested multiprocessing context or on platforms where 'spawn' is slow).
+
+    Returns results in the same order as `candidates`.
+    """
+    if len(candidates) <= 1:
+        # No parallelism needed for a single candidate
+        return [evaluate_candidate(candidates[0], env_entry, num_episodes)]
+
+    max_workers = min(len(candidates), os.cpu_count() or 1)
+    results_by_id: dict[int, EvalResult] = {}
+
+    try:
+        with ProcessPoolExecutor(max_workers=max_workers) as pool:
+            future_to_candidate = {
+                pool.submit(evaluate_candidate, c, env_entry, num_episodes): c
+                for c in candidates
+            }
+            for future in as_completed(future_to_candidate):
+                candidate = future_to_candidate[future]
+                try:
+                    result = future.result()
+                except Exception as exc:
+                    result = EvalResult(
+                        candidate_id=candidate.candidate_id,
+                        mean_reward=float("-inf"),
+                        std_reward=0.0,
+                        mean_episode_length=0.0,
+                        num_episodes=0,
+                        had_errors=True,
+                        error_message=f"Worker process crashed: {exc}",
+                    )
+                results_by_id[candidate.candidate_id] = result
+                status = "error" if result.had_errors else f"reward={result.mean_reward:.2f}"
+                logger.info(f"  [parallel] Candidate {candidate.candidate_id}: {status}")
+    except Exception as exc:
+        logger.warning(f"ProcessPoolExecutor failed ({exc}), falling back to sequential evaluation")
+        return [evaluate_candidate(c, env_entry, num_episodes) for c in candidates]
+
+    # Return in original candidate order
+    return [results_by_id[c.candidate_id] for c in candidates]
+
+
 def run_reward_design(
     task_spec: TaskSpec,
     env_entry: EnvEntry,
@@ -480,22 +534,20 @@ def run_reward_design(
                 break  # Use what we have
             raise RuntimeError("Reward agent generated zero valid candidates")
 
-        # Step 3: Evaluate each candidate
-        logger.info(f"Evaluating {len(candidates)} candidates ({num_eval_episodes} episodes each)")
-        gen_eval_results = []
-        for candidate in candidates:
-            result = evaluate_candidate(
-                candidate, env_entry,
-                num_episodes=num_eval_episodes,
-            )
+        # Step 3: Evaluate candidates in parallel
+        logger.info(
+            f"Evaluating {len(candidates)} candidates in parallel "
+            f"({num_eval_episodes} episodes each, up to {min(len(candidates), os.cpu_count() or 1)} workers)"
+        )
+        gen_eval_results = _evaluate_candidates_parallel(candidates, env_entry, num_eval_episodes)
+
+        for candidate, result in zip(candidates, gen_eval_results):
             candidate.score = result.mean_reward
             candidate.metrics = {
                 "mean_reward": result.mean_reward,
                 "std_reward": result.std_reward,
                 "mean_episode_length": result.mean_episode_length,
             }
-            gen_eval_results.append(result)
-
             status = "error" if result.had_errors else f"reward={result.mean_reward:.2f}"
             logger.info(f"  Gen {gen + 1} candidate {candidate.candidate_id}: {status}")
 

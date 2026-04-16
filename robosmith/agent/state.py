@@ -50,6 +50,9 @@ class PipelineState(TypedDict):
     max_iterations: int
     last_decision: str       # Decision enum value
 
+    # ── Resumability ──
+    completed_nodes: list[str]  # nodes that have already run (used by resume)
+
     # ── Output ──
     status: str              # "running", "success", "failed"
     status_message: str
