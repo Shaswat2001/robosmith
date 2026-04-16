@@ -144,19 +144,24 @@ class EnvRegistry:
         results = list(self._entries)
 
         if robot_type:
-            results = [e for e in results if e.robot_type == robot_type]
+            q = robot_type.lower()
+            results = [e for e in results if q in e.robot_type.lower()]
 
         if env_type:
-            results = [e for e in results if e.env_type == env_type]
+            q = env_type.lower()
+            results = [e for e in results if q in e.env_type.lower()]
 
         if framework:
-            results = [e for e in results if e.framework == framework]
+            q = framework.lower()
+            results = [e for e in results if q in e.framework.lower()]
 
         if robot_model:
-            results = [e for e in results if e.robot_model == robot_model]
+            q = robot_model.lower()
+            results = [e for e in results if q in e.robot_model.lower()]
 
         if action_type:
-            results = [e for e in results if e.action_type == action_type]
+            q = action_type.lower()
+            results = [e for e in results if q in e.action_type.lower()]
 
         # Tag matching: keep entries that match at least one tag, sort by count
         if tags:

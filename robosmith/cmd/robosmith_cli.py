@@ -10,6 +10,7 @@ import logging
 from pathlib import Path
 from loguru import logger
 from typing import Optional
+from rich.table import Table
 from rich.console import Console
 
 from robosmith import __version__
@@ -52,7 +53,13 @@ def envs(
         tags=tag_list,
     )
 
+    filters_applied = any([robot, framework, env_type, tags])
     if not results:
+        if filters_applied:
+            console.print("  [yellow]No environments matched your filters.[/yellow]")
+            console.print(f"  [dim]Available frameworks: {', '.join(registry.list_frameworks())}[/dim]")
+            console.print(f"  [dim]Available robot types: {', '.join(registry.list_robot_types())}[/dim]")
+            return
         results = registry.list_all()
 
     table = Table(title=f"Environments ({len(results)} found)", border_style="dim")
