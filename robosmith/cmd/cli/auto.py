@@ -110,9 +110,9 @@ def auto_integrate_cmd(
         if output:
             from pathlib import Path
             Path(output).write_text(final_state["wrapper_code"])
-            console.print(f"[green]Wrapper written to {output}[/green]")
+            console.print(f"[green]✓ Wrapper written to {output}[/green]")
         else:
-            console.print("[bold]Generated adapter:[/bold]")
+            console.print("[bold]Generated adapter[/bold] [dim](use -o <file> to save)[/dim]")
             console.print(Syntax(
                 final_state["wrapper_code"],
                 "python",

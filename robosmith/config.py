@@ -241,6 +241,10 @@ class ForgeConfig(BaseModel):
         default_factory=list,
         description="Stages to skip: scout, intake, delivery",
     )
+    scout_source: str = Field(
+        default="semantic_scholar",
+        description="Literature search backend: semantic_scholar, arxiv, or both",
+    )
     verbose: bool = Field(default=True)
     dry_run: bool = Field(
         default=False, description="Parse and plan only, don't execute training"

@@ -27,9 +27,14 @@ def _load_scout_cache(queries: list[str]) -> KnowledgeCard | None:
 
     try:
         data = json.loads(cache_file.read_text())
+        papers = data.get("papers", [])
+        if not papers:
+            logger.debug("Scout cache: discarding empty cached result")
+            cache_file.unlink(missing_ok=True)
+            return None
         return KnowledgeCard(
             query=data.get("query", ""),
-            papers=data.get("papers", []),
+            papers=papers,
             total_found=data.get("total_found", 0),
             search_time_seconds=0.0,
         )
@@ -38,7 +43,10 @@ def _load_scout_cache(queries: list[str]) -> KnowledgeCard | None:
         return None
 
 def _save_scout_cache(queries: list[str], card: KnowledgeCard) -> None:
-    """Save scout results to cache."""
+    """Save scout results to cache. Skips empty results to avoid caching failures."""
+    if not card.papers:
+        logger.debug("Scout cache: skipping save for empty results")
+        return
     try:
         CACHE_DIR.mkdir(parents=True, exist_ok=True)
         key = _cache_key(queries)
