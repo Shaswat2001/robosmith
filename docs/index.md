@@ -4,23 +4,45 @@
 
 # RoboSmith
 
-**Natural language → trained robot policy.**
+**From robotics problem to working policy — with minimal friction.**
 
-RoboSmith is an autonomous pipeline that takes a plain English task description and produces a trained reinforcement learning policy — handling environment selection, reward design, training, evaluation, and delivery with zero human intervention.
+RoboSmith is a robotics toolchain built around two complementary workflows. The first takes a plain English task description and produces a trained RL policy through a fully autonomous pipeline. The second helps you work with the existing robotics ecosystem — inspecting policies, datasets, and environments, diagnosing rollouts, and generating the adapter code to bridge incompatible artifacts.
 
-```bash
-robosmith run --task "Walk forward" --time-budget 5
-```
+Both workflows are built on the same foundation: compiled LangGraph state machines where every step is an explicit node, failures are handled by conditional routing, and the full pipeline state is persisted to disk so nothing is ever lost.
 
 ---
 
-## Why RoboSmith exists
+## The two workflows
 
-Training a robot policy today is a multistep, expert-driven process. You need to pick the right simulator, write a reward function (often the hardest part), choose an RL algorithm, tune hyperparameters, evaluate whether the policy actually does what you want, and iterate when it doesn't. Each of these steps requires specialized knowledge, and the whole process can take days or weeks of trial and error.
+### Train from scratch
 
-RoboSmith automates the entire workflow. You describe what you want in plain English, and it handles everything else — from finding the right simulation environment to delivering a trained policy checkpoint with a video of the robot performing the task.
+You describe what you want. RoboSmith handles everything else.
 
-The core insight is that large language models are remarkably good at writing reward functions when given proper context about the observation and action spaces. RoboSmith combines this capability with evolutionary search (inspired by [Eureka](https://eureka-research.github.io/)) and wraps it in a fully autonomous pipeline that can iterate on its own failures.
+```bash
+robosmith run --task "A Franka arm that picks up a red cube"
+```
+
+The pipeline runs through 7 stages — parsing your task, searching the literature for reward design insights, selecting the right simulation environment, evolving a reward function through LLM-powered search, training an RL policy, evaluating it behaviorally, and packaging the results. If evaluation fails, the pipeline analyzes what went wrong and iterates automatically.
+
+### Integrate existing work
+
+You have artifacts that don't fit together. RoboSmith helps you understand and bridge them.
+
+```bash
+robosmith inspect compat lerobot/smolvla_base lerobot/aloha_mobile_cabinet --fix
+```
+
+This workflow exists because not every robotics problem starts from scratch. Pre-trained policies, collected datasets, and existing environments are everywhere — but they rarely fit together out of the box. Different camera naming conventions, mismatched action dimensions, wrong image resolutions. The integration tooling gives you the primitives to understand and resolve these mismatches systematically.
+
+---
+
+## Why agentic architecture?
+
+Both workflows run as LangGraph `StateGraph` instances. This is a deliberate architectural choice.
+
+Every node has typed inputs and outputs. The full state — what each stage received, what it produced, what decision was made — is written to disk after every step. Failures are routed to recovery paths by conditional edges, not by unhandled exceptions. A reward function that crashes during evaluation gets an error score and the pipeline continues. A training run that stalls early triggers the decision agent rather than running to completion and wasting compute.
+
+The auto-integrate workflow is built from the same inspection and generation building blocks as the standalone `inspect` and `gen` commands. Adding a new workflow means composing a new graph from existing nodes — the infrastructure is shared.
 
 ---
 
@@ -34,59 +56,46 @@ flowchart LR
     D --> E[Reward Design]
     E --> F[Training]
     F --> G[Evaluation]
-    G -->|Pass| H[Delivery]
+    G -->|Accept| H[Delivery]
     G -->|Fail| E
 ```
 
-| Stage | What it does | Uses LLM? | Typical time |
-|-------|-------------|-----------|-------------|
-| **Intake** | Parses natural language into a structured task spec | Yes (fast model) | ~1s |
-| **Scout** | Searches Semantic Scholar for relevant research | No | 10–60s |
-| **Env Synthesis** | Matches the task to the best simulation environment | No | <1s |
-| **Reward Design** | Evolves reward functions using LLM + random rollouts | Yes (main model) | 30–120s |
-| **Training** | Trains an RL policy with the best reward function | No | 1–10 min |
-| **Evaluation** | Runs the policy and measures behavioral success | Yes (fast model) | 10–30s |
-| **Delivery** | Packages checkpoint, video, report, and reward code | No | 5–15s |
+| Stage | What it does | LLM? | Time |
+|-------|-------------|------|------|
+| **Intake** | Parses task → structured `TaskSpec` | Yes (fast) | ~1s |
+| **Scout** | Searches Semantic Scholar / ArXiv for reward insights | No | 10–60s |
+| **Env Synthesis** | Tag-matches task to best simulation environment | No | <1s |
+| **Reward Design** | Evolves reward functions via LLM + rollout evaluation | Yes (main) | 30–120s |
+| **Training** | Trains RL policy — algorithm and backend auto-selected | No | 1–10 min |
+| **Evaluation** | Measures behavioral success, not just reward value | Yes (fast) | 10–30s |
+| **Delivery** | Packages checkpoint, video, reward function, report | No | 5–15s |
 
 ---
 
-## Features
+## Integration tooling at a glance
 
-- **7-stage autonomous pipeline** — from natural language to a trained policy checkpoint with no manual steps
-- **Evolutionary reward design** — Eureka-style LLM-powered reward function evolution with multi-generation search
-- **5 training backends** — SB3, CleanRL, rl_games, imitation learning, offline RL, each pluggable through a common interface
-- **5 environment adapters** — Gymnasium/MuJoCo, Isaac Lab, LIBERO, ManiSkill, and custom MJCF/URDF, all discoverable at runtime
-- **30 pre-registered environments** — locomotion, manipulation, classic control, dexterous hands, and more
-- **Smart algorithm selection** — task-aware paradigm and algorithm choice based on robot type, action space, and available data
-- **Behavioral success detection** — measures whether the robot actually did the task, not whether the reward value is high
-- **Autonomous observation introspection** — 3-tier obs layout extraction (runtime, sample-based, LLM) with no hardcoded layouts
-- **LLM decision agent** — intelligent iteration decisions with actionable suggestions when evaluation fails
-- **Literature-informed reward design** — Scout stage feeds relevant paper abstracts into the reward generation prompt
-- **Full artifact delivery** — checkpoint, evolved reward function, evaluation report, rollout video, and human-readable summary
-- **Provider-agnostic LLM access** — Anthropic, OpenAI, Ollama, or any provider supported by LiteLLM
+| Command | What it tells you |
+|---------|------------------|
+| `robosmith inspect dataset <id>` | Cameras, action/state dims, episodes, storage format |
+| `robosmith inspect env <id>` | Obs/action spaces, episode structure, per-dim docs |
+| `robosmith inspect policy <id>` | Architecture, expected inputs/outputs, action head |
+| `robosmith inspect robot <path>` | Joints, DOF, end effector from URDF or MJCF |
+| `robosmith inspect compat <a> <b>` | All mismatches with severity and fix hints |
+| `robosmith inspect compat ... --fix` | Generates `PolicyAdapter` to resolve mismatches |
+| `robosmith diag trajectory <path>` | Success rate, action stats, failure clusters |
+| `robosmith diag compare <a> <b>` | Side-by-side delta between two rollouts |
+| `robosmith gen wrapper <policy> <target>` | Python adapter code (LLM or template-based) |
+| `robosmith auto integrate <policy> <target>` | Full inspect → compat → generate pipeline |
 
 ---
 
 ## Quick links
 
-- [Installation](getting-started/installation.md) — get RoboSmith running in 2 minutes
-- [Quick Start](getting-started/quickstart.md) — your first autonomous training run
+- [Installation](getting-started/installation.md) — get RoboSmith running in minutes
+- [Quick Start](getting-started/quickstart.md) — your first training run and first integration
 - [Configuration](getting-started/configuration.md) — CLI flags, YAML config, and environment variables
-- [Pipeline Overview](pipeline/overview.md) — how each stage works in detail
+- [Pipeline Overview](pipeline/overview.md) — how each stage works and why it exists
+- [Scout](pipeline/scout.md) — literature search backends (Semantic Scholar, ArXiv, both)
 - [Custom Trainers](extending/trainers.md) — add your own RL backend
 - [Custom Environments](extending/environments.md) — add your own simulation framework
-- [Custom Agents](extending/agents.md) — extend or replace LLM agents
-- [API Reference](api/config.md) — full API documentation for all modules
-- [Contributing](contributing.md) — development setup, testing, and code style
-
----
-
-## Who is this for?
-
-**Robotics researchers** who want to quickly prototype policies for new tasks without spending days on reward engineering.
-
-**RL practitioners** who want a batteries-included pipeline that handles the tedious parts (env setup, obs introspection, evaluation criteria) so they can focus on the research.
-
-**Engineers** who need to train robot policies but don't have deep RL expertise — RoboSmith makes the right algorithmic choices automatically.
-
-**Educators** who want to demonstrate the full RL pipeline without requiring students to set up complex toolchains.
+- [Contributing](contributing.md) — development setup and project structure

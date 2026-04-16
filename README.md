@@ -10,77 +10,31 @@
 
 ---
 
-RoboSmith is an autonomous pipeline that takes a plain English task description and produces a trained RL policy — handling environment selection, reward design, training, evaluation, and delivery with zero human intervention.
+RoboSmith is a robotics toolchain with two modes of operation.
+
+**Train from scratch** — describe a task in plain English, get a trained RL policy:
 
 ```bash
-pip install -e ".[sim,train,agent]"
-
-# Add your API key(s) to .env.local — RoboSmith auto-detects the provider
-echo 'ANTHROPIC_API_KEY=sk-ant-...' > .env.local
-
-robosmith run --task "Train a HalfCheetah to run as fast as possible"
+robosmith run --task "A Franka arm that picks up a red cube"
 ```
 
-RoboSmith selects the right simulation, designs a reward function using LLM-powered evolutionary search, trains a policy, evaluates it, and iterates if needed — inspired by [Eureka](https://eureka-research.github.io/), [DrEureka](https://eureka-research.github.io/dr-eureka/), and [ARCHIE](https://arxiv.org/abs/2503.04280).
+**Integrate existing work** — inspect policies and datasets, find mismatches, generate adapter code:
 
-## Why RoboSmith?
-
-Training a robot policy today requires deep RL expertise: picking the right simulator, shaping reward functions by hand, selecting algorithms, tuning hyperparameters, and iterating through failed experiments. RoboSmith collapses the entire workflow into a single command.
-
-**What makes it different:** Existing tools like Eureka automate reward design, but none handle the full loop. RoboSmith integrates environment discovery, literature search, env introspection, reward evolution, training, behavioral evaluation, and artifact delivery into a single autonomous pipeline that iterates on its own failures.
-
-## How It Works
-
-The pipeline is built as a [LangGraph](https://langchain-ai.github.io/langgraph/) `StateGraph` — each stage is a node with explicit data contracts, conditional routing, and a retry loop for failed evaluations.
-
-```
-Natural language task
-        │
-        ▼
-┌─────────────┐
-│   Intake    │  LLM parses task → structured TaskSpec
-└──────┬──────┘
-       │
-       ▼
-┌─────────────┐
-│    Scout    │  Literature search (Semantic Scholar / ArXiv / both)
-└──────┬──────┘
-       │
-       ▼
-┌──────────────────┐
-│  Env Synthesis   │  Tag-matching → best simulation environment
-└──────┬───────────┘
-       │
-       ▼
-┌──────────────────┐
-│  Inspect Env     │  Exact obs/action dims, actuator names, dimension docs
-└──────┬───────────┘
-       │
-       ▼
-┌──────────────────┐
-│  Reward Design   │  Eureka-style: generate → evaluate → evolve (N gens)
-└──────┬───────────┘
-       │
-       ▼
-┌──────────────────┐
-│    Training      │  SB3 / CleanRL / rl_games — algorithm auto-selected
-└──────┬───────────┘
-       │
-       ▼
-┌──────────────────┐
-│   Evaluation     │  Behavioral success metrics + LLM decision agent
-└──────┬───────────┘
-       │
-       ├── accept ──────────────────────────────────┐
-       │                                            │
-       └── refine_reward / switch_algo ──▶ [retry]  │
-                                                    ▼
-                                          ┌──────────────────┐
-                                          │    Delivery      │  artifacts + video + report
-                                          └──────────────────┘
+```bash
+robosmith inspect compat lerobot/smolvla_base lerobot/aloha_mobile_cabinet --fix
 ```
 
-Up to 3 iterations by default. Each retry feeds the training curve analysis back into reward design so the LLM knows what went wrong.
+Both modes are built on the same agentic foundation: LangGraph state machines where every step is an explicit node, failures are routed and retried automatically, and the full pipeline state is persisted to disk after every node so nothing is lost.
+
+---
+
+## Why two modes?
+
+The original vision for RoboSmith was purely about training from scratch — describe a task, get a policy. That pipeline still exists and works well. But in practice, robotics teams spend as much time *integrating* existing work as they do training new things. You find a policy on HuggingFace that's close to what you need, but it was trained on a dataset with different camera names, a different action dimension, or images at the wrong resolution. Before you can evaluate or fine-tune it, you need to understand exactly what the mismatch is and how to fix it.
+
+The `inspect`, `diag`, `gen`, and `auto` commands address this directly. They're not add-ons — they're a natural extension of the same mission: remove friction from robot policy development.
+
+---
 
 ## Installation
 
@@ -93,251 +47,330 @@ pip install -e ".[sim,train,agent]"
 Install extras based on what you need:
 
 ```bash
-pip install -e ".[sim]"         # MuJoCo + Gymnasium
-pip install -e ".[train]"       # Stable Baselines3 + PyTorch
-pip install -e ".[agent]"       # LangGraph + LangChain (agentic pipeline)
-pip install -e ".[robotics]"    # Gymnasium-Robotics (Fetch, Shadow Hand)
-pip install -e ".[video]"       # Video recording
-pip install -e ".[all]"         # Everything
+pip install -e ".[sim]"       # MuJoCo + Gymnasium
+pip install -e ".[train]"     # Stable Baselines3 + PyTorch
+pip install -e ".[agent]"     # LangGraph (required for run and auto)
+pip install -e ".[robotics]"  # Gymnasium-Robotics (Fetch, Shadow Hand)
+pip install -e ".[video]"     # Video recording
+pip install -e ".[all]"       # Everything
 ```
 
-Check what's installed:
+Check what's installed and what's missing:
 
 ```bash
 robosmith deps
 ```
 
-## API Keys — `.env.local`
+## API Keys
 
-RoboSmith reads `.env.local` (then `.env`) on startup and auto-detects which provider to use based on which keys are present. Create `.env.local` in your project directory:
+RoboSmith reads `.env.local` on startup and auto-detects the LLM provider from whichever key is present. Create `.env.local` in your project directory:
 
 ```bash
-# Anthropic (Claude) — recommended
-ANTHROPIC_API_KEY=sk-ant-...
-
-# OpenAI (GPT-4o)
-OPENAI_API_KEY=sk-...
-
-# Google (Gemini)
-GEMINI_API_KEY=AIza...
-
-# Groq (Llama, fast + free tier)
-GROQ_API_KEY=gsk_...
-
-# OpenRouter (multi-provider gateway)
-OPENROUTER_API_KEY=sk-or-...
-
-# Optional: Semantic Scholar (higher rate limit)
-S2_API_KEY=...
+ANTHROPIC_API_KEY=sk-ant-...      # Anthropic (Claude) — recommended
+OPENAI_API_KEY=sk-...             # OpenAI
+GEMINI_API_KEY=AIza...            # Google Gemini
+GROQ_API_KEY=gsk_...              # Groq (fast + generous free tier)
+OPENROUTER_API_KEY=sk-or-...      # OpenRouter (multi-provider gateway)
+S2_API_KEY=...                    # Optional: higher Semantic Scholar rate limit
 ```
 
 Provider auto-detection priority: Anthropic → OpenAI → Gemini → Groq → OpenRouter.
 
-You can also set the key in your shell environment — `.env.local` only sets keys that aren't already set.
+The `inspect`, `diag`, and `gen --no-llm` commands work without any API key.
 
-## Quick Start
+---
+
+## Training Pipeline (`robosmith run`)
+
+The pipeline runs as a compiled LangGraph `StateGraph`. Each stage is a node with typed inputs and outputs. Conditional edges handle failure routing — when evaluation fails, the graph routes back to reward design with a plain-English analysis of what went wrong, not a blank restart.
+
+```
+Natural language task
+        │
+        ▼
+┌─────────────┐
+│   Intake    │  LLM parses task → structured TaskSpec
+└──────┬──────┘
+       │
+       ▼
+┌─────────────┐
+│    Scout    │  Literature search → reward design context
+└──────┬──────┘
+       │
+       ▼
+┌──────────────────┐
+│  Env Synthesis   │  Tag-matching → best simulation environment
+└──────┬───────────┘
+       │
+       ▼
+┌──────────────────┐
+│  Reward Design   │  Eureka-style: generate → evaluate → evolve
+└──────┬───────────┘
+       │
+       ▼
+┌──────────────────┐
+│    Training      │  SB3 / CleanRL / rl_games — auto-selected
+└──────┬───────────┘
+       │
+       ▼
+┌──────────────────┐
+│   Evaluation     │  Behavioral success + LLM decision agent
+└──────┬───────────┘
+       │
+       ├── accept ─────────────────────────────┐
+       │                                       │
+       └── refine / switch_algo ──▶ [retry]    ▼
+                                     ┌──────────────────┐
+                                     │    Delivery      │  checkpoint + video + report
+                                     └──────────────────┘
+```
+
+Up to 3 iterations by default. Each retry feeds the training curve analysis back into reward design so the LLM knows what went wrong.
+
+### Quick examples
 
 ```bash
 # Basic run — provider auto-detected from .env.local
 robosmith run --task "Train a HalfCheetah to run as fast as possible"
 
-# Choose LLM provider or exact model
+# Choose your LLM
 robosmith run --task "..." --llm openai
 robosmith run --task "..." --llm gemini
-robosmith run --task "..." --llm groq
-robosmith run --task "..." --llm openai/gpt-4o-mini   # exact model string
+robosmith run --task "..." --llm openai/gpt-4o-mini   # exact LiteLLM model string
 
-# Choose literature search backend
-robosmith run --task "..." --scout arxiv              # ArXiv only (no key needed)
+# Choose the literature search backend
+robosmith run --task "..." --scout arxiv              # recent preprints, no key needed
 robosmith run --task "..." --scout both               # Semantic Scholar + ArXiv merged
 robosmith run --task "..." --scout semantic_scholar   # default
 
 # Control training
 robosmith run --task "..." --algo ppo --time-budget 30
 robosmith run --task "..." --backend cleanrl
-robosmith run --task "..." --candidates 6             # more reward candidates per gen
+robosmith run --task "..." --candidates 6
 
-# Browse environments and backends
-robosmith envs
-robosmith envs --robot quadruped --tags "locomotion,walk"
-robosmith trainers
-
-# Skip stages
-robosmith run --task "..." --skip scout
-
-# Dry run (parse + plan only, no training)
+# Dry run — parse and plan only, no training
 robosmith run --task "..." --dry-run
 
-# Verbose — terminal shows one-liners, full debug log in robosmith_runs/latest.log
-robosmith run --task "..." --verbose
+# Skip literature search (saves 10–60 seconds)
+robosmith run --task "..." --skip scout
 
 # Use a config file
 robosmith run --task "..." --config robosmith.yaml
 ```
 
-## CLI Reference
-
-| Flag | Default | Description |
-|------|---------|-------------|
-| `--task` / `-t` | required | Natural language task description |
-| `--llm` / `-L` | auto | Provider name (`anthropic`, `openai`, `gemini`, `groq`) or full model string (`openai/gpt-4o`) |
-| `--scout` | `semantic_scholar` | Literature search backend: `semantic_scholar`, `arxiv`, `both` |
-| `--algo` / `-a` | `auto` | RL algorithm: `ppo`, `sac`, `td3`, `auto` |
-| `--time-budget` | `60` | Max training time in minutes |
-| `--candidates` / `-c` | `4` | Reward function candidates per generation |
-| `--backend` / `-b` | auto | Training backend: `sb3`, `cleanrl` |
-| `--robot` / `-r` | auto | Robot type: `arm`, `quadruped`, `biped`, `dexterous_hand`, `mobile_base` |
-| `--num-envs` | `1024` | Parallel simulation environments |
-| `--skip` / `-s` | — | Stages to skip: `scout`, `intake`, `delivery` |
-| `--push-to-hub` | — | HuggingFace repo to push artifacts to |
-| `--dry-run` | — | Parse and plan only, no training |
-| `--verbose` / `-v` | — | DEBUG-level logs to `robosmith_runs/latest.log` |
-| `--config` | — | Path to `robosmith.yaml` |
-
-## What Gets Produced
+### What gets produced
 
 Every run creates a timestamped directory in `robosmith_runs/`:
 
 ```
 robosmith_runs/run_20260415_182058_a64796/
-├── reward_function.py     # The evolved reward function (Python, runnable)
+├── reward_function.py     # The evolved reward function (runnable Python)
 ├── policy_ppo.zip         # Trained model checkpoint
-├── eval_report.json       # Evaluation metrics (success rate, reward, decision)
+├── eval_report.json       # Success rate, mean reward, decision
 ├── policy_rollout.mp4     # Video of the trained policy
 ├── report.md              # Human-readable run summary
 ├── run_state.json         # Full pipeline state (for debugging)
 └── task_spec.json         # Parsed task specification
 ```
 
-Logs are always written to `robosmith_runs/latest.log`. Pass `--verbose` for DEBUG-level detail.
+### `robosmith run` flags
 
-## LLM Providers
+| Flag | Default | Description |
+|------|---------|-------------|
+| `--task` / `-t` | required | Natural language task description |
+| `--llm` / `-L` | auto | Provider (`anthropic`, `openai`, `gemini`, `groq`) or full model string |
+| `--scout` | `semantic_scholar` | Literature backend: `semantic_scholar`, `arxiv`, `both` |
+| `--algo` / `-a` | `auto` | RL algorithm: `ppo`, `sac`, `td3` |
+| `--time-budget` | `60` | Max training time in minutes |
+| `--candidates` / `-c` | `4` | Reward candidates per generation |
+| `--backend` / `-b` | auto | Training backend: `sb3`, `cleanrl` |
+| `--robot` / `-r` | auto | Robot type: `arm`, `quadruped`, `biped`, `dexterous_hand`, `mobile_base` |
+| `--num-envs` | `1024` | Parallel simulation environments |
+| `--skip` / `-s` | — | Stages to skip: `scout`, `intake`, `delivery` |
+| `--push-to-hub` | — | HuggingFace repo to push artifacts to |
+| `--dry-run` | — | Parse and plan only, no training |
+| `--verbose` / `-v` | — | Debug logs to `robosmith_runs/latest.log` |
+| `--config` | — | Path to `robosmith.yaml` |
 
-RoboSmith uses [LiteLLM](https://litellm.ai/) under the hood, so any provider it supports works.
+---
 
-| Provider | Key | Default models |
-|----------|-----|----------------|
-| **Anthropic** | `ANTHROPIC_API_KEY` | claude-sonnet-4-6 / claude-haiku-4-5 |
-| **OpenAI** | `OPENAI_API_KEY` | gpt-4o / gpt-4o-mini |
-| **Gemini** | `GEMINI_API_KEY` | gemini-2.0-flash |
-| **Groq** | `GROQ_API_KEY` | llama-3.3-70b-versatile / llama-3.1-8b-instant |
-| **OpenRouter** | `OPENROUTER_API_KEY` | claude-sonnet-4-6 (via OR) |
-| **Ollama** | _(local)_ | llama3 |
+## Integration Tooling
 
-To use a custom model, pass the full LiteLLM model string:
+### Why this exists
+
+Not every robotics workflow starts from scratch. You might have a pre-trained policy from HuggingFace, a demonstration dataset collected on your robot, or an existing simulation environment — and the challenge isn't training but *connecting* these pieces. A policy trained on one dataset won't work out-of-the-box on another if the camera names, action dimensions, or image sizes differ.
+
+The integration tooling gives you four primitives:
+
+| Command | What it answers |
+|---------|----------------|
+| `inspect` | What exactly is this artifact? What are its dimensions, schemas, and interfaces? |
+| `diag` | How did this policy actually perform in these rollouts? Where did it fail? |
+| `gen` | Give me Python code that bridges these two mismatched artifacts |
+| `auto` | Run inspect + gen end-to-end as a single agentic workflow |
+
+### `robosmith inspect`
+
+Inspect any robotics artifact and understand its structure before using it.
 
 ```bash
-robosmith run --task "..." --llm "openrouter/meta-llama/llama-3.3-70b-instruct"
+# Dataset — cameras, action/state dims, episodes, tasks, storage format
+robosmith inspect dataset lerobot/aloha_mobile_cabinet
+robosmith inspect dataset lerobot/aloha_mobile_cabinet --schema   # column-level stats
+robosmith inspect dataset lerobot/aloha_mobile_cabinet --quality  # NaN and constant-column checks
+robosmith inspect dataset lerobot/aloha_mobile_cabinet --json
+
+# Simulation environment — obs/action spaces, episode structure, render modes
+robosmith inspect env Ant-v5
+robosmith inspect env Ant-v5 --obs-docs   # per-dimension descriptions
+robosmith inspect env Ant-v5 --sample     # run one step, dump actual obs/reward/info
+
+# Policy — architecture, expected inputs/outputs, action head
+robosmith inspect policy lerobot/smolvla_base
+robosmith inspect policy lerobot/smolvla_base --config       # full training config
+robosmith inspect policy lerobot/smolvla_base --requirements # package requirements
+
+# Robot description file (URDF or MJCF)
+robosmith inspect robot path/to/robot.urdf
+
+# Compatibility check — finds mismatches between any two artifacts
+robosmith inspect compat lerobot/smolvla_base lerobot/aloha_mobile_cabinet
+robosmith inspect compat lerobot/smolvla_base lerobot/aloha_mobile_cabinet --fix
 ```
 
-Or set `ROBOSMITH_MODEL` in your environment / `.env.local`:
+The `--fix` flag generates a `PolicyAdapter` class that resolves all detected mismatches — camera key remapping, action dimension adaptation, image resizing. No API key required.
+
+### `robosmith diag`
+
+Analyze trajectory rollouts to understand policy performance beyond just reward numbers.
 
 ```bash
-ROBOSMITH_MODEL=groq/mixtral-8x7b-32768
+# Single trajectory — success rate, episode lengths, action stats, failure clusters
+robosmith diag trajectory path/to/rollout.hdf5
+robosmith diag trajectory lerobot/aloha_mobile_cabinet   # Hub repo_id also works
+robosmith diag trajectory path/to/rollout.hdf5 --json
+
+# Side-by-side comparison — what changed between two rollouts?
+robosmith diag compare rollout_a.hdf5 rollout_b.hdf5
+robosmith diag compare rollout_a.hdf5 rollout_b.hdf5 --json
 ```
+
+### `robosmith gen`
+
+Generate Python adapter code to bridge mismatches between a policy and a target.
+
+```bash
+# Uses LLM by default for smarter, context-aware code
+robosmith gen wrapper lerobot/smolvla_base lerobot/aloha_mobile_cabinet
+
+# Template-based generation — no API key needed
+robosmith gen wrapper lerobot/smolvla_base lerobot/aloha_mobile_cabinet --no-llm
+
+# Write to file
+robosmith gen wrapper lerobot/smolvla_base lerobot/aloha_mobile_cabinet -o adapter.py
+```
+
+### `robosmith auto`
+
+Run the full integration workflow — inspect both artifacts, check compatibility, generate adapter — as a single agentic pipeline.
+
+```bash
+robosmith auto integrate lerobot/smolvla_base lerobot/aloha_mobile_cabinet
+robosmith auto integrate lerobot/smolvla_base lerobot/aloha_mobile_cabinet --verbose
+robosmith auto integrate lerobot/smolvla_base lerobot/aloha_mobile_cabinet -o adapter.py
+```
+
+### `robosmith envs`
+
+Browse and filter the 30 pre-registered simulation environments. All filters use case-insensitive substring matching.
+
+```bash
+robosmith envs                        # all environments
+robosmith envs --framework gym        # matches "gymnasium"
+robosmith envs --framework isaac      # matches "isaac_lab"
+robosmith envs --robot arm
+robosmith envs --env-type tabletop
+robosmith envs --tags "pick place"
+robosmith envs --framework bogus      # clear error + available options listed
+```
+
+---
 
 ## Architecture
 
-### Agentic Pipeline (LangGraph)
+### LangGraph state machines
 
-The pipeline runs as a compiled `StateGraph`. Each node reads from and writes to a shared `PipelineState` TypedDict. Conditional edges handle failure routing and the reward-refinement retry loop.
+Every workflow in RoboSmith runs as a compiled LangGraph `StateGraph`. Each stage is a **node** with typed inputs and outputs. Conditional **edges** handle routing: failures go to recovery, evaluation failures go back to reward design with feedback. The full `PipelineState` is written to disk after every node.
 
-```
-PipelineState flows through:
-  intake → scout → env_synthesis → inspect_env
-       → reward_design → training → evaluation
-       → [accept: delivery] [retry: reward_design]
-```
+This architecture makes the system transparent and debuggable. You can inspect `run_state.json` after any run to see exactly what every node received and produced. You can resume a failed run from the last successful node. And the conditional routing means the system adapts to failures intelligently rather than failing with a traceback.
 
-The `inspect_env` node is what makes reward design accurate — it extracts exact observation dimensions, actuator names, and per-dimension documentation from the environment before the LLM writes any reward code.
+### Training backends
 
-### Training Backends
-
-| Backend | Algorithms | When to use |
-|---------|-----------|-------------|
-| **SB3** (default) | PPO, SAC, TD3, A2C, DQN | Standard training |
+| Backend | Algorithms | When it's used |
+|---------|-----------|----------------|
+| **SB3** (default) | PPO, SAC, TD3, A2C, DQN | Most tasks |
 | **CleanRL** | PPO | Pure PyTorch, no SB3 dependency |
-| **rl_games** | PPO | GPU-parallel (Isaac Lab) |
+| **rl_games** | PPO | GPU-parallel Isaac Lab training |
+| **IL** | BC, DAgger | Tasks with demonstration data |
+| **Offline RL** | TD3+BC, CQL, IQL | Tasks with static datasets |
 
-Algorithm auto-selection:
+### LLM providers
 
+RoboSmith uses [LiteLLM](https://litellm.ai/) for all LLM calls.
+
+| Provider | Key | Models used |
+|----------|-----|-------------|
+| **Anthropic** | `ANTHROPIC_API_KEY` | claude-sonnet-4-6 / claude-haiku-4-5 |
+| **OpenAI** | `OPENAI_API_KEY` | gpt-4o / gpt-4o-mini |
+| **Gemini** | `GEMINI_API_KEY` | gemini-2.0-flash |
+| **Groq** | `GROQ_API_KEY` | llama-3.3-70b / llama-3.1-8b |
+| **OpenRouter** | `OPENROUTER_API_KEY` | any model via OR |
+
+---
+
+## Python API
+
+```python
+from robosmith import TaskSpec, ForgeConfig
+from robosmith.agent.graphs.run import run_pipeline
+
+spec = TaskSpec(task_description="Walk forward", robot_type="quadruped")
+config = ForgeConfig(max_iterations=2, verbose=True)
+
+result = run_pipeline(spec, config)
+
+print(f"Success rate: {result['eval_report'].success_rate:.0%}")
+print(f"Run ID: {result['run_id']}")
+print(f"Artifacts: {result['artifacts_dir']}")
 ```
-discrete actions     → PPO
-locomotion tags      → PPO
-dexterous hand tags  → TD3
-manipulation tags    → SAC
-default              → SAC
-```
 
-### Environment Adapters
-
-| Adapter | Framework | Environments |
-|---------|-----------|-------------|
-| **Gymnasium** (default) | gymnasium, MuJoCo | Ant, Humanoid, HalfCheetah, Fetch, Shadow Hand, ... |
-| **Isaac Lab** | NVIDIA Isaac Lab | GPU-parallel locomotion and manipulation |
-| **LIBERO** | LIBERO benchmark | 130 manipulation tasks |
-| **ManiSkill** | SAPIEN | Pick, push, articulated objects |
-
-### Literature Scout
-
-The scout stage runs before reward design to pull relevant prior work into the LLM context.
-
-| Source | Key required | Notes |
-|--------|-------------|-------|
-| **Semantic Scholar** | No (optional `S2_API_KEY` for higher rate limits) | Citation counts, 200M+ papers |
-| **ArXiv** | No | Recent preprints, cs.LG + cs.RO + cs.AI, no citation counts |
-| **Both** | No | Merged + deduplicated, S2 papers rank first |
-
-Scout results are cached for 24 hours in `~/.cache/robosmith/scout/`.
+---
 
 ## Configuration
 
 Create `robosmith.yaml` in your project directory for persistent settings:
 
 ```yaml
-# LLM — provider and models (overridden by --llm flag or ROBOSMITH_MODEL env var)
 llm:
   provider: anthropic
   model: anthropic/claude-sonnet-4-6
   fast_model: anthropic/claude-haiku-4-5-20251001
   temperature: 0.7
 
-# Reward search
 reward_search:
-  candidates_per_iteration: 4
+  candidates_per_iteration: 4   # reward candidates generated per generation
   num_iterations: 3
   eval_time_minutes: 2.0
 
-# Training
-training_backend: sb3        # sb3, cleanrl
-max_iterations: 3            # outer reward refinement loop
-
-# Scout
-scout_source: semantic_scholar   # semantic_scholar, arxiv, both
-
-# Paths
+training_backend: sb3
+max_iterations: 3
+scout_source: semantic_scholar   # semantic_scholar | arxiv | both
 runs_dir: ./robosmith_runs
 ```
 
-## Key Design Decisions
+Full configuration reference: [docs/getting-started/configuration.md](docs/getting-started/configuration.md)
 
-**Reward design is evolutionary.** RoboSmith generates multiple reward function candidates per generation, evaluates them with random rollouts, and evolves the best one — exactly like Eureka. The LLM receives full observation space documentation (dimension names, types, bounds) so it knows what `obs[13]` means for each environment.
-
-**Observation introspection is upstream of reward design.** The `inspect_env` node runs before reward design and extracts exact obs/action specs. This means the reward LLM never has to guess observation layout — it gets the real structure from the environment.
-
-**Success is behavioral, not reward-based.** The evaluation stage measures whether the agent survived and performed the task (episode length, success signal), not whether the reward value is high. This prevents reward hacking from fooling the pipeline.
-
-**Everything is a plugin.** Trainers and environment adapters are lazy-loaded at runtime. The core pipeline doesn't import SB3, PyTorch, or MuJoCo — it discovers what's installed when it runs.
-
-**Provider-agnostic LLM.** LiteLLM routes to any provider. Put your key in `.env.local` and the provider is auto-detected — no code changes needed to switch from Claude to GPT-4o.
-
-## Requirements
-
-- Python 3.11+
-- An LLM API key in `.env.local` or shell environment
-- MuJoCo (for simulation)
-- PyTorch + Stable Baselines3 (for training)
-- GPU recommended but not required
+---
 
 ## Prior Art
 
@@ -349,16 +382,12 @@ RoboSmith builds on ideas from:
 - [Isaac Lab](https://developer.nvidia.com/isaac/lab) — GPU-accelerated robot simulation
 - [Stable Baselines3](https://stable-baselines3.readthedocs.io/) — Reliable RL implementations
 
-The key difference: none of these do the full loop. RoboSmith integrates environment synthesis, reward design, training, evaluation, and delivery into a single autonomous pipeline.
-
-## Contributing
-
-See [CONTRIBUTING](https://shaswat2001.github.io/robosmith/contributing/) for development setup, testing, and code style guidelines.
-
-## License
-
-MIT
+The key difference from all of these: none handle the full loop end-to-end, and none include tooling for integrating with the existing robotics ecosystem.
 
 ## Documentation
 
 Full documentation: [shaswat2001.github.io/robosmith](https://shaswat2001.github.io/robosmith/)
+
+## License
+
+MIT
