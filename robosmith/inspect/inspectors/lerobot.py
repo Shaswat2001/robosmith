@@ -13,7 +13,7 @@ import logging
 import numpy as np
 from typing import Any
 import pyarrow.parquet as pq
-from huggingface_hub import hf_hub_download, list_repo_tree
+from huggingface_hub import hf_hub_download, list_repo_tree, RepoFile
 
 from robosmith.inspect.models import (
     CameraSpec,
@@ -114,8 +114,13 @@ class LeRobotInspector(BaseDatasetInspector):
         """Get detailed column stats by reading a parquet shard."""
         try:
             
-            # Find the first parquet data file
-            files = [f.rfilename for f in list_repo_tree(identifier, repo_type="dataset")]
+            # Find the first parquet data file (list_repo_tree returns both
+            # RepoFile and RepoFolder objects; only RepoFile has rfilename)
+            files = [
+                f.rfilename
+                for f in list_repo_tree(identifier, repo_type="dataset", recursive=True)
+                if isinstance(f, RepoFile)
+            ]
             parquet_files = [
                 f for f in files
                 if f.startswith("data/") and f.endswith(".parquet")

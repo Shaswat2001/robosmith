@@ -145,7 +145,7 @@ def generate_wrapper_node(state: IntegrateState) -> dict:
         code = generate_wrapper(policy_id, target_id, use_llm=False)
         return {
             "wrapper_code": code,
-            "output_files": ["adapter.py"],
+            "output_files": [],
             "steps_log": [f"✓ Generated wrapper adapter ({len(code)} chars)"],
         }
     except Exception as e:
@@ -172,13 +172,13 @@ def finalize_node(state: IntegrateState) -> dict:
 
     parts = []
     if state.get("wrapper_code"):
-        parts.append("adapter.py")
+        parts.append("wrapper ready")
     if state.get("warnings"):
         parts.append(f"{len(state['warnings'])} warnings to review")
 
     return {
         "status": "success",
-        "status_message": f"Integration complete. Generated: {', '.join(parts)}",
+        "status_message": f"Integration complete. {', '.join(parts)}",
         "steps_log": [f"✓ Done: {', '.join(parts)}"],
     }
 

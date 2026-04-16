@@ -181,5 +181,12 @@ def inspect_compat_cmd(
         format_compat(result)
 
     if fix and not result.compatible:
-        console.print("\n[yellow]--fix flag: generating wrapper...[/yellow]")
-        console.print("[dim]gen wrapper not yet implemented. Coming in Phase 4.[/dim]")
+        from rich.syntax import Syntax
+        from robosmith.generators.gen_wrapper import generate_wrapper
+        console.print("\n[yellow]Generating adapter wrapper...[/yellow]")
+        try:
+            code = generate_wrapper(artifact_a, artifact_b, use_llm=False)
+            console.print("[bold]Generated adapter[/bold] [dim](use robosmith gen wrapper ... -o <file> to save)[/dim]")
+            console.print(Syntax(code, "python", theme="monokai", line_numbers=True))
+        except Exception as e:
+            console.print(f"[red]Wrapper generation failed:[/red] {e}")
