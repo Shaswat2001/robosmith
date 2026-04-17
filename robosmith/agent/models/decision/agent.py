@@ -11,7 +11,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any
 
-from loguru import logger
+from robosmith._logging import logger
 
 from .prompt import DECISION_SYSTEM_PROMPT
 from robosmith.config import Decision, LLMConfig

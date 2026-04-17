@@ -118,7 +118,7 @@ select = ["E", "F", "I", "N", "UP", "B", "SIM", "RUF"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-addopts = "-v --tb=short"
+addopts = "-v --tb=short -p no:hydra_pytest"
 
 [tool.mypy]
 python_version = "3.11"

@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import time
 from pathlib import Path
-from loguru import logger
+from robosmith._logging import logger
 
 from robosmith.config import RunState, TaskSpec
 from robosmith.stages.evaluation import EvalReport
@@ -101,7 +101,7 @@ def write_report_card(
         # Check if video was recorded
         video_path = Path(state.artifacts_dir) / "policy_rollout.mp4" if state.artifacts_dir else None
         if video_path and video_path.exists():
-            lines.append(f"- **Policy video:** `policy_rollout.mp4`")
+            lines.append("- **Policy video:** `policy_rollout.mp4`")
         lines.append("")
 
     # Reward function

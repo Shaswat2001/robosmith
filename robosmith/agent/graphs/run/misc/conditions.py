@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from loguru import logger
+from robosmith._logging import logger
 
 from robosmith.agent.state import PipelineState
 from robosmith.config import Decision, ForgeConfig

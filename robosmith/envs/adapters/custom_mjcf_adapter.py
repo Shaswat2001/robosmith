@@ -10,10 +10,11 @@ environments on the fly.
 
 from __future__ import annotations
 
+import importlib.util
 import numpy as np
 from typing import Any
 from pathlib import Path
-from loguru import logger
+from robosmith._logging import logger
 
 from robosmith.envs.adapters import EnvAdapter, EnvConfig
 
@@ -44,9 +45,7 @@ class CustomMJCFAdapter(EnvAdapter):
         if not asset_path.exists():
             raise FileNotFoundError(f"Asset file not found: {asset_path}")
 
-        try:
-            import mujoco
-        except ImportError:
+        if importlib.util.find_spec("mujoco") is None:
             raise ImportError("MuJoCo is required: pip install mujoco")
 
         logger.info(f"Loading custom model from: {asset_path}")

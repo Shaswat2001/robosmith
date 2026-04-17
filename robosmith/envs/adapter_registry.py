@@ -8,7 +8,7 @@ to the right adapter based on framework/env_id.
 from __future__ import annotations
 
 from typing import Any
-from loguru import logger
+from robosmith._logging import logger
 
 from robosmith.envs.registry import EnvEntry
 from robosmith.envs.adapters import EnvAdapter, EnvConfig

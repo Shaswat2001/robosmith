@@ -8,7 +8,7 @@ import yaml
 import typer
 import logging
 from pathlib import Path
-from loguru import logger
+from robosmith._logging import logger
 from typing import Optional
 from rich.table import Table
 from rich.console import Console

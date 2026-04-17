@@ -21,7 +21,7 @@ from langgraph.graph import StateGraph, END
 from robosmith.agent.state import IntegrateState
 from robosmith.inspect.compat import check_compatibility
 from robosmith.generators.gen_wrapper import generate_wrapper
-from robosmith.inspect.dispatch import inspect_policy, inspect_dataset, inspect_env, inspect_robot
+from robosmith.inspect.dispatch import inspect_dataset, inspect_env, inspect_policy
 
 def inspect_policy_node(state: IntegrateState) -> dict:
     """Inspect the policy to get its expected inputs/outputs."""

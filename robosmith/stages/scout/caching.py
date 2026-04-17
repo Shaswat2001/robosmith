@@ -4,7 +4,7 @@ from __future__ import annotations
 import time
 import json
 import hashlib
-from loguru import logger
+from robosmith._logging import logger
 from .utils import CACHE_DIR, CACHE_TTL_HOURS, KnowledgeCard
 
 def _cache_key(queries: list[str]) -> str:

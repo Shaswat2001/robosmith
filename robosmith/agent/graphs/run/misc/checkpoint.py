@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 from typing import Callable
-from loguru import logger
+from robosmith._logging import logger
 
 from robosmith.agent.state import PipelineState
 
@@ -109,7 +109,7 @@ def _restore_state_from_checkpoint(cp: dict) -> dict:
 
     er_data = state.get("eval_report")
     if isinstance(er_data, dict) and er_data.get("_type") == "EvalReport":
-        from robosmith.stages.evaluation.utils import EvalReport, EpisodeResult
+        from robosmith.stages.evaluation.utils import EvalReport
         from robosmith.config import Decision
         try:
             decision = Decision(er_data.get("decision", "refine_reward"))

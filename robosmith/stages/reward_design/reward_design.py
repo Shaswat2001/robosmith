@@ -12,8 +12,9 @@ The evolutionary loop:
 from __future__ import annotations
 
 import os
+import logging
 import numpy as np
-from loguru import logger
+from robosmith._logging import logger
 from concurrent.futures import ProcessPoolExecutor, as_completed
 
 from robosmith.agent.models.reward import RewardAgent, RewardCandidate
@@ -350,6 +351,16 @@ def evaluate_candidate(
         error_message="; ".join(errors[:3]) if errors else "",
     )
 
+def _quiet_worker_logging() -> None:
+    """Silence default process-local log sinks in reward-eval workers."""
+    try:
+        logger.remove()
+    except Exception:
+        pass
+
+    logging.getLogger().setLevel(logging.CRITICAL)
+    logging.getLogger("robosmith").setLevel(logging.CRITICAL)
+
 def _evaluate_candidates_parallel(
     candidates: list[RewardCandidate],
     env_entry: EnvEntry,
@@ -372,7 +383,10 @@ def _evaluate_candidates_parallel(
     results_by_id: dict[int, EvalResult] = {}
 
     try:
-        with ProcessPoolExecutor(max_workers=max_workers) as pool:
+        with ProcessPoolExecutor(
+            max_workers=max_workers,
+            initializer=_quiet_worker_logging,
+        ) as pool:
             future_to_candidate = {
                 pool.submit(evaluate_candidate, c, env_entry, num_episodes): c
                 for c in candidates
@@ -467,6 +481,8 @@ def run_reward_design(
     all_candidates: list[RewardCandidate] = []
     all_eval_results: list[EvalResult] = []
     global_best: RewardCandidate | None = None
+    base_context = literature_context
+    last_eval_results: list[EvalResult] = []
     _gens_without_improvement = 0
 
     for gen in range(num_iterations):
@@ -476,7 +492,7 @@ def run_reward_design(
         if gen == 0:
             # First generation: generate from scratch
             # Include literature context + training reflection from previous outer iteration
-            combined_context = literature_context
+            combined_context = base_context
             if training_reflection:
                 combined_context = (
                     (combined_context + "\n\n" if combined_context else "")
@@ -495,7 +511,11 @@ def run_reward_design(
             # If no global best yet (all previous candidates errored), regenerate from scratch
             if global_best is None:
                 # Collect error messages from failed candidates to help the LLM
-                error_msgs = [r.error_message for r in gen_eval_results if r.had_errors and r.error_message]
+                error_msgs = [
+                    r.error_message
+                    for r in last_eval_results
+                    if r.had_errors and r.error_message
+                ]
                 error_context = ""
                 if error_msgs:
                     unique_errors = list(set(e[:100] for e in error_msgs))[:3]
@@ -511,7 +531,7 @@ def run_reward_design(
                     obs_space_info=obs_info + error_context,
                     action_space_info=act_info,
                     num_candidates=num_candidates,
-                    literature_context=combined_context if gen == 1 else "",
+                    literature_context=base_context if gen == 1 else "",
                 )
             else:
                 feedback = _format_feedback(global_best, all_eval_results[-num_candidates:])
@@ -540,6 +560,7 @@ def run_reward_design(
             f"({num_eval_episodes} episodes each, up to {min(len(candidates), os.cpu_count() or 1)} workers)"
         )
         gen_eval_results = _evaluate_candidates_parallel(candidates, env_entry, num_eval_episodes)
+        last_eval_results = gen_eval_results
 
         for candidate, result in zip(candidates, gen_eval_results):
             candidate.score = result.mean_reward
@@ -674,4 +695,3 @@ def _get_obs_dim(env_entry) -> int:
         return dim
     except Exception:
         return 20  # Default assumption
-

@@ -16,12 +16,11 @@ from __future__ import annotations
 
 import numpy as np
 from pathlib import Path
-from loguru import logger
-from dataclasses import dataclass, field
+from robosmith._logging import logger
 
 from robosmith.envs.wrapper import make_env
 from robosmith.envs.registry import EnvEntry
-from robosmith.config import Decision, TaskSpec
+from robosmith.config import TaskSpec
 from robosmith.agent.models.reward import RewardCandidate
 from robosmith.envs.reward_wrapper import ForgeRewardWrapper
 

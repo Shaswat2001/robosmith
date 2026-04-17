@@ -13,8 +13,6 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any
 
-from loguru import logger
-
 from robosmith.trainers.base import LearningParadigm
 
 @dataclass
@@ -52,7 +50,6 @@ def select_policy_approach(
     backends = available_backends or ["sb3"]
     tags = set(env_entry.task_tags) if env_entry else set()
     action_type = env_entry.action_type if env_entry else "continuous"
-    robot_type = env_entry.robot_type if env_entry else "custom"
 
     alternatives = []
 

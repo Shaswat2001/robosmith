@@ -11,3 +11,12 @@ The evolutionary loop:
 
 from .utils import EvalResult, RewardDesignResult
 from .reward_design import run_reward_design, evaluate_candidate, extract_space_info, _flatten_obs
+
+__all__ = [
+    "EvalResult",
+    "RewardDesignResult",
+    "_flatten_obs",
+    "evaluate_candidate",
+    "extract_space_info",
+    "run_reward_design",
+]

@@ -10,10 +10,11 @@ No API key needed — Semantic Scholar's public API allows 100 req/sec.
 
 from __future__ import annotations
 
+import sys
 import time
 import httpx
 from typing import Any
-from loguru import logger
+from robosmith._logging import logger
 
 from robosmith.config import TaskSpec
 from .utils import KnowledgeCard, S2_BASE, S2_FIELDS
@@ -126,9 +127,9 @@ def build_search_queries(task_spec: TaskSpec) -> list[str]:
     elif any(w in desc for w in ("pick", "place", "grasp", "push", "manipulation")):
         queries.append(f"robot manipulation reward shaping {robot}")
     elif any(w in desc for w in ("balance", "swing", "pendulum")):
-        queries.append(f"swing-up balance control reinforcement learning")
+        queries.append("swing-up balance control reinforcement learning")
     elif any(w in desc for w in ("dexterous", "hand", "finger", "spin")):
-        queries.append(f"dexterous manipulation reward design")
+        queries.append("dexterous manipulation reward design")
 
     return queries
 
@@ -165,10 +166,16 @@ def run_scout(
 
     use_s2 = source in ("semantic_scholar", "both")
     use_arxiv = source in ("arxiv", "both")
+    scout_package = sys.modules.get("robosmith.stages.scout")
+    search_papers_fn = (
+        getattr(scout_package, "search_papers", search_papers)
+        if scout_package is not None
+        else search_papers
+    )
 
     for query in queries:
         if use_s2:
-            card = search_papers(query, max_results=max_papers_per_query, year_range="2022-")
+            card = search_papers_fn(query, max_results=max_papers_per_query, year_range="2022-")
             total_found += card.total_found
             for paper in card.papers:
                 _merge_paper(all_papers, paper)

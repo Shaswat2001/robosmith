@@ -12,8 +12,6 @@ import json
 import logging
 import numpy as np
 from typing import Any
-import pyarrow.parquet as pq
-from huggingface_hub import hf_hub_download, list_repo_tree, RepoFile
 
 from robosmith.inspect.models import (
     CameraSpec,
@@ -27,6 +25,27 @@ from robosmith.inspect.models import (
 from robosmith.inspect.registry import BaseDatasetInspector, dataset_registry
 
 logger = logging.getLogger(__name__)
+
+def _require_huggingface_hub() -> tuple[Any, Any, Any]:
+    try:
+        from huggingface_hub import RepoFile, hf_hub_download, list_repo_tree
+    except ImportError as exc:
+        raise ImportError(
+            "LeRobot inspection requires huggingface-hub. "
+            "Install it with `pip install huggingface-hub`."
+        ) from exc
+    return hf_hub_download, list_repo_tree, RepoFile
+
+def _require_parquet() -> Any:
+    try:
+        import pyarrow.parquet as pq
+    except Exception as exc:
+        raise ImportError(
+            "LeRobot schema and task inspection require a working pyarrow install. "
+            "Install or repair it with `pip install pyarrow`, or reinstall it "
+            "against your current numpy version."
+        ) from exc
+    return pq
 
 class LeRobotInspector(BaseDatasetInspector):
     """Inspector for LeRobot format datasets on HuggingFace Hub (v2 and v3)."""
@@ -43,7 +62,7 @@ class LeRobotInspector(BaseDatasetInspector):
             return False
 
         try:
-
+            hf_hub_download, _, _ = _require_huggingface_hub()
             hf_hub_download(
                 identifier,
                 "meta/info.json",
@@ -113,7 +132,9 @@ class LeRobotInspector(BaseDatasetInspector):
     def inspect_schema(self, identifier: str, **kwargs: Any) -> dict[str, ColumnStats]:
         """Get detailed column stats by reading a parquet shard."""
         try:
-            
+            hf_hub_download, list_repo_tree, RepoFile = _require_huggingface_hub()
+            pq = _require_parquet()
+
             # Find the first parquet data file (list_repo_tree returns both
             # RepoFile and RepoFolder objects; only RepoFile has rfilename)
             files = [
@@ -191,6 +212,7 @@ class LeRobotInspector(BaseDatasetInspector):
     def _fetch_meta(self, repo_id: str) -> dict[str, Any]:
         """Fetch meta/info.json from the Hub."""
         try:
+            hf_hub_download, _, _ = _require_huggingface_hub()
             path = hf_hub_download(repo_id, "meta/info.json", repo_type="dataset")
             with open(path) as f:
                 return json.load(f)
@@ -341,6 +363,7 @@ class LeRobotInspector(BaseDatasetInspector):
 
         # Try JSONL first (v2 format)
         try:
+            hf_hub_download, _, _ = _require_huggingface_hub()
             path = hf_hub_download(repo_id, "meta/tasks.jsonl", repo_type="dataset")
             tasks = []
             with open(path) as f:
@@ -357,6 +380,8 @@ class LeRobotInspector(BaseDatasetInspector):
 
         # Try Parquet (v3 format)
         try:
+            hf_hub_download, _, _ = _require_huggingface_hub()
+            pq = _require_parquet()
             path = hf_hub_download(repo_id, "meta/tasks.parquet", repo_type="dataset")
             table = pq.read_table(path)
             if "task" in table.column_names:

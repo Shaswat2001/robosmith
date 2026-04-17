@@ -361,6 +361,7 @@ class TestGymnasiumInspector:
         assert inspector.can_handle("lerobot/something") is False
 
     def test_inspect_ant(self, inspector):
+        pytest.importorskip("mujoco", reason="MuJoCo required for Ant-v5 inspection")
         result = inspector.inspect("Ant-v5")
         assert result.env_id == "Ant-v5"
         assert result.framework == "gymnasium"
@@ -374,16 +375,19 @@ class TestGymnasiumInspector:
         assert "rgb_array" in result.render_modes
 
     def test_inspect_halfcheetah(self, inspector):
+        pytest.importorskip("mujoco", reason="MuJoCo required for HalfCheetah-v5 inspection")
         result = inspector.inspect("HalfCheetah-v5")
         assert result.action_space.shape == [6]
         assert result.obs_space["obs"].shape == [17]
 
     def test_inspect_action_semantics(self, inspector):
         """MuJoCo envs should have actuator names."""
+        pytest.importorskip("mujoco", reason="MuJoCo required for Ant-v5 inspection")
         result = inspector.inspect("Ant-v5")
         assert len(result.action_semantics) == 8  # Ant has 8 actuators
 
     def test_inspect_sample_step(self, inspector):
+        pytest.importorskip("mujoco", reason="MuJoCo required for Ant-v5 sample step")
         sample = inspector.inspect_sample_step("Ant-v5")
         assert sample is not None
         assert "obs" in sample
@@ -393,6 +397,7 @@ class TestGymnasiumInspector:
 
     def test_inspect_json_serializable(self, inspector):
         """Ensure the result can be serialized to JSON."""
+        pytest.importorskip("mujoco", reason="MuJoCo required for Ant-v5 inspection")
         result = inspector.inspect("Ant-v5")
         json_str = result.model_dump_json(exclude_none=True)
         data = json.loads(json_str)

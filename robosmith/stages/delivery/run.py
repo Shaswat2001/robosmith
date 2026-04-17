@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from loguru import logger
+from robosmith._logging import logger
 from dataclasses import dataclass
 
 from .video import record_policy_video

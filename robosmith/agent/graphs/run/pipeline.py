@@ -5,7 +5,7 @@ import uuid
 import json
 from pathlib import Path
 from typing import Callable
-from loguru import logger
+from robosmith._logging import logger
 from langgraph.graph import StateGraph, END
 
 from robosmith.config import (
@@ -22,7 +22,7 @@ from .design import reward_design_node
 from .synthesis import env_synthesis_node
 from .train import training_node, evaluation_node
 from .misc.conditions import should_skip_scout, check_failed, decide_after_eval
-from .misc.checkpoint import _make_resumable_node, _restore_state_from_checkpoint
+from .misc.checkpoint import _make_resumable_node, _restore_state_from_checkpoint, _save_checkpoint
 
 from robosmith.agent.state import PipelineState
 

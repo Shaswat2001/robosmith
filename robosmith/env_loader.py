@@ -17,7 +17,7 @@ from __future__ import annotations
 
 import os
 from pathlib import Path
-from loguru import logger
+from robosmith._logging import logger
 
 # Default main/fast model per provider (litellm format: "provider/model")
 PROVIDER_DEFAULTS: dict[str, dict[str, str]] = {

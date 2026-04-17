@@ -6,7 +6,7 @@ import imageio
 import numpy as np
 import gymnasium as gym
 from pathlib import Path
-from loguru import logger
+from robosmith._logging import logger
 
 from robosmith.config import RunState
 from robosmith.envs.registry import EnvRegistry

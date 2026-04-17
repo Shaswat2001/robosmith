@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from loguru import logger
+from robosmith._logging import logger
 
 from robosmith.config import TaskSpec
 from robosmith.envs.registry import EnvEntry, EnvRegistry

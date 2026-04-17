@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import json
-from loguru import logger
+from robosmith._logging import logger
 
 from robosmith.agent.state import PipelineState
 from robosmith.inspect.dispatch import inspect_env

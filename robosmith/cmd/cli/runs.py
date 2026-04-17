@@ -20,7 +20,6 @@ import typer
 from rich.console import Console
 from rich.table import Table
 from rich.panel import Panel
-from rich.text import Text
 from rich.syntax import Syntax
 
 runs_app = typer.Typer(
@@ -165,8 +164,8 @@ def runs_list(
     console.print(table)
     console.print()
     console.print(f"  [dim]Run dir: {runs_dir.resolve()}[/dim]")
-    console.print(f"  [dim]robosmith runs inspect <run_id>  — full details[/dim]")
-    console.print(f"  [dim]robosmith runs compare <id1> <id2>  — side-by-side[/dim]")
+    console.print("  [dim]robosmith runs inspect <run_id>  — full details[/dim]")
+    console.print("  [dim]robosmith runs compare <id1> <id2>  — side-by-side[/dim]")
     console.print()
 
 @runs_app.command("inspect")
@@ -253,7 +252,7 @@ def runs_inspect(
 
         if status_str != "success" and len(completed) < len(all_nodes):
             console.print()
-            console.print(f"  [yellow]Run did not finish — resume with:[/yellow]")
+            console.print("  [yellow]Run did not finish — resume with:[/yellow]")
             console.print(f"  [dim]robosmith resume {run_dir.name}[/dim]")
 
     # ── Artifacts ──

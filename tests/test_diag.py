@@ -8,9 +8,13 @@ import json
 import tempfile
 from pathlib import Path
 
-import h5py
 import numpy as np
 import pytest
+
+try:
+    import h5py
+except Exception as exc:
+    pytest.skip(f"h5py required for HDF5 diagnostics tests: {exc}", allow_module_level=True)
 
 from robosmith.diagnostics.diag_models import TrajectoryDiagResult, TrajectoryCompareResult
 from robosmith.diagnostics.trajectory_reader import HDF5TrajectoryReader, Episode, get_reader

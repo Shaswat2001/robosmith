@@ -119,6 +119,8 @@ class EnvInspectResult(BaseModel):
 class PolicyInspectResult(BaseModel):
     """Complete inspection result for a policy checkpoint or model."""
 
+    model_config = {"protected_namespaces": ()}
+
     model_id: str
     architecture: str  # e.g. "SmolVLA", "Pi0", "ACT", "DiffusionPolicy"
     base_vlm: str | None = None  # e.g. "SmolVLM-500M"
