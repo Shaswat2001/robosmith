@@ -30,11 +30,10 @@ runs_app = typer.Typer(
 )
 console = Console()
 
-# ── Helpers ───────────────────────────────────────────────────────────────────
+# Helpers
 
 def _default_runs_dir() -> Path:
     return Path("./robosmith_runs")
-
 
 def _load_run(run_dir: Path) -> dict:
     """Load all available metadata for a run directory."""
@@ -50,7 +49,6 @@ def _load_run(run_dir: Path) -> dict:
 
     return data
 
-
 def _find_run(run_id: str, runs_dir: Path) -> Path | None:
     """Locate a run directory by exact or prefix match."""
     exact = runs_dir / run_id
@@ -61,7 +59,6 @@ def _find_run(run_id: str, runs_dir: Path) -> Path | None:
         key=lambda d: d.name,
     )
     return matches[0] if matches else None
-
 
 def _parse_run_date(run_id: str) -> datetime | None:
     """Extract the datetime embedded in a run_id like run_20250416_143022_abc."""
@@ -75,17 +72,14 @@ def _parse_run_date(run_id: str) -> datetime | None:
             pass
     return None
 
-
 def _format_date(run_id: str) -> str:
     dt = _parse_run_date(run_id)
     if dt:
         return dt.strftime("%Y-%m-%d %H:%M")
     return "unknown"
 
-
 def _status_color(status: str) -> str:
     return {"success": "green", "failed": "red", "running": "yellow"}.get(status, "white")
-
 
 def _decision_color(decision: str) -> str:
     return {"accept": "green", "refine_reward": "yellow",
@@ -102,9 +96,7 @@ def _list_all_runs(runs_dir: Path) -> list[dict]:
     )
     return [_load_run(d) for d in dirs]
 
-
-# ── Commands ──────────────────────────────────────────────────────────────────
-
+# Commands
 @runs_app.command("list")
 def runs_list(
     runs_dir: Path = typer.Option(_default_runs_dir(), "--runs-dir", "-d", help="Base runs directory"),
@@ -176,7 +168,6 @@ def runs_list(
     console.print(f"  [dim]robosmith runs inspect <run_id>  — full details[/dim]")
     console.print(f"  [dim]robosmith runs compare <id1> <id2>  — side-by-side[/dim]")
     console.print()
-
 
 @runs_app.command("inspect")
 def runs_inspect(
@@ -294,7 +285,6 @@ def runs_inspect(
 
     console.print()
 
-
 @runs_app.command("compare")
 def runs_compare(
     run_id_a: str = typer.Argument(help="First run ID or prefix"),
@@ -374,7 +364,6 @@ def runs_compare(
     console.print()
     console.print(table)
     console.print()
-
 
 @runs_app.command("clean")
 def runs_clean(

@@ -31,7 +31,6 @@ _AGENTS = [
     ("delivery",),
 ]
 
-
 def banner() -> None:
     ascii_art = pyfiglet.figlet_format("robosmith", font="ansi_shadow")
 
