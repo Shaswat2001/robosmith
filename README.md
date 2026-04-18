@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/assets/logo.svg" alt="RoboSmith Logo" width="1000"/>
+  <img src="docs/assets/logo.svg" alt="RoboSmith Logo" width="760"/>
 </p>
 
 <p align="center">
