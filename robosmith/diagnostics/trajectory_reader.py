@@ -7,7 +7,6 @@ episode data that the diagnostic analyzer can consume.
 
 from __future__ import annotations
 
-import h5py
 import json
 import logging
 import numpy as np
@@ -15,12 +14,39 @@ from pathlib import Path
 from typing import Any, Iterator
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from huggingface_hub import hf_hub_download, list_repo_tree
-
-import pyarrow as pa
-import pyarrow.parquet as pq
 
 logger = logging.getLogger(__name__)
+
+def _require_h5py() -> Any:
+    try:
+        import h5py
+    except Exception as exc:
+        raise ImportError(
+            "HDF5 trajectory diagnostics require h5py. Install or repair it with "
+            "`pip install h5py`, or reinstall it against your current numpy version."
+        ) from exc
+    return h5py
+
+def _require_huggingface_hub() -> tuple[Any, Any]:
+    try:
+        from huggingface_hub import hf_hub_download, list_repo_tree
+    except ImportError as exc:
+        raise ImportError(
+            "LeRobot Hub trajectory diagnostics require huggingface-hub. "
+            "Install it with `pip install huggingface-hub`."
+        ) from exc
+    return hf_hub_download, list_repo_tree
+
+def _require_parquet() -> Any:
+    try:
+        import pyarrow.parquet as pq
+    except Exception as exc:
+        raise ImportError(
+            "LeRobot trajectory diagnostics require a working pyarrow install. "
+            "Install or repair it with `pip install pyarrow`, or reinstall it "
+            "against your current numpy version."
+        ) from exc
+    return pq
 
 @dataclass
 class Episode:
@@ -85,6 +111,7 @@ class HDF5TrajectoryReader(TrajectoryReader):
 
     def read_episodes(self, path: str) -> Iterator[Episode]:
 
+        h5py = _require_h5py()
         p = Path(path)
         files = [p] if p.is_file() else sorted(p.glob("*.hdf5")) + sorted(p.glob("*.h5"))
 
@@ -149,6 +176,7 @@ class LeRobotTrajectoryReader(TrajectoryReader):
         # Hub repo_id
         if "/" in path and not p.exists():
             try:
+                hf_hub_download, _ = _require_huggingface_hub()
                 hf_hub_download(path, "meta/info.json", repo_type="dataset")
                 return True
             except Exception:
@@ -168,97 +196,101 @@ class LeRobotTrajectoryReader(TrajectoryReader):
             yield from self._read_hub(path)
 
     def _read_local(self, root: Path) -> Iterator[Episode]:
-        
-
         # Read meta
         with open(root / "meta" / "info.json") as f:
-            meta = json.load(f)
+            json.load(f)
 
-        total_episodes = meta.get("total_episodes", 0)
-
-        # Read all parquet data files
         data_dir = root / "data"
         parquet_files = sorted(data_dir.rglob("*.parquet"))
 
         if not parquet_files:
             return
 
-        # Concatenate all parquet files
-        tables = [pq.read_table(str(f)) for f in parquet_files]
-        table = pa.concat_tables(tables)
-        df = table.to_pandas()
-
-        # Segment by episode index
-        if "episode_index" in df.columns:
-            for ep_idx in range(total_episodes):
-                ep_data = df[df["episode_index"] == ep_idx]
-                if ep_data.empty:
-                    continue
-
-                actions = self._extract_array(ep_data, "action")
-                states = self._extract_array(ep_data, "observation.state")
-
-                # Check for success signal
-                success = None
-                if "next.done" in ep_data.columns:
-                    success = bool(ep_data["next.done"].iloc[-1])
-                elif "next.success" in ep_data.columns:
-                    success = bool(ep_data["next.success"].iloc[-1])
-
-                rewards = None
-                if "next.reward" in ep_data.columns:
-                    rewards = ep_data["next.reward"].values.astype(np.float64)
-
-                yield Episode(
-                    index=ep_idx,
-                    actions=actions if actions is not None else np.array([]),
-                    rewards=rewards,
-                    success=success,
-                    states=states,
-                )
+        yield from self._read_parquet_episode_groups(parquet_files)
 
     def _read_hub(self, repo_id: str) -> Iterator[Episode]:
         """Read from Hub by downloading parquet shards."""
 
-        meta_path = hf_hub_download(repo_id, "meta/info.json", repo_type="dataset")
-        with open(meta_path) as f:
-            meta = json.load(f)
+        hf_hub_download, list_repo_tree = _require_huggingface_hub()
 
         # Find and download first data parquet (for quick diagnostics)
-        files = [f.rfilename for f in list_repo_tree(repo_id, repo_type="dataset")]
+        files = [
+            rfilename
+            for item in list_repo_tree(repo_id, repo_type="dataset", recursive=True)
+            if (rfilename := getattr(item, "rfilename", None)) is not None
+        ]
         parquet_files = sorted([f for f in files if f.startswith("data/") and f.endswith(".parquet")])
 
         if not parquet_files:
             return
 
         # Download first shard only for quick diag
-
         local_path = hf_hub_download(repo_id, parquet_files[0], repo_type="dataset")
-        table = pq.read_table(local_path)
-        df = table.to_pandas()
+        yield from self._read_parquet_episode_groups([Path(local_path)])
 
-        if "episode_index" not in df.columns:
-            return
+    def _read_parquet_episode_groups(self, parquet_files: list[Path]) -> Iterator[Episode]:
+        """Yield LeRobot episodes without materializing the full dataset at once."""
 
-        for ep_idx in df["episode_index"].unique():
-            ep_data = df[df["episode_index"] == ep_idx]
+        pq = _require_parquet()
+        current_idx: int | None = None
+        current_chunks: list[Any] = []
 
-            actions = self._extract_array(ep_data, "action")
+        def emit_episode() -> Episode | None:
+            if current_idx is None or not current_chunks:
+                return None
+            ep_data = self._concat_dataframes(current_chunks)
+            return self._episode_from_dataframe(int(current_idx), ep_data)
 
-            success = None
-            if "next.done" in ep_data.columns:
-                success = bool(ep_data["next.done"].iloc[-1])
+        for parquet_file in parquet_files:
+            table = pq.read_table(str(parquet_file))
+            df = table.to_pandas()
+            if "episode_index" not in df.columns:
+                continue
 
-            rewards = None
-            if "next.reward" in ep_data.columns:
-                rewards = ep_data["next.reward"].values.astype(np.float64)
+            for ep_idx, ep_data in df.groupby("episode_index", sort=False):
+                ep_idx = int(ep_idx)
+                if current_idx is None:
+                    current_idx = ep_idx
+                if ep_idx != current_idx:
+                    episode = emit_episode()
+                    if episode is not None:
+                        yield episode
+                    current_idx = ep_idx
+                    current_chunks = []
+                current_chunks.append(ep_data)
 
-            yield Episode(
-                index=int(ep_idx),
-                actions=actions if actions is not None else np.array([]),
-                rewards=rewards,
-                success=success,
-            )
+        episode = emit_episode()
+        if episode is not None:
+            yield episode
+
+    def _concat_dataframes(self, chunks: list[Any]) -> Any:
+        if len(chunks) == 1:
+            return chunks[0]
+
+        pandas = __import__("pandas")
+        return pandas.concat(chunks, ignore_index=True)
+
+    def _episode_from_dataframe(self, ep_idx: int, ep_data: Any) -> Episode:
+        actions = self._extract_array(ep_data, "action")
+        states = self._extract_array(ep_data, "observation.state")
+
+        success = None
+        if "next.done" in ep_data.columns:
+            success = bool(ep_data["next.done"].iloc[-1])
+        elif "next.success" in ep_data.columns:
+            success = bool(ep_data["next.success"].iloc[-1])
+
+        rewards = None
+        if "next.reward" in ep_data.columns:
+            rewards = ep_data["next.reward"].values.astype(np.float64)
+
+        return Episode(
+            index=ep_idx,
+            actions=actions if actions is not None else np.array([]),
+            rewards=rewards,
+            success=success,
+            states=states,
+        )
 
     def _extract_array(self, df: Any, prefix: str) -> np.ndarray | None:
         """Extract a multi-dim array from columns with a shared prefix.

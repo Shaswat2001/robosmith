@@ -7,7 +7,7 @@ Backends register themselves on import; the registry just picks the best one.
 
 from __future__ import annotations
 
-from loguru import logger
+from robosmith._logging import logger
 
 from robosmith.trainers.base import Trainer, LearningParadigm
 

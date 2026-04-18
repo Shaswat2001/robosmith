@@ -11,13 +11,12 @@ common mismatches (action dim remap, camera key remap, normalization).
 from __future__ import annotations
 
 import re
-import litellm
 import logging
 from pathlib import Path
 from typing import Any
 
 from robosmith.inspect.compat import check_compatibility
-from robosmith.inspect.models import CompatReport, Severity
+from robosmith.inspect.models import CompatReport
 
 logger = logging.getLogger(__name__)
 
@@ -287,6 +286,7 @@ def _generate_with_llm(
     report: CompatReport,
 ) -> str:
     """Use litellm to generate smarter wrapper code."""
+    import litellm
 
     # Build the prompt with full compat report
     issues_text = ""

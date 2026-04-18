@@ -9,12 +9,31 @@ handling, token tracking.
 from __future__ import annotations
 
 import json
+import importlib.util
+import sys
 import time
-import litellm
+import types
 from typing import Any
-from loguru import logger
+from robosmith._logging import logger
 
 from robosmith.config import LLMConfig
+
+def _install_litellm_stub_if_missing() -> None:
+    """Provide a patchable LiteLLM module in minimal test environments."""
+    if importlib.util.find_spec("litellm") is not None or "litellm" in sys.modules:
+        return
+
+    module = types.ModuleType("litellm")
+
+    def completion(*args: Any, **kwargs: Any) -> Any:
+        raise ImportError(
+            "LiteLLM is required for LLM calls. Install it with `pip install litellm`."
+        )
+
+    module.completion = completion
+    sys.modules["litellm"] = module
+
+_install_litellm_stub_if_missing()
 
 class BaseAgent:
     """
@@ -54,6 +73,8 @@ class BaseAgent:
         last_error = None
         for attempt in range(1, self.config.max_retries + 1):
             try:
+                import litellm
+
                 logger.debug(f"LLM call (attempt {attempt}): model={self.model}, len={len(user_message)}")
                 start = time.time()
                 response = litellm.completion(
@@ -107,6 +128,8 @@ class BaseAgent:
                 "No API key found. Please set ANTHROPIC_API_KEY or OPENAI_API_KEY:\n"
                 "  export ANTHROPIC_API_KEY='sk-ant-...'"
             )
+        if "LiteLLM is required" in error_str:
+            raise RuntimeError(error_str)
         raise RuntimeError(f"LLM call failed after {self.config.max_retries} attempts: {last_error}")
 
     def chat_json(self, user_message: str, temperature: float | None = None) -> Any:
@@ -141,7 +164,7 @@ class BaseAgent:
                 return json.loads(cleaned)
             except json.JSONDecodeError as e:
                 if attempt == 0:
-                    logger.warning(f"JSON parse failed (attempt 1), retrying with stricter prompt")
+                    logger.warning("JSON parse failed (attempt 1), retrying with stricter prompt")
                     prompt = (
                         user_message
                         + "\n\nYou MUST respond with ONLY valid JSON. "

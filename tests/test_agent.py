@@ -8,6 +8,8 @@ using mock data (no Hub or env access needed).
 import json
 import pytest
 
+pytest.importorskip("langgraph", reason="LangGraph required for agent graph tests")
+
 from robosmith.agent.graphs.auto_integrate import (
     IntegrateState,
     build_auto_integrate_graph,

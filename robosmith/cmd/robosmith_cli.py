@@ -8,7 +8,7 @@ import yaml
 import typer
 import logging
 from pathlib import Path
-from loguru import logger
+from robosmith._logging import logger
 from typing import Optional
 from rich.table import Table
 from rich.console import Console
@@ -18,7 +18,7 @@ from robosmith.utils import banner
 from robosmith.envs.registry import EnvRegistry
 from robosmith.config import RewardSearchConfig, LLMConfig
 from robosmith.config import Algorithm, ForgeConfig, RobotType, TaskSpec
-from .cli import diag_app, gen_app, auto_app, inspect_app
+from .cli import diag_app, gen_app, auto_app, inspect_app, runs_app
 
 app = typer.Typer(
     name="robosmith",
@@ -30,6 +30,7 @@ app.add_typer(diag_app)
 app.add_typer(inspect_app)
 app.add_typer(gen_app)
 app.add_typer(auto_app)
+app.add_typer(runs_app)
 
 console = Console()
 
@@ -283,6 +284,58 @@ def run(
     if artifacts_dir:
         console.print(f"  Artifacts: [dim]{artifacts_dir}[/dim]")
     console.print()
+
+@app.command()
+def resume(
+    run_id: str = typer.Argument(help="Run ID or prefix to resume, e.g. run_20250416_143022_abc123"),
+    runs_dir: Path = typer.Option(Path("./robosmith_runs"), "--runs-dir", help="Base runs directory"),
+    verbose: bool = typer.Option(False, "--verbose", "-v", help="Show detailed logs"),
+) -> None:
+    """Resume an interrupted pipeline run from its last checkpoint."""
+    banner()
+
+    logger.remove()
+    log_path = runs_dir / "latest.log"
+    log_path.parent.mkdir(parents=True, exist_ok=True)
+    log_level = "DEBUG" if verbose else "INFO"
+    logger.add(str(log_path), level=log_level, format="{time:HH:mm:ss} | {level:<7} | {message}", mode="w")
+
+    _NODE_COLOR = {
+        "intake": "white", "scout": "blue", "env_synthesis": "cyan",
+        "inspect_env": "cyan", "reward_design": "magenta",
+        "training": "yellow", "evaluation": "green", "delivery": "bold green",
+    }
+
+    def _on_step(node_name: str, line: str) -> None:
+        color = _NODE_COLOR.get(node_name, "white")
+        console.print(f"  [{color}]{line}[/{color}]")
+
+    console.print(f"  Resuming: [bold]{run_id}[/bold]")
+    console.print()
+
+    try:
+        from robosmith.agent.graphs.run import resume_pipeline
+        result = resume_pipeline(run_id=run_id, runs_dir=runs_dir, on_step=_on_step)
+    except FileNotFoundError as e:
+        console.print(f"  [red]{e}[/red]")
+        raise typer.Exit(1)
+
+    console.print()
+    eval_report = result.get("eval_report")
+    if eval_report and hasattr(eval_report, "success_rate"):
+        decision = getattr(eval_report, "decision", "")
+        decision_str = decision.value if hasattr(decision, "value") else str(decision)
+        console.print(
+            f"  Success: [bold]{eval_report.success_rate:.0%}[/bold]"
+            f"  |  Reward: [bold]{eval_report.mean_reward:.2f}[/bold]"
+            f"  |  Decision: [bold]{decision_str}[/bold]"
+        )
+    console.print(f"  Run: [dim]{result.get('run_id', '')}[/dim]")
+    artifacts_dir = result.get("artifacts_dir", "")
+    if artifacts_dir:
+        console.print(f"  Artifacts: [dim]{artifacts_dir}[/dim]")
+    console.print()
+
 
 @app.command()
 def version() -> None:

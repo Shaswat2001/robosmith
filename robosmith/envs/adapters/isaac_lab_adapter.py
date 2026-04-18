@@ -10,7 +10,7 @@ Requires: isaaclab (NVIDIA Isaac Lab), which itself requires Isaac Sim.
 from __future__ import annotations
 
 from typing import Any
-from loguru import logger
+from robosmith._logging import logger
 
 from robosmith.envs.adapters import EnvAdapter, EnvConfig
 
@@ -29,7 +29,6 @@ class IsaacLabAdapter(EnvAdapter):
         try:
             # Isaac Lab uses its own env creation API
             import isaaclab  # noqa: F401
-            from isaaclab.envs import ManagerBasedRLEnvCfg
         except ImportError:
             raise ImportError(
                 f"Isaac Lab is required for environment '{env_id}'. "

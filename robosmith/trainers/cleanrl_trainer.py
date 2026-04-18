@@ -17,7 +17,7 @@ from pathlib import Path
 from typing import Any
 
 import numpy as np
-from loguru import logger
+from robosmith._logging import logger
 
 from robosmith.trainers.base import (
     LearningParadigm,

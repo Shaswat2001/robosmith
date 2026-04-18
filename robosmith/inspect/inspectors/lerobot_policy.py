@@ -87,7 +87,6 @@ class LeRobotPolicyInspector(BasePolicyInspector):
         input_features = config.get("input_features", {})
         cameras = self._parse_cameras(input_features)
         state_keys = self._parse_state_keys(input_features)
-        state_dim = self._get_state_dim(input_features)
 
         # ── Parse output features ──
         output_features = config.get("output_features", {})

@@ -11,12 +11,13 @@ Requires: rl_games, torch, isaaclab (optional).
 
 from __future__ import annotations
 
+import importlib.util
 import time
 from pathlib import Path
 from typing import Any
 
 import numpy as np
-from loguru import logger
+from robosmith._logging import logger
 
 from robosmith.trainers.base import (
     LearningParadigm,
@@ -59,9 +60,6 @@ class RLGamesTrainer(Trainer):
     def train(self, config: TrainingConfig) -> TrainingResult:
         """Train using rl_games."""
         try:
-            from rl_games.algos_torch import torch_ext
-            from rl_games.common import env_configurations, vecenv
-            from rl_games.common.algo_observer import DefaultAlgoObserver
             from rl_games.torch_runner import Runner
         except ImportError as e:
             raise ImportError(
@@ -119,10 +117,8 @@ class RLGamesTrainer(Trainer):
 
     def load_policy(self, path: Path) -> Policy:
         """Load an rl_games checkpoint."""
-        try:
-            from rl_games.torch_runner import Runner
-        except ImportError as e:
-            raise ImportError("rl_games required to load policies") from e
+        if importlib.util.find_spec("rl_games") is None:
+            raise ImportError("rl_games required to load policies")
 
         # rl_games uses its own checkpoint format
         import torch

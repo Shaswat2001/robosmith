@@ -12,7 +12,7 @@ from __future__ import annotations
 
 import time
 import httpx
-from loguru import logger
+from robosmith._logging import logger
 from xml.etree import ElementTree as ET
 
 from .utils import KnowledgeCard

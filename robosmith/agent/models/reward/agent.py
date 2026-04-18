@@ -8,58 +8,12 @@ reward functions that can be plugged into an RL training loop.
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-
-from loguru import logger
+from robosmith._logging import logger
 
 from .prompt import REWARD_SYSTEM_PROMPT
+from .types import RewardCandidate
 from robosmith.config import LLMConfig
 from robosmith.agent.models.base import BaseAgent
-
-@dataclass
-class RewardCandidate:
-    """A single generated reward function candidate."""
-
-    code: str
-    function_name: str = "compute_reward"
-    candidate_id: int = 0
-    generation: int = 0  # Which evolutionary iteration produced this
-
-    # Filled in after evaluation
-    score: float | None = None
-    metrics: dict = field(default_factory=dict)
-    error: str | None = None
-
-    def is_valid(self) -> bool:
-        """Check if the code compiles and has the right signature."""
-        try:
-            compiled = compile(self.code, f"<reward_{self.candidate_id}>", "exec")
-            namespace: dict = {}
-            exec(compiled, namespace)
-
-            func = namespace.get(self.function_name)
-            if func is None:
-                self.error = f"Function '{self.function_name}' not found in generated code"
-                return False
-
-            if not callable(func):
-                self.error = f"'{self.function_name}' is not callable"
-                return False
-
-            return True
-
-        except SyntaxError as e:
-            self.error = f"Syntax error: {e}"
-            return False
-        except Exception as e:
-            self.error = f"Validation error: {e}"
-            return False
-
-    def get_function(self):  # noqa: ANN201
-        """Compile and return the actual callable reward function."""
-        namespace: dict = {"np": __import__("numpy")}
-        exec(self.code, namespace)  # noqa: S102
-        return namespace[self.function_name]
 
 class RewardAgent(BaseAgent):
     """
