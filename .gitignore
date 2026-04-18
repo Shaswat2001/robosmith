@@ -154,6 +154,13 @@ venv.bak/
 # mkdocs documentation
 /site
 
+# Node / Astro docs
+node_modules/
+robosmith-docs/node_modules/
+robosmith-docs/dist/
+.astro/
+robosmith-docs/.astro/
+
 # mypy
 .mypy_cache/
 .dmypy.json

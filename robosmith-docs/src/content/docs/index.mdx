@@ -1,0 +1,208 @@
+---
+title: RoboSmith
+description: The problem, thesis, reading path, and current feature map for RoboSmith.
+---
+
+<div class="smith-hero">
+  <div class="smith-emblem" aria-hidden="true">
+    <svg width="260" height="220" viewBox="0 0 260 220">
+      <defs>
+        <filter id="smithGlow">
+          <feGaussianBlur stdDeviation="3" result="coloredBlur" />
+          <feMerge>
+            <feMergeNode in="coloredBlur" />
+            <feMergeNode in="SourceGraphic" />
+          </feMerge>
+        </filter>
+      </defs>
+      <path d="M124 52 L124 28 L136 28 L136 52" fill="#2dd4bf" filter="url(#smithGlow)" />
+      <rect x="72" y="52" width="116" height="86" rx="20" fill="#2dd4bf" filter="url(#smithGlow)" />
+      <circle cx="110" cy="92" r="15" fill="none" stroke="#07111f" stroke-width="7" />
+      <circle cx="150" cy="92" r="15" fill="none" stroke="#07111f" stroke-width="7" />
+      <rect x="84" y="158" width="92" height="48" rx="13" fill="#14b8a6" opacity="0.95" />
+      <rect x="105" y="172" width="51" height="7" rx="3.5" fill="none" stroke="#07111f" stroke-width="4" />
+      <rect x="105" y="188" width="35" height="7" rx="3.5" fill="none" stroke="#07111f" stroke-width="4" />
+    </svg>
+  </div>
+  <div class="smith-brand-text">
+    <div class="smith-wordmark" aria-label="RoboSmith"><span>Robo</span><strong>Smith</strong></div>
+    <p class="smith-subtitle">Agentic Robot Policy Toolchain</p>
+    <p class="smith-tagline">Describe the behavior, inspect the robotics artifacts,<br />design rewards, train policies, and package the result.</p>
+    <div class="smith-chips" aria-label="Primary capabilities">
+      <span>LangGraph pipeline</span>
+      <span>inspection tools</span>
+      <span>reward search</span>
+      <strong>Python API + CLI</strong>
+    </div>
+  </div>
+</div>
+
+## The Problem
+
+Robot learning has two recurring kinds of friction.
+
+First, training from scratch is still a pile of hand-written glue. A task starts
+as plain English, but the stack needs a structured task spec, a matching simulator,
+a reward function, a trainer, an evaluation plan, and an artifact bundle that
+someone can actually inspect later.
+
+Second, much of robotics work does not start from scratch. Teams inherit a
+pre-trained policy, a LeRobot dataset, a rollout file, or a simulator. Before
+anything useful happens, they have to understand camera names, image sizes,
+action dimensions, state keys, normalization, and which adapter code is missing.
+
+The failure mode is time lost between the idea and the experiment.
+
+| Workflow | Typical failure | RoboSmith response |
+| --- | --- | --- |
+| Train a new behavior | The task is underspecified, reward design is brittle, and training failures do not feed back into the next attempt. | A checkpointed LangGraph pipeline parses the task, searches context, matches an environment, designs rewards, trains, evaluates, and retries. |
+| Reuse existing work | Policy, dataset, and environment schemas are close but incompatible. | Inspectors expose schemas, compatibility checks explain mismatches, and generators produce adapter code. |
+| Debug a run | A single reward number hides why the policy failed. | Diagnostics summarize trajectories, action statistics, failure clusters, and run-to-run deltas. |
+| Manage experiments | Run directories become opaque piles of files. | `robosmith runs` lists, inspects, compares, cleans, and resumes pipeline runs. |
+
+## The Thesis
+
+RoboSmith treats robot policy development as an explicit, inspectable flow. Every
+major step is a typed node. Every output is persisted. Every integration tool
+uses the same premise: make the hidden interface visible before trying to fix it.
+
+<ol class="smith-flow">
+  <li>
+    <strong>Understand</strong>
+    <span>Turn natural language, policies, datasets, environments, and robots into structured descriptions.</span>
+  </li>
+  <li>
+    <strong>Choose</strong>
+    <span>Match a task to one of 30 registered environments and select a suitable training backend.</span>
+  </li>
+  <li>
+    <strong>Design</strong>
+    <span>Generate, evaluate, and evolve reward candidates using environment introspection and literature context.</span>
+  </li>
+  <li>
+    <strong>Train</strong>
+    <span>Run SB3, CleanRL, rl_games, imitation learning, or offline RL through one trainer interface.</span>
+  </li>
+  <li>
+    <strong>Evaluate</strong>
+    <span>Measure behavior across seeds, decide whether to accept, refine, switch algorithms, or adjust the environment.</span>
+  </li>
+  <li>
+    <strong>Package</strong>
+    <span>Write the reward, model checkpoint, report, video, task spec, eval report, and resumable state.</span>
+  </li>
+</ol>
+
+## Read This In Order
+
+The sidebar is organized as a launch path. Start with the problem and the first
+run, then move into workflow and reference pages when you need the details.
+
+<div class="smith-doc-path">
+  <a href="/robosmith/guides/why-robosmith/">
+    <span>01</span>
+    <strong>Why RoboSmith?</strong>
+    <em>The motivation, two-workflow model, and current boundaries.</em>
+  </a>
+  <a href="/robosmith/guides/installation/">
+    <span>02</span>
+    <strong>Installation</strong>
+    <em>Python install, optional extras, API keys, and dependency checks.</em>
+  </a>
+  <a href="/robosmith/guides/quickstart/">
+    <span>03</span>
+    <strong>Quick Start</strong>
+    <em>Run the training pipeline and inspect existing robotics artifacts.</em>
+  </a>
+  <a href="/robosmith/workflows/training-pipeline/">
+    <span>04</span>
+    <strong>Training Pipeline</strong>
+    <em>Intake, scout, environment synthesis, reward design, training, evaluation, and delivery.</em>
+  </a>
+  <a href="/robosmith/workflows/integration-tooling/">
+    <span>05</span>
+    <strong>Integration Tooling</strong>
+    <em>Inspect, diagnose, generate adapters, and run auto-integration.</em>
+  </a>
+  <a href="/robosmith/reference/python-api/">
+    <span>06</span>
+    <strong>Python API</strong>
+    <em>Public classes, functions, result models, registries, and extension points.</em>
+  </a>
+</div>
+
+## First Minute
+
+Install the project in editable mode with the common simulation, training, and
+agent extras:
+
+```bash
+git clone https://github.com/Shaswat2001/robosmith.git
+cd robosmith
+pip install -e ".[sim,train,agent]"
+robosmith deps
+```
+
+Run a dry pass before spending training time:
+
+```bash
+robosmith run \
+  --task "Train a HalfCheetah to run as fast as possible" \
+  --dry-run
+```
+
+Inspect existing work without any LLM key:
+
+```bash
+robosmith inspect policy lerobot/smolvla_base
+robosmith inspect dataset lerobot/aloha_mobile_cabinet --schema --quality
+robosmith inspect compat lerobot/smolvla_base lerobot/aloha_mobile_cabinet --fix
+```
+
+Use the Python API when you want RoboSmith inside another experiment runner:
+
+```python
+from robosmith import TaskSpec, ForgeConfig
+from robosmith.agent.graphs.run import run_pipeline
+
+spec = TaskSpec(task_description="A Franka arm picks up a red cube")
+config = ForgeConfig(max_iterations=2, scout_source="arxiv")
+
+result = run_pipeline(spec, config)
+print(result["run_id"])
+print(result["artifacts_dir"])
+```
+
+## Current Surface
+
+<div class="smith-result-grid">
+  <div class="smith-result-card">
+    <span>Environment registry</span>
+    <b>30</b>
+    <em>Classic control, MuJoCo, Gymnasium-Robotics, and Isaac Lab entries.</em>
+  </div>
+  <div class="smith-result-card">
+    <span>Training backends</span>
+    <b>5</b>
+    <em>SB3, CleanRL, rl_games, imitation learning, and offline RL behind one interface.</em>
+  </div>
+  <div class="smith-result-card">
+    <span>Integration commands</span>
+    <b>4</b>
+    <em>`inspect`, `diag`, `gen`, and `auto` for working with existing robotics artifacts.</em>
+  </div>
+</div>
+
+## What Exists Today
+
+RoboSmith currently ships a Python package and Typer CLI. The training pipeline
+uses LangGraph, persists checkpoints after every node, supports stage skipping,
+and can resume interrupted runs. The integration tooling can inspect datasets,
+environments, policies, robot descriptions, compatibility reports, trajectories,
+and generated adapter code.
+
+Some pieces are intentionally still adapter-shaped. Isaac Lab, LIBERO,
+ManiSkill, imitation learning, and offline RL have interfaces and registry
+entries, but their practical availability depends on the external packages and
+installation steps for each framework. The docs call that out instead of treating
+all backends as equally installed by default.

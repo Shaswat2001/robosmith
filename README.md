@@ -5,12 +5,16 @@
 <p align="center">
   <a href="https://www.python.org/downloads/"><img src="https://img.shields.io/badge/python-3.11+-blue.svg" alt="Python 3.11+"/></a>
   <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/license-MIT-green.svg" alt="MIT License"/></a>
-  <a href="https://shaswat2001.github.io/robosmith/"><img src="https://img.shields.io/badge/docs-mkdocs-purple.svg" alt="Documentation"/></a>
+  <a href="https://shaswat2001.github.io/robosmith/"><img src="https://img.shields.io/badge/docs-starlight-teal.svg" alt="Documentation"/></a>
 </p>
 
 ---
 
-RoboSmith is a robotics toolchain with two modes of operation.
+RoboSmith is an agentic robotics toolchain for turning task descriptions into
+trained policies. It also helps connect the
+policies, datasets, environments, and rollouts that robotics teams already have.
+
+It has two modes of operation.
 
 **Train from scratch** — describe a task in plain English, get a trained RL policy:
 
@@ -387,6 +391,15 @@ The key difference from all of these: none handle the full loop end-to-end, and 
 ## Documentation
 
 Full documentation: [shaswat2001.github.io/robosmith](https://shaswat2001.github.io/robosmith/)
+
+The current docs source lives in [`robosmith-docs/`](robosmith-docs/) and is built
+with Astro Starlight:
+
+```bash
+cd robosmith-docs
+npm install
+npm run dev
+```
 
 ## License
 
