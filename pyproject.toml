@@ -7,7 +7,7 @@ include = ["robosmith*"]
 
 [project]
 name = "robosmith"
-version = "0.1.0"
+version = "0.2.0"
 description = "Natural language to trained robot policy. An autonomous smith that crafts robot behaviors."
 readme = "README.md"
 license = { text = "MIT" }

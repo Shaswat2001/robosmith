@@ -16,7 +16,7 @@ design, RL training, evaluation, and deployment.
 
 """
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 
 from robosmith.config import ForgeConfig as SmithConfig
 from robosmith.config import TaskSpec
