@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/assets/robosmith-logo.svg" alt="RoboSmith Logo" width="760"/>
+  <img src="robosmith-docs/public/robosmith-logo.svg" alt="RoboSmith Logo" width="760"/>
 </p>
 
 <p align="center">
@@ -372,7 +372,7 @@ scout_source: semantic_scholar   # semantic_scholar | arxiv | both
 runs_dir: ./robosmith_runs
 ```
 
-Full configuration reference: [docs/getting-started/configuration.md](docs/getting-started/configuration.md)
+Full configuration reference: [robosmith-docs/src/content/docs/reference/configuration.md](robosmith-docs/src/content/docs/reference/configuration.md)
 
 ---
 
