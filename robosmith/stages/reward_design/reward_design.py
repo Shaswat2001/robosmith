@@ -11,17 +11,19 @@ The evolutionary loop:
 
 from __future__ import annotations
 
-import os
 import logging
-import numpy as np
-from robosmith._logging import logger
+import os
 from concurrent.futures import ProcessPoolExecutor, as_completed
 
+import numpy as np
+from robosmith._logging import logger
+
+from robosmith.agent.models.base import BaseAgent
 from robosmith.agent.models.reward import RewardAgent, RewardCandidate
 from robosmith.config import LLMConfig, RewardSearchConfig, TaskSpec
 from robosmith.envs.registry import EnvEntry
-from robosmith.agent.models.base import BaseAgent
 from robosmith.envs.wrapper import make_env
+from .analysis import analyzeRewardCode, scoreRewardCandidate
 
 from .utils import EvalResult, RewardDesignResult
 
@@ -184,9 +186,21 @@ def _analyze_obs_by_sampling(env) -> str:
                 )
 
         # Check info dict for useful keys
-        useful_info_keys = [k for k in step_info.keys() if k not in ("TimeLimit.truncated",)]
+        useful_info_keys = [k for k in step_info if k not in ("TimeLimit.truncated",)]
         if useful_info_keys:
             lines.append(f"  info keys: {', '.join(useful_info_keys)}")
+            numeric_keys = []
+            for key in useful_info_keys:
+                value = step_info.get(key)
+                if isinstance(value, int | float | np.integer | np.floating):
+                    numeric_keys.append(f"{key}={float(value):.4f}")
+            if numeric_keys:
+                lines.append("  numeric info samples: " + ", ".join(numeric_keys[:8]))
+            lines.append(
+                "  IMPORTANT: Prefer using semantically named values from info when available. "
+                "Do not assume an observation index means forward progress "
+                "unless the docs above say so."
+            )
 
         return "\n".join(lines)
 
@@ -563,11 +577,16 @@ def run_reward_design(
         last_eval_results = gen_eval_results
 
         for candidate, result in zip(candidates, gen_eval_results):
-            candidate.score = result.mean_reward
+            if not candidate.analysis:
+                candidate.analysis = analyzeRewardCode(candidate.code, obs_info)
+            candidateScore, scoreDetails = scoreRewardCandidate(result.mean_reward, candidate.analysis)
+            candidate.score = candidateScore
             candidate.metrics = {
                 "mean_reward": result.mean_reward,
                 "std_reward": result.std_reward,
                 "mean_episode_length": result.mean_episode_length,
+                "reward_score": candidateScore,
+                "reward_score_details": scoreDetails,
             }
             status = "error" if result.had_errors else f"reward={result.mean_reward:.2f}"
             logger.info(f"  Gen {gen + 1} candidate {candidate.candidate_id}: {status}")

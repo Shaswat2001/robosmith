@@ -2,15 +2,22 @@
 from __future__ import annotations
 
 import shutil
+from contextlib import suppress
+from pathlib import Path
+
+import gymnasium as gym
 import imageio
 import numpy as np
-import gymnasium as gym
-from pathlib import Path
-from robosmith._logging import logger
 
+from robosmith._logging import logger
 from robosmith.config import RunState
 from robosmith.envs.registry import EnvRegistry
 from robosmith.trainers.registry import TrainerRegistry
+
+def format_exception(exc: Exception) -> str:
+    """Return a useful message even for exceptions with empty str()."""
+    message = str(exc)
+    return message or exc.__class__.__name__
 
 def load_policy_for_video(model_path: Path):
     """
@@ -40,10 +47,11 @@ def load_policy_for_video(model_path: Path):
 
     # Fallback: direct SB3
     from stable_baselines3 import PPO, SAC, TD3
+
     algo_name = model_path.stem.replace("policy_", "").lower()
     algo_map = {"ppo": PPO, "sac": SAC, "td3": TD3}
-    AlgoClass = algo_map.get(algo_name, PPO)
-    return AlgoClass.load(str(model_path))
+    algo_class = algo_map.get(algo_name, PPO)
+    return algo_class.load(str(model_path))
 
 def record_policy_video(
     state: RunState,
@@ -86,7 +94,7 @@ def record_policy_video(
 
         # Method 1: gymnasium RecordVideo (needs moviepy)
         try:
-            env = gym.make(env_entry, render_mode="rgb_array")
+            env = gym.make(env_entry.env_id, render_mode="rgb_array")
             env = gym.wrappers.RecordVideo(
                 env,
                 video_folder=str(video_dir),
@@ -94,9 +102,9 @@ def record_policy_video(
                 name_prefix="policy",
             )
 
-            for ep in range(num_episodes):
+            for _ep in range(num_episodes):
                 obs, info = env.reset()
-                for step in range(max_steps):
+                for _step in range(max_steps):
                     action, _ = model.predict(obs, deterministic=True)
                     obs, reward, terminated, truncated, info = env.step(action)
                     if terminated or truncated:
@@ -112,18 +120,16 @@ def record_policy_video(
                 return final_path
 
         except Exception as e:
-            logger.debug(f"RecordVideo failed ({e}), trying imageio")
-            try:
+            logger.debug(f"RecordVideo failed ({format_exception(e)}), trying imageio")
+            with suppress(Exception):
                 env.close()
-            except Exception:
-                pass
 
         # Method 2: manual frame capture with imageio
         try:
-            env = gym.make(env_entry, render_mode="rgb_array")
+            env = gym.make(env_entry.env_id, render_mode="rgb_array")
             frames: list = []
 
-            for ep in range(num_episodes):
+            for _ep in range(num_episodes):
                 obs, info = env.reset()
 
                 # capture initial frame
@@ -134,7 +140,7 @@ def record_policy_video(
                         frame = frame.astype(np.uint8)
                     frames.append(frame)
 
-                for step in range(max_steps):
+                for _step in range(max_steps):
                     frame = env.render()
                     if frame is not None:
                         frames.append(np.asarray(frame))
@@ -166,12 +172,12 @@ def record_policy_video(
         except ImportError:
             logger.info("For video recording: pip install imageio[ffmpeg] moviepy")
         except Exception as e:
-            logger.warning(f"Video recording failed: {e}")
+            logger.warning(f"Video recording failed: {format_exception(e)}")
 
         # Clean up empty video dir
         shutil.rmtree(video_dir, ignore_errors=True)
 
     except Exception as e:
-        logger.warning(f"Video recording failed: {e}")
+        logger.warning(f"Video recording failed: {format_exception(e)}")
 
     return None

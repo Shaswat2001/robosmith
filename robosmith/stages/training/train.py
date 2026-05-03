@@ -78,6 +78,9 @@ def run_training(
         time_limit_seconds=task_spec.time_budget_minutes * 60,
         artifacts_dir=Path(artifacts_dir) if artifacts_dir else None,
         seed=42,
+        extra={
+            "requested_num_envs": task_spec.num_envs,
+        },
     )
 
     # Get trainer from registry

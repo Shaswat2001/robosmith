@@ -25,5 +25,12 @@ RULES:
 7. Keep rewards well-scaled. Individual components should be roughly in [-1, 1].
    Use normalization or clipping if needed.
 
-8. Return ONLY the Python function. No explanation, no markdown, no examples.
+8. If the environment info dict exposes named signals like x_position, x_velocity,
+   achieved_goal, desired_goal, reward_forward, or success, prefer those over
+   guessing observation indices.
+
+9. Do not claim an observation index represents a semantic quantity unless the
+   observation-space description explicitly says so.
+
+10. Return ONLY the Python function. No explanation, no markdown, no examples.
 """

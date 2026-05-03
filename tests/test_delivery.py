@@ -6,10 +6,9 @@ from pathlib import Path
 import pytest
 
 from robosmith.agent.models.reward import RewardCandidate
-from robosmith.config import Decision, RunState, StageRecord, StageStatus, SuccessCriterion, TaskSpec
+from robosmith.config import Decision, RunState, StageRecord, StageStatus, TaskSpec
 from robosmith.stages.delivery import run_delivery
 from robosmith.stages.evaluation import EpisodeResult, EvalReport
-
 
 SAMPLE_REWARD = """\
 def compute_reward(obs, action, next_obs, info):
@@ -30,11 +29,31 @@ def sample_state(tmp_path: Path) -> RunState:
         task_spec=spec,
         artifacts_dir=tmp_path / "artifacts",
         stages={
-            "intake": StageRecord(stage="intake", status=StageStatus.COMPLETED, duration_seconds=0.1),
-            "env_synthesis": StageRecord(stage="env_synthesis", status=StageStatus.COMPLETED, duration_seconds=0.5),
-            "reward_design": StageRecord(stage="reward_design", status=StageStatus.COMPLETED, duration_seconds=30.0),
-            "training": StageRecord(stage="training", status=StageStatus.COMPLETED, duration_seconds=120.0),
-            "evaluation": StageRecord(stage="evaluation", status=StageStatus.COMPLETED, duration_seconds=10.0),
+            "intake": StageRecord(
+                stage="intake",
+                status=StageStatus.COMPLETED,
+                duration_seconds=0.1,
+            ),
+            "env_synthesis": StageRecord(
+                stage="env_synthesis",
+                status=StageStatus.COMPLETED,
+                duration_seconds=0.5,
+            ),
+            "reward_design": StageRecord(
+                stage="reward_design",
+                status=StageStatus.COMPLETED,
+                duration_seconds=30.0,
+            ),
+            "training": StageRecord(
+                stage="training",
+                status=StageStatus.COMPLETED,
+                duration_seconds=120.0,
+            ),
+            "evaluation": StageRecord(
+                stage="evaluation",
+                status=StageStatus.COMPLETED,
+                duration_seconds=10.0,
+            ),
         },
         decision_history=[
             {"decision": Decision.ACCEPT, "reason": "All criteria met", "iteration": 1},
@@ -102,7 +121,11 @@ class TestRunDelivery:
         assert "import numpy" in content
 
     def test_writes_eval_report(self, sample_state, sample_candidate, sample_eval_report):
-        result = run_delivery(sample_state, reward_candidate=sample_candidate, eval_report=sample_eval_report)
+        result = run_delivery(
+            sample_state,
+            reward_candidate=sample_candidate,
+            eval_report=sample_eval_report,
+        )
         eval_path = result.artifacts_dir / "eval_report.json"
         assert eval_path.exists()
 
@@ -111,7 +134,11 @@ class TestRunDelivery:
         assert data["decision"] == "accept"
 
     def test_writes_report_card(self, sample_state, sample_candidate, sample_eval_report):
-        result = run_delivery(sample_state, reward_candidate=sample_candidate, eval_report=sample_eval_report)
+        result = run_delivery(
+            sample_state,
+            reward_candidate=sample_candidate,
+            eval_report=sample_eval_report,
+        )
         report_path = result.artifacts_dir / "report.md"
         assert report_path.exists()
 
@@ -123,7 +150,11 @@ class TestRunDelivery:
         assert "RoboSmith" in content
 
     def test_files_written_list(self, sample_state, sample_candidate, sample_eval_report):
-        result = run_delivery(sample_state, reward_candidate=sample_candidate, eval_report=sample_eval_report)
+        result = run_delivery(
+            sample_state,
+            reward_candidate=sample_candidate,
+            eval_report=sample_eval_report,
+        )
         assert "reward_function.py" in result.files_written
         assert "task_spec.json" in result.files_written
         assert "eval_report.json" in result.files_written
@@ -155,3 +186,53 @@ class TestRunDelivery:
             artifacts_dir=tmp_path,
         )
         assert result is None  # Should gracefully return None
+
+    def test_video_recording_uses_gym_env_id(self, tmp_path, monkeypatch):
+        """Registry IDs are resolved before creating Gymnasium envs for video."""
+        import numpy as np
+
+        from robosmith.stages.delivery import video
+
+        class DummyModel:
+            def predict(self, obs, deterministic=True):
+                return np.zeros(8, dtype=np.float32), None
+
+        class DummyEnv:
+            def reset(self):
+                return np.zeros(105, dtype=np.float64), {}
+
+            def step(self, action):
+                return np.zeros(105, dtype=np.float64), 0.0, True, False, {}
+
+            def render(self):
+                return np.zeros((8, 8, 3), dtype=np.uint8)
+
+            def close(self):
+                pass
+
+        gym_ids: list[str] = []
+
+        def fake_make(gym_id, render_mode=None):
+            gym_ids.append(gym_id)
+            assert render_mode == "rgb_array"
+            return DummyEnv()
+
+        def fake_mimwrite(path, frames, fps):
+            Path(path).write_bytes(b"fake video")
+
+        monkeypatch.setattr(video, "load_policy_for_video", lambda model_path: DummyModel())
+        monkeypatch.setattr(video.gym, "make", fake_make)
+        monkeypatch.setattr(video.gym.wrappers, "RecordVideo", lambda env, **kwargs: env)
+        monkeypatch.setattr(video.imageio, "mimwrite", fake_mimwrite)
+
+        spec = TaskSpec(task_description="walk", environment_id="mujoco-ant")
+        state = RunState(run_id="test", task_spec=spec, artifacts_dir=str(tmp_path))
+
+        result = video.record_policy_video(
+            state=state,
+            model_path=tmp_path / "policy_ppo.zip",
+            artifacts_dir=tmp_path,
+        )
+
+        assert result == tmp_path / "policy_rollout.mp4"
+        assert gym_ids == ["Ant-v5", "Ant-v5"]

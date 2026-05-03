@@ -14,6 +14,7 @@ from .prompt import REWARD_SYSTEM_PROMPT
 from .types import RewardCandidate
 from robosmith.config import LLMConfig
 from robosmith.agent.models.base import BaseAgent
+from robosmith.stages.reward_design.analysis import analyzeRewardCode
 
 class RewardAgent(BaseAgent):
     """
@@ -70,6 +71,7 @@ class RewardAgent(BaseAgent):
                 code=code,
                 candidate_id=i,
                 generation=0,
+                analysis=analyzeRewardCode(code, obs_space_info),
             )
 
             if candidate.is_valid():
@@ -114,6 +116,7 @@ class RewardAgent(BaseAgent):
                 code=code,
                 candidate_id=i,
                 generation=generation,
+                analysis=analyzeRewardCode(code, obs_space_info),
             )
 
             if candidate.is_valid():

@@ -27,6 +27,7 @@ def _serialize_for_checkpoint(state: PipelineState) -> dict:
                 "generation": value.generation,
                 "score": value.score,
                 "metrics": value.metrics,
+                "analysis": getattr(value, "analysis", {}),
             }
         elif key == "knowledge_card" and hasattr(value, "papers"):
             cp[key] = {
@@ -47,6 +48,7 @@ def _serialize_for_checkpoint(state: PipelineState) -> dict:
                 "final_std_reward": getattr(value, "final_std_reward", 0.0),
                 "converged": value.converged,
                 "error": value.error,
+                "extra": getattr(value, "extra", {}),
             }
         elif key == "eval_report" and hasattr(value, "decision"):
             decision = value.decision.value if hasattr(value.decision, "value") else str(value.decision)
@@ -81,6 +83,7 @@ def _restore_state_from_checkpoint(cp: dict) -> dict:
             generation=rc_data.get("generation", 0),
             score=rc_data.get("score"),
             metrics=rc_data.get("metrics", {}),
+            analysis=rc_data.get("analysis", {}),
         )
 
     kc_data = state.get("knowledge_card")
@@ -105,6 +108,7 @@ def _restore_state_from_checkpoint(cp: dict) -> dict:
             final_std_reward=tr_data.get("final_std_reward", 0.0),
             converged=tr_data.get("converged", False),
             error=tr_data.get("error"),
+            extra=tr_data.get("extra", {}),
         )
 
     er_data = state.get("eval_report")

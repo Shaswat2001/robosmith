@@ -103,6 +103,11 @@ class TestRewardCandidate:
         assert candidate.score is None
         assert candidate.generation == 0
         assert candidate.metrics == {}
+        assert candidate.analysis == {}
+
+    def test_generate_attaches_analysis(self):
+        candidate = RewardCandidate(code=VALID_REWARD_CODE, candidate_id=0)
+        assert candidate.analysis == {}
 
 
 # ── Code cleaning tests ──
@@ -142,6 +147,7 @@ class TestRewardAgentGenerate:
         assert len(candidates) == 3
         assert all(c.is_valid() for c in candidates)
         assert all(c.generation == 0 for c in candidates)
+        assert all("signal_provenance" in c.analysis for c in candidates)
 
     @patch("litellm.completion")
     def test_generate_filters_invalid(self, mock_completion):

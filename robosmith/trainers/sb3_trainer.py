@@ -77,6 +77,7 @@ class SB3Trainer(Trainer):
             )
 
         logger.info(f"SB3 training: {algo_name.upper()}, {config.total_timesteps:,} steps")
+        stop_data = {"reason": "completed"}
 
         # Auto-detect policy type based on observation space
         default_policy = "MlpPolicy"
@@ -116,6 +117,7 @@ class SB3Trainer(Trainer):
                 elapsed = time.time() - start_time
                 if elapsed > config.time_limit_seconds:
                     logger.info(f"Time limit reached ({config.time_limit_seconds:.0f}s) — stopping")
+                    stop_data["reason"] = "time_limit"
                     return False
 
                 if self.num_timesteps - self._last_log_step >= self._log_interval:
@@ -154,6 +156,7 @@ class SB3Trainer(Trainer):
                                 f"Training stalled — reward flat at {recent_r[-1]:.2f} "
                                 f"for {len(recent_r)} checkpoints. Stopping early."
                             )
+                            stop_data["reason"] = "stalled"
                             return False
 
                 return True
@@ -174,6 +177,16 @@ class SB3Trainer(Trainer):
                 training_time_seconds=time.time() - start_time,
                 error=f"Training crashed: {e}",
                 metrics_history=metrics_history,
+                extra={
+                    "effective_config": {
+                        "backend": self.name,
+                        "requested_num_envs": config.extra.get("requested_num_envs", 1),
+                        "actual_num_envs": 1,
+                        "policy": config.extra.get("policy", default_policy),
+                        "device": config.device,
+                        "stop_reason": "crashed",
+                    }
+                },
             )
 
         # Final metrics
@@ -191,6 +204,19 @@ class SB3Trainer(Trainer):
             model.save(str(model_path))
             logger.info(f"Model saved to {model_path}")
 
+        actualNumEnvs = int(getattr(env, "num_envs", 1))
+        effectiveConfig = {
+            "backend": self.name,
+            "algorithm": algo_name,
+            "requested_num_envs": config.extra.get("requested_num_envs", actualNumEnvs),
+            "actual_num_envs": actualNumEnvs,
+            "policy": config.extra.get("policy", default_policy),
+            "device": config.device,
+            "seed": config.seed,
+            "stop_reason": stop_data["reason"],
+            "vectorized": actualNumEnvs > 1,
+        }
+
         env.close()
 
         return TrainingResult(
@@ -202,6 +228,7 @@ class SB3Trainer(Trainer):
             final_std_reward=final_std,
             converged=True,
             metrics_history=metrics_history,
+            extra={"effective_config": effectiveConfig},
         )
 
     def load_policy(self, path: Path) -> Policy:

@@ -14,17 +14,110 @@ for now — LLM-based decision agent comes later.
 
 from __future__ import annotations
 
-import numpy as np
+from contextlib import suppress
 from pathlib import Path
+
+import numpy as np
+
 from robosmith._logging import logger
-
-from robosmith.envs.wrapper import make_env
-from robosmith.envs.registry import EnvEntry
-from robosmith.config import TaskSpec
 from robosmith.agent.models.reward import RewardCandidate
+from robosmith.config import TaskSpec
+from robosmith.envs.registry import EnvEntry
 from robosmith.envs.reward_wrapper import ForgeRewardWrapper
+from robosmith.envs.wrapper import make_env
 
-from .utils import _load_model, _build_report, EvalReport, EpisodeResult
+from .utils import EpisodeResult, EvalReport, _build_report, _load_model
+
+def _coerce_success_flag(value) -> bool | None:
+    """Normalize env-provided success signals to bool when possible."""
+    if isinstance(value, bool | np.bool_):
+        return bool(value)
+    if isinstance(value, int | float | np.integer | np.floating):
+        return bool(value)
+    if isinstance(value, str):
+        lowered = value.strip().lower()
+        if lowered in {"true", "1", "yes", "success"}:
+            return True
+        if lowered in {"false", "0", "no", "failure", "failed"}:
+            return False
+    return None
+
+def _infer_success_from_episode(
+    info_history: list[dict],
+    steps: int,
+    max_steps: int,
+) -> bool:
+    """
+    Infer task success from env signals before falling back to episode length.
+
+    This avoids counting "survived until timeout" as success in locomotion
+    environments like HalfCheetah that never terminate early but do expose
+    meaningful progress signals such as ``x_velocity`` and ``x_position``.
+    """
+    explicit_flags: list[bool] = []
+    x_positions: list[float] = []
+    x_velocities: list[float] = []
+    forward_rewards: list[float] = []
+
+    for info in info_history:
+        for key in ("is_success", "success"):
+            if key in info:
+                parsed = _coerce_success_flag(info[key])
+                if parsed is not None:
+                    explicit_flags.append(parsed)
+
+        if "x_position" in info:
+            with suppress(TypeError, ValueError):
+                x_positions.append(float(info["x_position"]))
+
+        for key in ("x_velocity", "forward_velocity"):
+            if key in info:
+                with suppress(TypeError, ValueError):
+                    x_velocities.append(float(info[key]))
+
+        for key in ("reward_forward", "forward_reward"):
+            if key in info:
+                with suppress(TypeError, ValueError):
+                    forward_rewards.append(float(info[key]))
+
+    if explicit_flags:
+        return explicit_flags[-1]
+
+    if x_positions:
+        forward_progress = x_positions[-1] - x_positions[0]
+        if forward_progress >= 5.0:
+            return True
+        if forward_progress <= 0.0 and steps >= max_steps * 0.7:
+            return False
+
+    if x_velocities:
+        mean_velocity = float(np.mean(x_velocities))
+        tail = x_velocities[-max(1, len(x_velocities) // 5):]
+        tail_mean_velocity = float(np.mean(tail))
+        if mean_velocity >= 1.0 or tail_mean_velocity >= 1.5:
+            return True
+        if mean_velocity <= 0.1 and steps >= max_steps * 0.7:
+            return False
+
+    if forward_rewards:
+        mean_forward_reward = float(np.mean(forward_rewards))
+        if mean_forward_reward >= 1.0:
+            return True
+        if mean_forward_reward <= 0.0 and steps >= max_steps * 0.7:
+            return False
+
+    # Fallback: use episode length only when the env gives us nothing better.
+    survived_well = steps >= max_steps * 0.7
+    survived_ok = steps >= max_steps * 0.3
+    terminated_early = steps < max_steps * 0.2
+
+    if terminated_early:
+        return False
+    if survived_well:
+        return True
+    if survived_ok:
+        return True
+    return steps >= max_steps * 0.5
 
 def run_evaluation(
     task_spec: TaskSpec,
@@ -84,8 +177,8 @@ def run_evaluation(
 
 def _run_episode(
     env_entry: EnvEntry,
-    reward_fn,  # noqa: ANN001
-    model,  # noqa: ANN001
+    reward_fn,
+    model,
     seed: int,
     max_steps: int,
 ) -> EpisodeResult:
@@ -97,6 +190,7 @@ def _run_episode(
     total_reward = 0.0
     original_total = 0.0
     steps = 0
+    info_history: list[dict] = []
 
     for _ in range(max_steps):
         if model is not None:
@@ -121,31 +215,14 @@ def _run_episode(
         total_reward += reward
         original_total += info.get("original_reward", 0.0)
         steps += 1
+        info_history.append(dict(info))
 
         if terminated or truncated:
             break
 
     wrapped.close()
 
-    # Success detection — behavioral outcome based.
-    # Primary signal: survival + episode length
-    # An agent that ran for most of max_steps is likely doing something right
-    survived_well = steps >= max_steps * 0.7
-    survived_ok = steps >= max_steps * 0.3
-    terminated_early = terminated and steps < max_steps * 0.2
-
-    if terminated_early:
-        # Fell over / crashed in the first 20% of the episode — failure
-        success = False
-    elif survived_well:
-        # Ran for 70%+ of max steps — good sign
-        success = True
-    elif not terminated and survived_ok:
-        # Truncated (time limit) and ran for 30%+ — decent
-        success = True
-    else:
-        # Somewhere in between — use episode length as a fraction
-        success = steps >= max_steps * 0.5
+    success = _infer_success_from_episode(info_history, steps, max_steps)
 
     return EpisodeResult(
         seed=seed,

@@ -153,3 +153,4 @@ class TestRunTraining:
         assert result.model_path is not None
         assert result.model_path.exists()
         assert result.training_time_seconds > 0
+        assert "effective_config" in result.extra

@@ -3,9 +3,10 @@
 import pytest
 
 from robosmith.agent.models.reward import RewardCandidate
-from robosmith.config import Decision, EnvironmentType, RobotType, SuccessCriterion, TaskSpec
+from robosmith.config import Decision, SuccessCriterion, TaskSpec
 from robosmith.envs.registry import EnvRegistry
-from robosmith.stages.evaluation import EvalReport, EpisodeResult, _build_report, run_evaluation
+from robosmith.stages.evaluation import EpisodeResult, _build_report, run_evaluation
+from robosmith.stages.evaluation.run import _infer_success_from_episode
 
 try:
     import gymnasium  # noqa: F401
@@ -41,8 +42,10 @@ def simple_candidate() -> RewardCandidate:
 class TestBuildReport:
     def _make_episodes(self, rewards, lengths, successes):
         return [
-            EpisodeResult(seed=i, total_reward=r, episode_length=l, success=s)
-            for i, (r, l, s) in enumerate(zip(rewards, lengths, successes))
+            EpisodeResult(seed=i, total_reward=r, episode_length=length, success=s)
+            for i, (r, length, s) in enumerate(
+                zip(rewards, lengths, successes, strict=True)
+            )
         ]
 
     def test_all_success_accepts(self):
@@ -105,7 +108,7 @@ class TestBuildReport:
         report = _build_report(episodes, spec)
 
         assert len(report.criteria_results) == 2
-        for key, result in report.criteria_results.items():
+        for _, result in report.criteria_results.items():
             assert "passed" in result
             assert "value" in result
 
@@ -148,6 +151,24 @@ class TestBuildReport:
         assert "1 episodes" in s
         assert "success=" in s
         assert "reward=" in s
+
+
+class TestSuccessInference:
+    def test_prefers_explicit_success_flag(self):
+        info_history = [{"is_success": 0}, {"is_success": 1}]
+        assert _infer_success_from_episode(info_history, steps=50, max_steps=100) is True
+
+    def test_uses_forward_progress_for_locomotion(self):
+        info_history = [
+            {"x_position": 0.0, "x_velocity": 0.2},
+            {"x_position": 2.5, "x_velocity": 1.4},
+            {"x_position": 6.5, "x_velocity": 1.8},
+        ]
+        assert _infer_success_from_episode(info_history, steps=1000, max_steps=1000) is True
+
+    def test_rejects_timeout_without_progress(self):
+        info_history = [{"x_position": 0.0, "x_velocity": 0.0} for _ in range(20)]
+        assert _infer_success_from_episode(info_history, steps=1000, max_steps=1000) is False
 
 
 # ── Full eval with live sim (random policy) ──

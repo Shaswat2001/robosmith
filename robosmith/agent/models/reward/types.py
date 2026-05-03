@@ -17,6 +17,7 @@ class RewardCandidate:
     # Filled in after evaluation
     score: float | None = None
     metrics: dict = field(default_factory=dict)
+    analysis: dict = field(default_factory=dict)
     error: str | None = None
 
     def is_valid(self) -> bool:

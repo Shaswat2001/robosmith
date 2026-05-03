@@ -10,9 +10,11 @@ from robosmith.config import LLMConfig, RewardSearchConfig, TaskSpec
 from robosmith.envs.registry import EnvRegistry
 from robosmith.stages.reward_design import (
     EvalResult,
+    analyzeRewardCode,
     evaluate_candidate,
     extract_space_info,
     run_reward_design,
+    scoreRewardCandidate,
     _flatten_obs,
 )
 
@@ -67,6 +69,26 @@ class TestFlattenObs:
         assert result.shape == (6,)
         assert result[0] == 1.0
         assert result[-1] == 6.0
+
+
+class TestRewardAnalysis:
+    def test_detects_guessed_indices(self):
+        analysis = analyzeRewardCode(
+            "def compute_reward(obs, action, next_obs, info):\n    return float(next_obs[13]), {}",
+            'Dimension descriptions:\n{"0": "position", "1": "velocity"}',
+        )
+        guessed = analysis["signal_provenance"]["guessed_obs_indices"]
+        assert guessed == [13]
+        assert analysis["confidence"] == "low"
+
+    def test_penalizes_large_constant_terms(self):
+        analysis = analyzeRewardCode(
+            "def compute_reward(obs, action, next_obs, info):\n    alive_bonus = 2.5\n    return float(alive_bonus), {}",
+            "",
+        )
+        score, details = scoreRewardCandidate(100.0, analysis)
+        assert score < 100.0
+        assert details["penalties"]
 
 
 # ── Space extraction ──
